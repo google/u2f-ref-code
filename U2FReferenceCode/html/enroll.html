@@ -1,0 +1,33 @@
+<html>
+	<body>
+		<h1>Enroll</h1>
+		
+		<script src="/fido-u2f.js"></script>
+		<script src="/enrollData.js?userName=userName"></script>
+		
+		<div id="status">Waiting for user touch</div>
+		
+		<script>
+			// Constants
+			var extensionId = "pcjhmbfhkeapeonmadkhpeadcommdcnh";
+			
+			var u2f = new FidoU2f(extensionId);
+			
+		    function callback(result) {
+		      if (result.errorCode) {
+		        document.getElementById('status')
+		        	.innerHTML = "Failed. Error code: " + result.errorCode;
+		        return;
+		      }
+		      
+		      document.location = "/enrollFinish"
+		            + "?browserData=" + result.browserData
+		            + "&challenge=" + result.challenge
+		            + "&enrollData=" + result.enrollData
+		            + "&sessionId=" + result.sessionId;
+		    }
+			
+			u2f.enroll(enrollData, callback);
+		</script>
+	</body>
+</html>

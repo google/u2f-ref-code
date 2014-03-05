@@ -8,12 +8,12 @@ import com.google.u2f.server.messages.SignResponse;
 
 public interface U2FServer {
 
-	public RegistrationRequest getRegistrationRequest(String accountName) throws U2FException;
+  public RegistrationRequest getRegistrationRequest(String accountName) throws U2FException;
 
-	public void processRegistrationResponse(RegistrationResponse registrationResponse)
-	    throws U2FException;
+  public void processRegistrationResponse(RegistrationResponse registrationResponse)
+      throws U2FException;
 
-	public SignRequest getSignRequest(String accountName) throws U2FException;
+  public SignRequest getSignRequest(String accountName) throws U2FException;
 
-	public void processSignResponse(SignResponse signResponse) throws U2FException;
+  public void processSignResponse(SignResponse signResponse) throws U2FException;
 }

@@ -11,28 +11,28 @@ import com.google.u2f.server.U2FServer;
 import com.google.u2f.server.messages.RegistrationRequest;
 
 public class EnrollDataServlet extends JavascriptServlet {
-	
-	private final U2FServer u2fServer;
-	
-	public EnrollDataServlet(U2FServer u2fServer) {
-		this.u2fServer = u2fServer;
-	}
 
-	@Override
-	public void generateJavascript(Request req, Response resp, PrintStream body) throws Exception {
-		String userName = req.getParameter("userName");
-		if (userName == null) {
-			resp.setStatus(Status.BAD_REQUEST);
-			return;
-		}
-		RegistrationRequest registrationRequest = u2fServer.getRegistrationRequest(userName);
+  private final U2FServer u2fServer;
 
-		JsonObject enrollServerData = new JsonObject();
-		enrollServerData.addProperty("appId", registrationRequest.getAppId());
-		enrollServerData.addProperty("challenge", registrationRequest.getChallenge());
-		enrollServerData.addProperty("version", registrationRequest.getVersion());
-		enrollServerData.addProperty("sessionId", registrationRequest.getSessionId());
+  public EnrollDataServlet(U2FServer u2fServer) {
+    this.u2fServer = u2fServer;
+  }
 
-		body.println("var enrollData = " + enrollServerData.toString() + ";");
+  @Override
+  public void generateJavascript(Request req, Response resp, PrintStream body) throws Exception {
+    String userName = req.getParameter("userName");
+    if (userName == null) {
+      resp.setStatus(Status.BAD_REQUEST);
+      return;
+    }
+    RegistrationRequest registrationRequest = u2fServer.getRegistrationRequest(userName);
+
+    JsonObject enrollServerData = new JsonObject();
+    enrollServerData.addProperty("appId", registrationRequest.getAppId());
+    enrollServerData.addProperty("challenge", registrationRequest.getChallenge());
+    enrollServerData.addProperty("version", registrationRequest.getVersion());
+    enrollServerData.addProperty("sessionId", registrationRequest.getSessionId());
+
+    body.println("var enrollData = " + enrollServerData.toString() + ";");
   }
 }

@@ -8,13 +8,12 @@ import com.google.u2f.client.Crypto;
 
 public class CryptoImpl implements Crypto {
 
-	@Override
-	public byte[] computeSha256(String message) throws U2FException {
-		try {
-	    return MessageDigest.getInstance("SHA-256").digest(message.getBytes());
+  @Override
+  public byte[] computeSha256(String message) throws U2FException {
+    try {
+      return MessageDigest.getInstance("SHA-256").digest(message.getBytes());
     } catch (NoSuchAlgorithmException e) {
-    	throw new U2FException("Cannot compute SHA-256", e);
+      throw new U2FException("Cannot compute SHA-256", e);
     }
-	}
-
+  }
 }

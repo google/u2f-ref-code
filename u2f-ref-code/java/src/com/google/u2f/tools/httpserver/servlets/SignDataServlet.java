@@ -11,30 +11,30 @@ import com.google.u2f.server.U2FServer;
 import com.google.u2f.server.messages.SignRequest;
 
 public class SignDataServlet extends JavascriptServlet {
-	
-	private final U2FServer u2fServer;
-	
-	public SignDataServlet(U2FServer u2fServer) {
-		this.u2fServer = u2fServer;
-	}
 
-	@Override
-	public void generateJavascript(Request req, Response resp, PrintStream body) throws Exception {
-		String userName = req.getParameter("userName");
-		if (userName == null) {
-			resp.setStatus(Status.BAD_REQUEST);
-			return;
-		}
+  private final U2FServer u2fServer;
 
-		SignRequest signRequest = u2fServer.getSignRequest(userName);
+  public SignDataServlet(U2FServer u2fServer) {
+    this.u2fServer = u2fServer;
+  }
 
-		JsonObject signServerData = new JsonObject();
-		signServerData.addProperty("appId", signRequest.getAppId());
-		signServerData.addProperty("challenge", signRequest.getChallenge());
-		signServerData.addProperty("version", signRequest.getVersion());
-		signServerData.addProperty("sessionId", signRequest.getSessionId());
-		signServerData.addProperty("keyHandle", signRequest.getKeyHandle());
+  @Override
+  public void generateJavascript(Request req, Response resp, PrintStream body) throws Exception {
+    String userName = req.getParameter("userName");
+    if (userName == null) {
+      resp.setStatus(Status.BAD_REQUEST);
+      return;
+    }
 
-		body.println("var signData = " + signServerData.toString() + ";");
+    SignRequest signRequest = u2fServer.getSignRequest(userName);
+
+    JsonObject signServerData = new JsonObject();
+    signServerData.addProperty("appId", signRequest.getAppId());
+    signServerData.addProperty("challenge", signRequest.getChallenge());
+    signServerData.addProperty("version", signRequest.getVersion());
+    signServerData.addProperty("sessionId", signRequest.getSessionId());
+    signServerData.addProperty("keyHandle", signRequest.getKeyHandle());
+
+    body.println("var signData = " + signServerData.toString() + ";");
   }
 }

@@ -14,23 +14,23 @@ import com.google.u2f.key.Crypto;
 
 public class BouncyCastleCrypto implements Crypto {
 
-	static {
-		Security.addProvider(new BouncyCastleProvider());
-	}
+  static {
+    Security.addProvider(new BouncyCastleProvider());
+  }
 
-	@Override
+  @Override
   public byte[] sign(byte[] signedData, PrivateKey privateKey) throws U2FException {
     try {
-    	Signature signature = Signature.getInstance("SHA256withECDSA");
-    	signature.initSign(privateKey);
-    	signature.update(signedData);
-    	return signature.sign();
+      Signature signature = Signature.getInstance("SHA256withECDSA");
+      signature.initSign(privateKey);
+      signature.update(signedData);
+      return signature.sign();
     } catch (NoSuchAlgorithmException e) {
-    	throw new U2FException("Error when signing", e);
+      throw new U2FException("Error when signing", e);
     } catch (SignatureException e) {
-    	throw new U2FException("Error when signing", e);
+      throw new U2FException("Error when signing", e);
     } catch (InvalidKeyException e) {
-    	throw new U2FException("Error when signing", e);
+      throw new U2FException("Error when signing", e);
     }
   }
 }

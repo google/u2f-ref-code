@@ -7,7 +7,7 @@ import com.google.u2f.key.messages.RegisterRequest;
 import com.google.u2f.key.messages.RegisterResponse;
 
 public interface U2FKey {
-		RegisterResponse register(RegisterRequest registerRequest) throws U2FException;
-		
-		AuthenticateResponse authenticate(AuthenticateRequest authenticateRequest) throws U2FException;
+  RegisterResponse register(RegisterRequest registerRequest) throws U2FException;
+
+  AuthenticateResponse authenticate(AuthenticateRequest authenticateRequest) throws U2FException;
 }

@@ -25,32 +25,32 @@ import org.bouncycastle.math.ec.ECPoint;
 
 public class TestUtils {
 
-	static {
-		Security.addProvider(new BouncyCastleProvider());
-	}
-	
-	public static byte[] parseHex(String hexEncoded) {
-		try {
-			return Hex.decodeHex(hexEncoded.toCharArray());
-		} catch (DecoderException e) {
-			throw new RuntimeException(e);
-		}
-	}
+  static {
+    Security.addProvider(new BouncyCastleProvider());
+  }
 
-	public static X509Certificate parseCertificate(byte[] encodedDerCertificate) {
-		try {
-	    return (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(
-	        new ByteArrayInputStream(encodedDerCertificate));
+  public static byte[] parseHex(String hexEncoded) {
+    try {
+      return Hex.decodeHex(hexEncoded.toCharArray());
+    } catch (DecoderException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static X509Certificate parseCertificate(byte[] encodedDerCertificate) {
+    try {
+      return (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(
+          new ByteArrayInputStream(encodedDerCertificate));
     } catch (CertificateException e) {
       throw new RuntimeException(e);
     }
-	}
+  }
 
-	public static X509Certificate parseCertificate(String encodedDerCertificateHex) {
-		return parseCertificate(parseHex(encodedDerCertificateHex));
-	}
-	
-	public static PrivateKey parsePrivateKey(String keyBytesHex) {
+  public static X509Certificate parseCertificate(String encodedDerCertificateHex) {
+    return parseCertificate(parseHex(encodedDerCertificateHex));
+  }
+
+  public static PrivateKey parsePrivateKey(String keyBytesHex) {
     try {
       KeyFactory fac = KeyFactory.getInstance("ECDSA");
       X9ECParameters curve = SECNamedCurves.getByName("secp256r1");
@@ -66,15 +66,15 @@ public class TestUtils {
       throw new RuntimeException(e);
     }
   }
-	
-	public static PublicKey parsePublicKey(byte[] keyBytes) {
+
+  public static PublicKey parsePublicKey(byte[] keyBytes) {
     try {
-    	X9ECParameters curve = SECNamedCurves.getByName("secp256r1");
-    	ECParameterSpec curveSpec = new ECParameterSpec(curve.getCurve(), curve.getG(), curve.getN(),
-    	    curve.getH());
-    	ECPoint point = curve.getCurve().decodePoint(keyBytes);
-    	return KeyFactory.getInstance("ECDSA").generatePublic(
-    	    new ECPublicKeySpec(point, curveSpec));
+      X9ECParameters curve = SECNamedCurves.getByName("secp256r1");
+      ECParameterSpec curveSpec = new ECParameterSpec(curve.getCurve(), curve.getG(), curve.getN(),
+          curve.getH());
+      ECPoint point = curve.getCurve().decodePoint(keyBytes);
+      return KeyFactory.getInstance("ECDSA").generatePublic(
+          new ECPublicKeySpec(point, curveSpec));
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     } catch (InvalidKeySpecException e) {
@@ -82,15 +82,15 @@ public class TestUtils {
     }
   }
 
-	public static byte[] computeSha256(byte[] bytes) {
-	    try {
-	      return MessageDigest.getInstance("SHA-256").digest(bytes);
-      } catch (NoSuchAlgorithmException e) {
-        throw new RuntimeException(e);
-      }
-	}
+  public static byte[] computeSha256(byte[] bytes) {
+    try {
+      return MessageDigest.getInstance("SHA-256").digest(bytes);
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
-	public static byte[] computeSha256(String data) {
-	    return computeSha256(data.getBytes());
-	}
+  public static byte[] computeSha256(String data) {
+    return computeSha256(data.getBytes());
+  }
 }

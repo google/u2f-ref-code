@@ -1,6 +1,7 @@
 package com.google.u2f.tools.httpserver.servlets;
 
 import java.io.PrintStream;
+import java.security.cert.X509Certificate;
 
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
@@ -24,8 +25,8 @@ public class EnrollFinishServlet extends HtmlServlet {
         req.getParameter("sessionId"));
 
     try {
-      u2fServer.processRegistrationResponse(registrationResponse);
-      body.println("Success!!!");
+      X509Certificate cert = u2fServer.processRegistrationResponse(registrationResponse);
+      body.println("Success!!!\n\nAttestation cert is:\n" + cert.toString());
     } catch (U2FException e) {
       body.println("Failure: " + e.toString());
     }

@@ -21,9 +21,9 @@ public abstract class HtmlServlet implements Container {
         resp.setDate("Date", time);
         resp.setDate("Last-Modified", time);
 
-        body.println("<html><body>");
+        body.println("<html><body><pre>");
         generateBody(req, resp, body);
-        body.println("</body></html>");
+        body.println("</pre></body></html>");
       } finally {
         body.close();
       }

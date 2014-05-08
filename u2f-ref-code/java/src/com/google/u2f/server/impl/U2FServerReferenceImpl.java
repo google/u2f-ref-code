@@ -66,7 +66,7 @@ public class U2FServerReferenceImpl implements U2FServer {
   }
 
   @Override
-  public void processRegistrationResponse(RegistrationResponse registrationResponse)
+  public X509Certificate processRegistrationResponse(RegistrationResponse registrationResponse)
       throws U2FException {
     Log.info(">> processRegistrationResponse");
 
@@ -115,7 +115,7 @@ public class U2FServerReferenceImpl implements U2FServer {
 
     Set<X509Certificate> trustedCertificates = dataStore.getTrustedCertificates();
     if (!trustedCertificates.contains(attestationCertificate)) {
-      throw new U2FException("Certificate is not trusted");
+      Log.warning("attestion cert is not trusted");    
     }
 
     Log.info("Verifying signature of bytes " + Hex.encodeHexString(signedBytes));
@@ -127,6 +127,7 @@ public class U2FServerReferenceImpl implements U2FServer {
         userPublicKey));
 
     Log.info("<< processRegistrationResponse");
+    return attestationCertificate;
   }
 
   @Override

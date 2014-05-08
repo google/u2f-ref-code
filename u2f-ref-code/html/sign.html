@@ -9,7 +9,7 @@
 		
 		<script>
 			// Constants
-			var extensionId = "pcjhmbfhkeapeonmadkhpeadcommdcnh";
+			var extensionId = "beknehfpfkghjoafdifaflglpjkojoco";
 			
 			var u2f = new FidoU2f(extensionId);
 			
@@ -28,7 +28,12 @@
 		            + "&sessionId=" + result.sessionId;
 		    }
 			
-			u2f.sign(signData, callback);
+			if ((typeof signData) == "undefined") {
+			  var statusDiv = document.getElementById('status');
+			  statusDiv.innerText = "No security keys registered";
+			} else {
+			  u2f.sign(signData, callback);
+			}
 		</script>
 	</body>
 </html>

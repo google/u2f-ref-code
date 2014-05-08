@@ -81,11 +81,12 @@ public class U2fHttpServer {
     DataStore dataStore = new MemoryDataStore();
     dataStore.addTrustedCertificate(trustedCertificate);
 
-    u2fServer = new U2FServerReferenceImpl("http://192.168.43.57:8080", challengeGenerator,
+    u2fServer = new U2FServerReferenceImpl("http://localhost:8080", challengeGenerator,
         sessionIdGenerator, dataStore, new BouncyCastleCrypto());
     Container dispatchContainer = new RequestDispatcher()
     .registerContainer("/fido-u2f.js",
         new StaticHandler("application/javascript", "html/fido-u2f.js"))
+        .registerContainer("/", new StaticHandler("text/html","html/index.html"))
         .registerContainer("/enroll", new StaticHandler("text/html","html/enroll.html"))
         .registerContainer("/enrollData.js", new EnrollDataServlet(u2fServer))
         .registerContainer("/enrollFinish", new EnrollFinishServlet(u2fServer))

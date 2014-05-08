@@ -1,19 +1,15 @@
 package com.google.u2f.client.impl;
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 
 import com.google.u2f.TestVectors;
 import com.google.u2f.U2FConsts;
-import com.google.u2f.U2FException;
 import com.google.u2f.client.ChannelIdProvider;
 import com.google.u2f.client.OriginVerifier;
 import com.google.u2f.key.U2FKey;
@@ -44,13 +40,6 @@ public class U2FClientReferenceImplTest extends TestVectors {
     u2fClient = new U2FClientReferenceImpl(new CryptoImpl(), mockOriginVerifier,
         mockChannelIdProvider, mockU2fServer, mockU2fKey);
 
-    doThrow(new U2FException("Invalid appId/origin pair")).when(mockOriginVerifier).validateOrigin(
-        anyString(), anyString());
-    doThrow(new U2FException("Invalid response")).when(mockU2fServer).processRegistrationResponse(
-        Mockito.<RegistrationResponse>any());
-    doThrow(new U2FException("Invalid response")).when(mockU2fServer).processSignResponse(
-        Mockito.<SignResponse>any());
-
     when(mockChannelIdProvider.getJsonChannelId()).thenReturn(CHANNEL_ID_JSON);
   }
 
@@ -61,11 +50,11 @@ public class U2FClientReferenceImplTest extends TestVectors {
             SESSION_ID));
     doNothing().when(mockOriginVerifier).validateOrigin(APP_ID_ENROLL, ORIGIN);
     when(mockU2fKey.register(new RegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256)))
-    .thenReturn(
-        new RegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE,
+        .thenReturn(new RegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE,
             SIGNATURE_ENROLL));
-    doNothing().when(mockU2fServer).processRegistrationResponse(
-        new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID));
+    when(mockU2fServer.processRegistrationResponse(
+        new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID)))
+        .thenReturn(VENDOR_CERTIFICATE);
 
     u2fClient.register(ORIGIN, ACCOUNT_NAME);
   }

@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.u2f.server.DataStore;
+import com.google.u2f.server.SessionIdGenerator;
 import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SessionData;
 
@@ -13,10 +14,17 @@ public class MemoryDataStore implements DataStore {
   private final Set<X509Certificate> trustedCertificateDataBase = new HashSet<X509Certificate>();
   private final HashMap<String, SessionData> sessionDataBase = new HashMap<String, SessionData>();
   private final HashMap<String, SecurityKeyData> securityKeyDataBase = new HashMap<String, SecurityKeyData>();
-
+  private final SessionIdGenerator sessionIdGenerator;
+  
+  public MemoryDataStore(SessionIdGenerator sessionIdGenerator) {
+	  this.sessionIdGenerator = sessionIdGenerator;
+  }
+  
   @Override
-  public void storeSessionData(String sessionId, SessionData sessionData) {
+  public String storeSessionData(SessionData sessionData) {
+	String sessionId = sessionIdGenerator.generateSessionId(sessionData.getAccountName());
     sessionDataBase.put(sessionId, sessionData);
+    return sessionId;
   }
 
   @Override

@@ -17,7 +17,6 @@ import com.google.u2f.key.messages.RegisterResponse;
 import com.google.u2f.server.ChallengeGenerator;
 import com.google.u2f.server.Crypto;
 import com.google.u2f.server.DataStore;
-import com.google.u2f.server.SessionIdGenerator;
 import com.google.u2f.server.U2FServer;
 import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SessionData;
@@ -31,15 +30,13 @@ public class U2FServerReferenceImpl implements U2FServer {
 
   private final String appId;
   private final ChallengeGenerator challengeGenerator;
-  private final SessionIdGenerator sessionIdGenerator;
   private final DataStore dataStore;
   private final Crypto cryto;
 
   public U2FServerReferenceImpl(String appId, ChallengeGenerator challengeGenerator,
-      SessionIdGenerator sessionIdGenerator, DataStore dataStore, Crypto cryto) {
+      DataStore dataStore, Crypto cryto) {
     this.appId = appId;
     this.challengeGenerator = challengeGenerator;
-    this.sessionIdGenerator = sessionIdGenerator;
     this.dataStore = dataStore;
     this.cryto = cryto;
   }
@@ -48,11 +45,10 @@ public class U2FServerReferenceImpl implements U2FServer {
   public RegistrationRequest getRegistrationRequest(String accountName) {
     Log.info(">> getRegistrationRequest " + accountName);
 
-    String sessionId = sessionIdGenerator.generateSessionId(accountName);
     byte[] challenge = challengeGenerator.generateChallenge(accountName);
     SessionData sessionData = new SessionData(accountName, challenge);
 
-    dataStore.storeSessionData(sessionId, sessionData);
+    String sessionId = dataStore.storeSessionData(sessionData);
 
     String challengeBase64 = Base64.encodeBase64URLSafeString(challenge);
 
@@ -134,7 +130,6 @@ public class U2FServerReferenceImpl implements U2FServer {
   public SignRequest getSignRequest(String accountName) throws U2FException {
     Log.info(">> getSignRequest " + accountName);
 
-    String sessionId = sessionIdGenerator.generateSessionId(accountName);
     byte[] challenge = challengeGenerator.generateChallenge(accountName);
     SessionData sessionData = new SessionData(accountName, challenge);
     SecurityKeyData securityKeyData = dataStore.getSecurityKeyData(accountName);
@@ -143,7 +138,7 @@ public class U2FServerReferenceImpl implements U2FServer {
       throw new U2FException("No security keys registered for this user");
     }
 
-    dataStore.storeSessionData(sessionId, sessionData);
+    String sessionId = dataStore.storeSessionData(sessionData);
 
     byte[] keyHandle = securityKeyData.getKeyHandle();
 

@@ -11,7 +11,7 @@ public interface DataStore {
 
   public Set<X509Certificate> getTrustedCertificates();
 
-  public void storeSessionData(String sessionId, SessionData sessionData);
+  public /* sessionId */ String storeSessionData(SessionData sessionData);
 
   public SessionData getSessionData(String sessionId);
 

@@ -25,7 +25,7 @@ public class EnrollDataServlet extends JavascriptServlet {
       resp.setStatus(Status.BAD_REQUEST);
       return;
     }
-    RegistrationRequest registrationRequest = u2fServer.getRegistrationRequest(userName);
+    RegistrationRequest registrationRequest = u2fServer.getRegistrationRequest(userName, "http://localhost:8080");
 
     JsonObject enrollServerData = new JsonObject();
     enrollServerData.addProperty("appId", registrationRequest.getAppId());

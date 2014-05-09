@@ -41,7 +41,7 @@ public class U2FClientReferenceImpl implements U2FClient {
 
   @Override
   public void register(String origin, String accountName) throws U2FException {
-    RegistrationRequest registrationRequest = server.getRegistrationRequest(accountName);
+    RegistrationRequest registrationRequest = server.getRegistrationRequest(accountName, origin);
 
     String version = registrationRequest.getVersion();
     String serverChallengeBase64 = registrationRequest.getChallenge();
@@ -75,7 +75,7 @@ public class U2FClientReferenceImpl implements U2FClient {
 
   @Override
   public void authenticate(String origin, String accountName) throws U2FException {
-    SignRequest signRequest = server.getSignRequest(accountName);
+    SignRequest signRequest = server.getSignRequest(accountName, origin);
 
     String version = signRequest.getVersion();
     String appId = signRequest.getAppId();

@@ -45,7 +45,7 @@ public class U2FClientReferenceImplTest extends TestVectors {
 
   @Test
   public void testRegister() throws Exception {
-    when(mockU2fServer.getRegistrationRequest(ACCOUNT_NAME)).thenReturn(
+    when(mockU2fServer.getRegistrationRequest(ACCOUNT_NAME, APP_ID_ENROLL)).thenReturn(
         new RegistrationRequest(U2FConsts.U2F_V2, SERVER_CHALLENGE_ENROLL_BASE64, APP_ID_ENROLL,
             SESSION_ID));
     doNothing().when(mockOriginVerifier).validateOrigin(APP_ID_ENROLL, ORIGIN);
@@ -61,7 +61,7 @@ public class U2FClientReferenceImplTest extends TestVectors {
 
   @Test
   public void testAuthenticate() throws Exception {
-    when(mockU2fServer.getSignRequest(ACCOUNT_NAME)).thenReturn(
+    when(mockU2fServer.getSignRequest(ACCOUNT_NAME, ORIGIN)).thenReturn(
         new SignRequest(U2FConsts.U2F_V2, SERVER_CHALLENGE_SIGN_BASE64, APP_ID_SIGN,
             KEY_HANDLE_BASE64, SESSION_ID));
     doNothing().when(mockOriginVerifier).validateOrigin(APP_ID_SIGN, ORIGIN);

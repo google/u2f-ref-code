@@ -81,8 +81,8 @@ public class U2fHttpServer {
     DataStore dataStore = new MemoryDataStore(sessionIdGenerator);
     dataStore.addTrustedCertificate(trustedCertificate);
 
-    u2fServer = new U2FServerReferenceImpl("http://localhost:8080", challengeGenerator,
-        dataStore, new BouncyCastleCrypto());
+    u2fServer = new U2FServerReferenceImpl(challengeGenerator, dataStore, 
+        new BouncyCastleCrypto());
     Container dispatchContainer = new RequestDispatcher()
     .registerContainer("/fido-u2f.js",
         new StaticHandler("application/javascript", "html/fido-u2f.js"))

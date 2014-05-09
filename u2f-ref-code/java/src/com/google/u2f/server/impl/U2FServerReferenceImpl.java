@@ -28,25 +28,23 @@ import com.google.u2f.server.messages.SignResponse;
 public class U2FServerReferenceImpl implements U2FServer {
   private static final Logger Log = Logger.getLogger(U2FServerReferenceImpl.class.getName());
 
-  private final String appId;
   private final ChallengeGenerator challengeGenerator;
   private final DataStore dataStore;
   private final Crypto cryto;
 
-  public U2FServerReferenceImpl(String appId, ChallengeGenerator challengeGenerator,
+  public U2FServerReferenceImpl(ChallengeGenerator challengeGenerator,
       DataStore dataStore, Crypto cryto) {
-    this.appId = appId;
     this.challengeGenerator = challengeGenerator;
     this.dataStore = dataStore;
     this.cryto = cryto;
   }
 
   @Override
-  public RegistrationRequest getRegistrationRequest(String accountName) {
+  public RegistrationRequest getRegistrationRequest(String accountName, String appId) {
     Log.info(">> getRegistrationRequest " + accountName);
 
     byte[] challenge = challengeGenerator.generateChallenge(accountName);
-    SessionData sessionData = new SessionData(accountName, challenge);
+    SessionData sessionData = new SessionData(accountName, appId, challenge);
 
     String sessionId = dataStore.storeSessionData(sessionData);
 
@@ -76,6 +74,7 @@ public class U2FServerReferenceImpl implements U2FServer {
       throw new U2FException("Unknown session_id");
     }
 
+    String appId = sessionData.getAppId();
     String browserData = new String(Base64.decodeBase64(browserDataBase64));
     byte[] rawRegistrationData = Base64.decodeBase64(rawRegistrationDataBase64);
 
@@ -127,11 +126,11 @@ public class U2FServerReferenceImpl implements U2FServer {
   }
 
   @Override
-  public SignRequest getSignRequest(String accountName) throws U2FException {
+  public SignRequest getSignRequest(String accountName, String appId) throws U2FException {
     Log.info(">> getSignRequest " + accountName);
 
     byte[] challenge = challengeGenerator.generateChallenge(accountName);
-    SessionData sessionData = new SessionData(accountName, challenge);
+    SessionData sessionData = new SessionData(accountName, appId, challenge);
     SecurityKeyData securityKeyData = dataStore.getSecurityKeyData(accountName);
 
     if (securityKeyData == null) {
@@ -168,7 +167,8 @@ public class U2FServerReferenceImpl implements U2FServer {
     if (sessionData == null) {
       throw new U2FException("Unknown session_id");
     }
-
+    
+    String appId = sessionData.getAppId();
     SecurityKeyData securityKeyData = dataStore.getSecurityKeyData(sessionData.getAccountName());
 
     if (securityKeyData == null) {

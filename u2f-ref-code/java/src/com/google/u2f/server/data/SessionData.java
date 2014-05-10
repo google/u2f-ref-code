@@ -1,6 +1,10 @@
 package com.google.u2f.server.data;
 
-public class SessionData {
+import java.io.Serializable;
+
+public class SessionData implements Serializable {
+  private static final long serialVersionUID = 1750990095756334568L;
+
   private final String accountName;
   private final byte[] challenge;
   private final String appId;

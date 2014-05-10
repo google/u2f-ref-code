@@ -13,7 +13,6 @@ public class SecurityKeyData {
   private final X509Certificate attestationCert;
 
   public SecurityKeyData(byte[] keyHandle, byte[] publicKey, X509Certificate attestationCert) {
-    super();
     this.keyHandle = keyHandle;
     this.publicKey = publicKey;
     this.attestationCert = attestationCert;

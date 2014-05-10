@@ -1,6 +1,7 @@
 package com.google.u2f.server.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -48,7 +49,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
     when(mockDataStore.storeSessionData(Matchers.<SessionData>any())).thenReturn(SESSION_ID);
     when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates);
     when(mockDataStore.getSecurityKeyData(ACCOUNT_NAME)).thenReturn(
-        new SecurityKeyData(KEY_HANDLE, USER_PUBLIC_KEY_SIGN_HEX));
+        new SecurityKeyData(KEY_HANDLE, USER_PUBLIC_KEY_SIGN_HEX, VENDOR_CERTIFICATE));
   }
 
   @Test
@@ -74,8 +75,8 @@ public class U2FServerReferenceImplTest extends TestVectors {
 
     u2fServer.processRegistrationResponse(registrationResponse);
 
-    verify(mockDataStore).storeSecurityKeyData(ACCOUNT_NAME,
-        new SecurityKeyData(KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX));
+    verify(mockDataStore).storeSecurityKeyData(eq(ACCOUNT_NAME),
+        eq(new SecurityKeyData(KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE)));
   }
 
   @Test
@@ -94,8 +95,8 @@ public class U2FServerReferenceImplTest extends TestVectors {
 
     u2fServer.processRegistrationResponse(registrationResponse);
 
-    verify(mockDataStore).storeSecurityKeyData(ACCOUNT_NAME,
-        new SecurityKeyData(KEY_HANDLE_2, USER_PUBLIC_KEY_2));
+    verify(mockDataStore).storeSecurityKeyData(eq(ACCOUNT_NAME),
+        eq(new SecurityKeyData(KEY_HANDLE_2, USER_PUBLIC_KEY_2, TRUSTED_CERTIFICATE_2)));
   }
 
   @Test
@@ -127,7 +128,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
 	when(mockDataStore.getSessionData(SESSION_ID)).thenReturn(
 	    new SessionData(ACCOUNT_NAME, APP_ID_2, SERVER_CHALLENGE_SIGN));
     when(mockDataStore.getSecurityKeyData(ACCOUNT_NAME)).thenReturn(
-        new SecurityKeyData(KEY_HANDLE_2, USER_PUBLIC_KEY_2));
+        new SecurityKeyData(KEY_HANDLE_2, USER_PUBLIC_KEY_2, VENDOR_CERTIFICATE));
     u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
         mockDataStore, cryto);
     SignResponse signResponse = new SignResponse(BROWSER_DATA_2_BASE64, SIGN_DATA_2_BASE64,

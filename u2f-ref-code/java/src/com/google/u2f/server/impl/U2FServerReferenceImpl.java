@@ -60,7 +60,7 @@ public class U2FServerReferenceImpl implements U2FServer {
   }
 
   @Override
-  public X509Certificate processRegistrationResponse(RegistrationResponse registrationResponse)
+  public SecurityKeyData processRegistrationResponse(RegistrationResponse registrationResponse)
       throws U2FException {
     Log.info(">> processRegistrationResponse");
 
@@ -118,11 +118,12 @@ public class U2FServerReferenceImpl implements U2FServer {
       throw new U2FException("Signature is invalid");
     }
 
-    dataStore.storeSecurityKeyData(sessionData.getAccountName(), new SecurityKeyData(keyHandle,
-        userPublicKey));
+    SecurityKeyData securityKeyData = new SecurityKeyData(keyHandle, 
+        userPublicKey, attestationCertificate);
+    dataStore.storeSecurityKeyData(sessionData.getAccountName(), securityKeyData);
 
     Log.info("<< processRegistrationResponse");
-    return attestationCertificate;
+    return securityKeyData;
   }
 
   @Override

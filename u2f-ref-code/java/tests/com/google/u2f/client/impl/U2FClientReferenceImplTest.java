@@ -19,6 +19,7 @@ import com.google.u2f.key.messages.AuthenticateResponse;
 import com.google.u2f.key.messages.RegisterRequest;
 import com.google.u2f.key.messages.RegisterResponse;
 import com.google.u2f.server.U2FServer;
+import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.messages.RegistrationRequest;
 import com.google.u2f.server.messages.RegistrationResponse;
 import com.google.u2f.server.messages.SignRequest;
@@ -54,7 +55,7 @@ public class U2FClientReferenceImplTest extends TestVectors {
             SIGNATURE_ENROLL));
     when(mockU2fServer.processRegistrationResponse(
         new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID)))
-        .thenReturn(VENDOR_CERTIFICATE);
+        .thenReturn(new SecurityKeyData(KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE));
 
     u2fClient.register(ORIGIN, ACCOUNT_NAME);
   }

@@ -72,9 +72,10 @@ public class U2FClientReferenceImplTest extends TestVectors {
             BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE))).thenReturn(
                 new AuthenticateResponse(UserPresenceVerifier.USER_PRESENT_FLAG, COUNTER_VALUE,
                     SIGNATURE_AUTHENTICATE));
-    doNothing().when(mockU2fServer).processSignResponse(
+    when(mockU2fServer.processSignResponse(
         new SignResponse(BROWSER_DATA_SIGN_BASE64, SIGN_RESPONSE_DATA_BASE64,
-            SERVER_CHALLENGE_SIGN_BASE64, SESSION_ID, APP_ID_SIGN));
+            SERVER_CHALLENGE_SIGN_BASE64, SESSION_ID, APP_ID_SIGN)))
+        .thenReturn(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE));;
 
     u2fClient.authenticate(ORIGIN, ACCOUNT_NAME);
   }

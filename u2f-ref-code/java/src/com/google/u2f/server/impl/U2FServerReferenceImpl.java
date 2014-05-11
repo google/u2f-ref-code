@@ -165,7 +165,7 @@ public class U2FServerReferenceImpl implements U2FServer {
   }
 
   @Override
-  public void processSignResponse(SignResponse signResponse) throws U2FException {
+  public SecurityKeyData processSignResponse(SignResponse signResponse) throws U2FException {
     Log.info(">> processSignResponse");
 
     String sessionId = signResponse.getSessionId();
@@ -230,6 +230,7 @@ public class U2FServerReferenceImpl implements U2FServer {
     }
 
     Log.info("<< processSignResponse");
+    return securityKeyData;
   }
 
   @Override

@@ -70,7 +70,7 @@ public class U2FClientReferenceImpl implements U2FClient {
     String clientDataBase64 = Base64.encodeBase64URLSafeString(clientData.getBytes());
 
     server.processRegistrationResponse(new RegistrationResponse(rawRegisterResponseBase64,
-        clientDataBase64, sessionId), accountName, System.currentTimeMillis());
+        clientDataBase64, sessionId), System.currentTimeMillis());
   }
 
   @Override

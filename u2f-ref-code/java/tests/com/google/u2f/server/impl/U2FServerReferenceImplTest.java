@@ -76,7 +76,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
     RegistrationResponse registrationResponse = new RegistrationResponse(REGISTRATION_DATA_BASE64,
         BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
 
-    u2fServer.processRegistrationResponse(registrationResponse, ACCOUNT_NAME, 0L);
+    u2fServer.processRegistrationResponse(registrationResponse, 0L);
 
     verify(mockDataStore).storeSecurityKeyData(eq(ACCOUNT_NAME),
         eq(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE)));
@@ -96,7 +96,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
     RegistrationResponse registrationResponse = new RegistrationResponse(REGISTRATION_DATA_2_BASE64,
         BROWSER_DATA_2_BASE64, SESSION_ID);
 
-    u2fServer.processRegistrationResponse(registrationResponse, ACCOUNT_NAME, 0L);
+    u2fServer.processRegistrationResponse(registrationResponse, 0L);
 
     verify(mockDataStore).storeSecurityKeyData(eq(ACCOUNT_NAME),
         eq(new SecurityKeyData(0L, KEY_HANDLE_2, USER_PUBLIC_KEY_2, TRUSTED_CERTIFICATE_2)));

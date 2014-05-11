@@ -2,14 +2,14 @@ package com.google.u2f.server.data;
 
 import java.io.Serializable;
 
-public class SessionData implements Serializable {
+public class EnrollSessionData implements Serializable {
   private static final long serialVersionUID = 1750990095756334568L;
 
   private final String accountName;
   private final byte[] challenge;
   private final String appId;
 
-  public SessionData(String accountName, String appId, byte[] challenge) {
+  public EnrollSessionData(String accountName, String appId, byte[] challenge) {
     this.accountName = accountName;
     this.challenge = challenge;
     this.appId = appId;

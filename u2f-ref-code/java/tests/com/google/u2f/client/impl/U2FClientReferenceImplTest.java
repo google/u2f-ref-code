@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.google.common.collect.ImmutableList;
 import com.google.u2f.TestVectors;
 import com.google.u2f.U2FConsts;
 import com.google.u2f.client.ChannelIdProvider;
@@ -63,8 +64,8 @@ public class U2FClientReferenceImplTest extends TestVectors {
   @Test
   public void testAuthenticate() throws Exception {
     when(mockU2fServer.getSignRequest(ACCOUNT_NAME, ORIGIN)).thenReturn(
-        new SignRequest(U2FConsts.U2F_V2, SERVER_CHALLENGE_SIGN_BASE64, APP_ID_SIGN,
-            KEY_HANDLE_BASE64, SESSION_ID));
+        ImmutableList.of(new SignRequest(U2FConsts.U2F_V2, SERVER_CHALLENGE_SIGN_BASE64, APP_ID_SIGN,
+            KEY_HANDLE_BASE64, SESSION_ID)));
     doNothing().when(mockOriginVerifier).validateOrigin(APP_ID_SIGN, ORIGIN);
     when(
         mockU2fKey.authenticate(new AuthenticateRequest(UserPresenceVerifier.USER_PRESENT_FLAG,

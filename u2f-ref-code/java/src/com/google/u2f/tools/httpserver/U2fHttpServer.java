@@ -35,6 +35,8 @@ public class U2fHttpServer {
   private final Object lock = new Object();
   private final U2FServer u2fServer;
 
+  private long sessionIdCounter = 0;
+  
   public static void main(String[] args) throws InterruptedException {
     new U2fHttpServer();
   }
@@ -54,7 +56,12 @@ public class U2fHttpServer {
     SessionIdGenerator sessionIdGenerator = new SessionIdGenerator() {
       @Override
       public String generateSessionId(String accountName) {
-        return "sessionId_"+accountName;
+        return new StringBuilder()
+          .append("sessionId_") 
+          .append(sessionIdCounter++)
+          .append("_")
+          .append(accountName)
+          .toString();
       }
     };
 

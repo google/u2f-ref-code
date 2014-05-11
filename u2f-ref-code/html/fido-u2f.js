@@ -37,23 +37,10 @@ var FidoU2fGnubbydChromeExtension = function(exensionId) {
   }
 
   var sign = function() {
-    // Inputs from the server
-    var sessionId = signData.sessionId;
-    var appId = signData.appId;
-    var challenge = signData.challenge;
-    var version = signData.version;
-    var keyHandle = signData.keyHandle;
-    
+    // Inputs from the server are in a global object    
     var signRequest = {
         type: "sign_web_request",
-        signData: [
-            {
-              appId: appId,
-              challenge: challenge,
-              keyHandle: keyHandle,
-              version: version
-            }
-        ]
+        signData: signData
     };
     
     function extensionCallback(extensionResult) {
@@ -67,7 +54,7 @@ var FidoU2fGnubbydChromeExtension = function(exensionId) {
         challenge: responseData.challenge,
         signData: responseData.signatureData,
         appId: responseData.appId,
-        sessionId: sessionId
+        sessionId: responseData.sessionId
       });
     }
     

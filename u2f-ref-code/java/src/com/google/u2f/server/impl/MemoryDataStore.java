@@ -2,18 +2,23 @@ package com.google.u2f.server.impl;
 
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.u2f.server.DataStore;
 import com.google.u2f.server.SessionIdGenerator;
+import com.google.u2f.server.data.EnrollSessionData;
 import com.google.u2f.server.data.SecurityKeyData;
-import com.google.u2f.server.data.SessionData;
+import com.google.u2f.server.data.SignSessionData;
 
 public class MemoryDataStore implements DataStore {
-  private final Set<X509Certificate> trustedCertificateDataBase = new HashSet<X509Certificate>();
-  private final HashMap<String, SessionData> sessionDataBase = new HashMap<String, SessionData>();
-  private final HashMap<String, SecurityKeyData> securityKeyDataBase = new HashMap<String, SecurityKeyData>();
+  private final Set<X509Certificate> trustedCertificateDataBase = Sets.newHashSet();
+  private final HashMap<String, EnrollSessionData> sessionDataBase = Maps.newHashMap();
+  private final HashMap<String, List<SecurityKeyData>> securityKeyDataBase = Maps.newHashMap();
   private final SessionIdGenerator sessionIdGenerator;
   
   public MemoryDataStore(SessionIdGenerator sessionIdGenerator) {
@@ -21,25 +26,34 @@ public class MemoryDataStore implements DataStore {
   }
   
   @Override
-  public String storeSessionData(SessionData sessionData) {
+  public String storeSessionData(EnrollSessionData sessionData) {
 	String sessionId = sessionIdGenerator.generateSessionId(sessionData.getAccountName());
     sessionDataBase.put(sessionId, sessionData);
     return sessionId;
   }
 
   @Override
-  public SessionData getSessionData(String sessionId) {
+  public EnrollSessionData getEnrollSessionData(String sessionId) {
     return sessionDataBase.get(sessionId);
+  }
+  
+  @Override
+  public SignSessionData getSignSessionData(String sessionId) {
+    return (SignSessionData) sessionDataBase.get(sessionId);
   }
 
   @Override
   public void storeSecurityKeyData(String accountName, SecurityKeyData securityKeyData) {
-    securityKeyDataBase.put(accountName, securityKeyData);
+    List<SecurityKeyData> tokens = getSecurityKeyData(accountName);
+    tokens.add(securityKeyData);
+    securityKeyDataBase.put(accountName, tokens);
   }
 
   @Override
-  public SecurityKeyData getSecurityKeyData(String accountName) {
-    return securityKeyDataBase.get(accountName);
+  public List<SecurityKeyData> getSecurityKeyData(String accountName) {
+    return Objects.firstNonNull(
+        securityKeyDataBase.get(accountName),
+        Lists.<SecurityKeyData>newArrayList());
   }
 
   @Override

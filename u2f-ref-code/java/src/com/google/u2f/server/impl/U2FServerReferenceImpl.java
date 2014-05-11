@@ -137,10 +137,6 @@ public class U2FServerReferenceImpl implements U2FServer {
     byte[] challenge = challengeGenerator.generateChallenge(accountName);
     List<SecurityKeyData> securityKeyDataList = dataStore.getSecurityKeyData(accountName);
 
-    if (securityKeyDataList.isEmpty()) {
-      throw new U2FException("No security keys registered for this user");
-    }
-
     ImmutableList.Builder<SignRequest> result = ImmutableList.builder();
     
     for (SecurityKeyData securityKeyData : securityKeyDataList) {

@@ -25,7 +25,10 @@ public class EnrollFinishServlet extends HtmlServlet {
         req.getParameter("sessionId"));
 
     try {
-      SecurityKeyData tokenData = u2fServer.processRegistrationResponse(registrationResponse);
+      SecurityKeyData tokenData = u2fServer.processRegistrationResponse(
+          registrationResponse,
+          req.getParameter("userName"),
+          System.currentTimeMillis());
       body.println("Success!!!\n\nnew token:\n" + tokenData.toString());
     } catch (U2FException e) {
       body.println("Failure: " + e.toString());

@@ -1,6 +1,7 @@
 package com.google.u2f.server.impl;
 
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -64,5 +65,16 @@ public class MemoryDataStore implements DataStore {
   @Override
   public void addTrustedCertificate(X509Certificate certificate) {
     trustedCertificateDataBase.add(certificate);
+  }
+
+  @Override
+  public void removeSecuityKey(String accountName, byte[] publicKey) {
+    List<SecurityKeyData> tokens = getSecurityKeyData(accountName);
+    for (SecurityKeyData token : tokens) {
+      if (Arrays.equals(token.getPublicKey(), publicKey)) {
+        tokens.remove(token);
+        break;
+      }
+    }
   }
 }

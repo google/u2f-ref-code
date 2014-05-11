@@ -52,7 +52,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
     when(mockDataStore.storeSessionData(Matchers.<EnrollSessionData>any())).thenReturn(SESSION_ID);
     when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates);
     when(mockDataStore.getSecurityKeyData(ACCOUNT_NAME)).thenReturn(
-        ImmutableList.of(new SecurityKeyData(KEY_HANDLE, USER_PUBLIC_KEY_SIGN_HEX, VENDOR_CERTIFICATE)));
+        ImmutableList.of(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_SIGN_HEX, VENDOR_CERTIFICATE)));
   }
 
   @Test
@@ -76,10 +76,10 @@ public class U2FServerReferenceImplTest extends TestVectors {
     RegistrationResponse registrationResponse = new RegistrationResponse(REGISTRATION_DATA_BASE64,
         BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
 
-    u2fServer.processRegistrationResponse(registrationResponse);
+    u2fServer.processRegistrationResponse(registrationResponse, ACCOUNT_NAME, 0L);
 
     verify(mockDataStore).storeSecurityKeyData(eq(ACCOUNT_NAME),
-        eq(new SecurityKeyData(KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE)));
+        eq(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE)));
   }
 
   @Test
@@ -96,10 +96,10 @@ public class U2FServerReferenceImplTest extends TestVectors {
     RegistrationResponse registrationResponse = new RegistrationResponse(REGISTRATION_DATA_2_BASE64,
         BROWSER_DATA_2_BASE64, SESSION_ID);
 
-    u2fServer.processRegistrationResponse(registrationResponse);
+    u2fServer.processRegistrationResponse(registrationResponse, ACCOUNT_NAME, 0L);
 
     verify(mockDataStore).storeSecurityKeyData(eq(ACCOUNT_NAME),
-        eq(new SecurityKeyData(KEY_HANDLE_2, USER_PUBLIC_KEY_2, TRUSTED_CERTIFICATE_2)));
+        eq(new SecurityKeyData(0L, KEY_HANDLE_2, USER_PUBLIC_KEY_2, TRUSTED_CERTIFICATE_2)));
   }
 
   @Test
@@ -131,7 +131,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
 	when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
 	    new SignSessionData(ACCOUNT_NAME, APP_ID_2, SERVER_CHALLENGE_SIGN, USER_PUBLIC_KEY_2));
     when(mockDataStore.getSecurityKeyData(ACCOUNT_NAME)).thenReturn(
-        ImmutableList.of(new SecurityKeyData(KEY_HANDLE_2, USER_PUBLIC_KEY_2, VENDOR_CERTIFICATE)));
+        ImmutableList.of(new SecurityKeyData(0l, KEY_HANDLE_2, USER_PUBLIC_KEY_2, VENDOR_CERTIFICATE)));
     u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
         mockDataStore, cryto);
     SignResponse signResponse = new SignResponse(BROWSER_DATA_2_BASE64, SIGN_DATA_2_BASE64,

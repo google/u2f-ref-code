@@ -64,8 +64,8 @@ public class U2FServerReferenceImpl implements U2FServer {
   }
 
   @Override
-  public SecurityKeyData processRegistrationResponse(RegistrationResponse registrationResponse)
-      throws U2FException {
+  public SecurityKeyData processRegistrationResponse(RegistrationResponse registrationResponse,
+      String accountName, long currentTimeInMillis) throws U2FException {
     Log.info(">> processRegistrationResponse");
 
     String sessionId = registrationResponse.getSessionId();
@@ -89,6 +89,10 @@ public class U2FServerReferenceImpl implements U2FServer {
     Log.info("  browserData: " + browserData);
     Log.info("  rawRegistrationData: " + Hex.encodeHexString(rawRegistrationData));
 
+    if (!accountName.equals(sessionData.getAccountName())) {
+      throw new U2FException("invalid registration response (for wrong user)");
+    }
+    
     RegisterResponse registerResponse = RawMessageCodec.decodeRegisterResponse(rawRegistrationData);
     byte[] userPublicKey = registerResponse.getUserPublicKey();
     byte[] keyHandle = registerResponse.getKeyHandle();
@@ -122,8 +126,8 @@ public class U2FServerReferenceImpl implements U2FServer {
       throw new U2FException("Signature is invalid");
     }
 
-    SecurityKeyData securityKeyData = new SecurityKeyData(keyHandle, 
-        userPublicKey, attestationCertificate);
+    SecurityKeyData securityKeyData = new SecurityKeyData(currentTimeInMillis,
+        keyHandle, userPublicKey, attestationCertificate);
     dataStore.storeSecurityKeyData(sessionData.getAccountName(), securityKeyData);
 
     Log.info("<< processRegistrationResponse");
@@ -240,6 +244,6 @@ public class U2FServerReferenceImpl implements U2FServer {
   @Override
   public void removeSecurityKey(String accountName, byte[] publicKey)
       throws U2FException {
-    
+    dataStore.removeSecuityKey(accountName, publicKey);
   }
 }

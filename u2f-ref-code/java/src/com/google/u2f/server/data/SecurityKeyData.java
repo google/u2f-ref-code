@@ -8,16 +8,25 @@ import org.apache.commons.codec.binary.Base64;
 import com.google.common.base.Objects;
 
 public class SecurityKeyData {
+  private final long enrollmentTime;
   private final byte[] keyHandle;
   private final byte[] publicKey;
   private final X509Certificate attestationCert;
 
-  public SecurityKeyData(byte[] keyHandle, byte[] publicKey, X509Certificate attestationCert) {
+  public SecurityKeyData(long enrollmentTime, byte[] keyHandle, byte[] publicKey, X509Certificate attestationCert) {
+    this.enrollmentTime = enrollmentTime;
     this.keyHandle = keyHandle;
     this.publicKey = publicKey;
     this.attestationCert = attestationCert;
   }
 
+  /**
+   * When these keys were created/enrolled with the relying party.
+   */
+  public long getEnrollmentTime() {
+    return enrollmentTime;
+  }
+  
   public byte[] getKeyHandle() {
     return keyHandle;
   }
@@ -33,6 +42,7 @@ public class SecurityKeyData {
   @Override
   public int hashCode() {
     return Objects.hashCode(
+        enrollmentTime,
         keyHandle, 
         publicKey, 
         attestationCert);
@@ -45,6 +55,7 @@ public class SecurityKeyData {
     }
     SecurityKeyData that = (SecurityKeyData) obj;
     return Arrays.equals(this.keyHandle, that.keyHandle) 
+        && (this.enrollmentTime == that.enrollmentTime)
         && Arrays.equals(this.publicKey, that.publicKey)
         && Objects.equal(this.attestationCert, that.attestationCert);
   }

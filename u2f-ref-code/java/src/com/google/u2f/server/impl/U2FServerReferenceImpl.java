@@ -134,12 +134,13 @@ public class U2FServerReferenceImpl implements U2FServer {
   public List<SignRequest> getSignRequest(String accountName, String appId) throws U2FException {
     Log.info(">> getSignRequest " + accountName);
 
-    byte[] challenge = challengeGenerator.generateChallenge(accountName);
     List<SecurityKeyData> securityKeyDataList = dataStore.getSecurityKeyData(accountName);
 
     ImmutableList.Builder<SignRequest> result = ImmutableList.builder();
     
     for (SecurityKeyData securityKeyData : securityKeyDataList) {
+      byte[] challenge = challengeGenerator.generateChallenge(accountName);
+
       SignSessionData sessionData = new SignSessionData(accountName, appId, 
           challenge, securityKeyData.getPublicKey());
       String sessionId = dataStore.storeSessionData(sessionData);
@@ -193,6 +194,7 @@ public class U2FServerReferenceImpl implements U2FServer {
 
     Log.info("-- Input --");
     Log.info("  sessionId: " + sessionId);
+    Log.info("  publicKey: " + Hex.encodeHexString(securityKeyData.getPublicKey()));
     Log.info("  challenge: " + Hex.encodeHexString(sessionData.getChallenge()));
     Log.info("  accountName: " + sessionData.getAccountName());
     Log.info("  browserData: " + browserData);

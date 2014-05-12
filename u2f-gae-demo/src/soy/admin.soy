@@ -1,0 +1,19 @@
+{namespace u2fdemo}
+
+/**
+ * Says hello to the world.
+ */
+{template .admin}
+<html>
+  <head>  
+    <link rel="stylesheet" type="text/css" href="/css/u2fdemo.css">
+  </head>
+  <body>
+  {call .sandbar data="all"/}
+  <div id='main'>
+    <form action="/admin?command=generateKeys" method="POST">
+      <input type="submit" value="Generate New Keys"></input>
+    </form>
+  </body>
+</html>
+{/template}

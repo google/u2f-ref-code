@@ -1,0 +1,45 @@
+{namespace u2fdemo}
+
+/**
+ * Says hello to the world.
+ * @param username the name of the person
+ */
+{template .main}
+<html>
+  <head>    
+  <link href="/jquery/css/custom-theme/jquery-ui-1.10.4.custom.css" rel="stylesheet">
+  <script src="/jquery/js/jquery-1.10.2.js"></script>
+  <script src="/jquery/js/jquery-ui-1.10.4.custom.js"></script>
+
+  <script type="text/javascript" src="https://u2fdemo.appspot.com/js/lib/u2f.js"></script>  
+
+  <script type="text/javascript" src="/js/u2fdemo.js"></script>
+  <link rel="stylesheet" type="text/css" href="/css/u2fdemo.css">
+  
+  </head>
+  <body onload="initialFetchTokens();">
+  {call .cardTemplate data="all"/}
+  {call .sandbar data="all"/}
+  
+  <div id='sidebar'>
+    <div id="addToken" style="-webkit-user-select: none;">Add U2F Authenticator</div>
+    <label><input id="reregistration" type="checkbox" />allow re-registration</label> 
+    <div id="testAuth" style="-webkit-user-select: none;">Test Authentication</div>
+    <div id="downloadCrx"><a href="/crx/crx-u2f.zip">download the Chrome extension</a></div>
+  </div>
+  <div id='main'>
+    
+    <h1>Registered U2F authenticators for {$username}:</h1>
+
+    <div id="tokens">
+    </div>
+    
+    <div class="spacer" style="height: 50px;"></div>    
+  </div>
+  <script>
+    $('#addToken').button().click(onAddToken); 
+    $('#testAuth').button().click(onTestAuthentication); 
+  </script>
+  </body>
+</html>
+{/template}

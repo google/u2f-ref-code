@@ -1,0 +1,8 @@
+eclipse.preferences.version=1
+filesCopiedToWebInfLib=appengine-api-1.0-sdk-1.9.4.jar|appengine-api-labs.jar|appengine-endpoints-deps.jar|appengine-endpoints.jar|appengine-jsr107cache-1.9.4.jar|asm-4.0.jar|datanucleus-api-jdo-3.1.3.jar|datanucleus-api-jpa-3.1.3.jar|datanucleus-appengine-2.1.2.jar|datanucleus-core-3.1.3.jar|geronimo-jpa_2.0_spec-1.0.jar|jdo-api-3.0.1.jar|jsr107cache-1.1.jar|jta-1.1.jar
+gaeDatanucleusVersion=v2
+gaeDeployDialogSettings=
+gaeHrdEnabled=true
+gaeLaunchAppInBrowser=true
+googleCloudSqlEnabled=false
+localDevMySqlEnabled=true

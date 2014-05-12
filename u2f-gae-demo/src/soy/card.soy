@@ -1,0 +1,27 @@
+{namespace u2fdemo}
+
+/**
+ * Template for U2F card
+ */
+{template .cardTemplate}
+<template id="cardTemplate">
+  <div class="card">
+     <div class="cardTitle">
+       <span>U2F Authenticator</span>
+     </div>
+     <div class="cardContent">
+       <div class="issuer"></div> 
+       <div class="enrollmentTime">Enrolled on&nbsp;
+         <span class="enrollmentTimeValue"></span>
+       </div>
+       <div class="cardLabel">key handle</div>
+       <div class="keyHandle"></div>
+       <div class="cardLabel">public key</div>
+       <div class="publicKey"></div>
+     </div>
+     <div class="buttonBar">
+       <div class="removeCardButton" tabindex="0" style="-webkit-user-select: none;">Delete</div>
+     </div>
+  </div>
+</template>
+{/template}

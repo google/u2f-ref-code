@@ -1,0 +1,44 @@
+{namespace u2fdemo}
+
+/**
+ * Renders bar at top that shows who's logged in, and how to log out.
+ * @param logoutUrl url for logging out.
+ * @param email email address of the logged-in user.
+ */ 
+{template .sandbar}
+<div id="header">
+  <div id="sandbar">
+    <header id="gc-googlebar">
+        <div class="title">
+        U2F Demo
+        </div>
+      <div class="gc-social">
+        <span class="signed-in">
+          <div>
+            <a class="email" href="https://plus.google.com/me">{$email}</a>
+            <a href="{$logoutUrl}">Sign out</a>
+          </div>
+          <img src="https://developer.google.com/_static/images/silhouette36.png?sz=30">
+        </span>
+      </div>
+    </header>      
+  </div>
+  
+  <div id="errorbox" class="invisible">
+    <div id="errormessage" >
+    </div>
+    <div id="dismissErrorButton" class="goog-inline-block goog-css3-button" title="" role="button" tabindex="0" style="-webkit-user-select: none;">
+    </div>
+  </div>
+  
+  <div id="infobox" class="invisible">
+    <div id="infomessage" >
+    </div>
+  </div>
+</div>
+
+
+<script>
+   $('#dismissErrorButton').button().click(hideError); 
+</script>
+{/template}

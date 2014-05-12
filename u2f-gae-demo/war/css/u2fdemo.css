@@ -1,0 +1,251 @@
+
+body {
+	font-family: Arial,sans-serif;
+	color: #222;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: #f7f7f7;
+	overflow: hidden;
+	padding-top: 77px;
+}
+
+h1 {
+	font-size: 120%;
+  font-weight: normal;
+  margin-top: 20px;
+}
+
+#header {
+	position: absolute;
+	top: 0px;
+	width: 100%;
+	
+}
+
+#main {
+	height: 100%;
+  padding-left: 45px;
+  overflow: scroll;
+}
+
+#gc-googlebar {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	min-width: 952px;
+	width: auto !important;
+	width: 952px;
+	position: relative;
+	background: #f1f1f1;
+	border-bottom: 1px solid #e5e5e5;
+	height: 77px;
+	margin: 0;
+	overflow: hidden;
+	padding: 24px 44px;
+	color: rgba(255,255,255,0.5);
+	box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.32);
+}
+
+#gc-googlebar .gc-social {
+	float: right;
+	font-size: 12px;
+	margin-top: -1px;
+}
+
+#gc-googlebar .signed-in>div {
+	float: left;
+}
+
+#gc-googlebar .signed-in a, 
+#gc-googlebar .signed-in a:visited {
+	display: block;
+	text-align: right;
+	line-height: 140%;
+	color: #808080;
+}
+
+#gc-googlebar .gc-social .email {
+	font-weight: bold;
+	color: #777;
+}
+
+#gc-googlebar .signed-in a {
+	text-decoration: none;
+}
+
+#gc-googlebar .gc-social img {
+	vertical-align: middle;
+	border: 1px solid #acacac;
+	margin-left: 8px;
+	-webkit-border-radius: 16px;
+	-moz-border-radius: 16px;
+	-ms-border-radius: 16px;
+	-o-border-radius: 16px;
+	border-radius: 16px;
+	width: 30px;
+	height: 30px;
+}
+
+#gc-googlebar .title {
+	color: #222;
+	float: left;
+	font-size: 188%;
+}
+
+.card {
+	width: 500px;
+	height: 278px;
+  margin: 20px 40px 20px 0;
+	box-shadow: 0px 0.5px 4px #aaaaaa;;
+	background: #fff;
+	display: inline-block;
+	overflow: hidden;
+}
+
+.highlight {
+	background-color: #83FF83;
+}
+
+.cardTitle {
+	height: 29px;
+	font-size: 115%;
+  background: #EBEBEB;
+  padding-left: 25px;
+  padding-top: 10px;
+  color: #5F5F5F;
+}
+
+.removeCardButton {
+	margin: 10px 20px;
+  font-weight: bold;
+  font-size: 90%;
+}
+
+.card .buttonBar {
+  bottom: 0px;
+	position: relative;
+  background: rgba(233, 233, 233, 0.9);
+  height: 50px;
+  transition: bottom 0.3s;
+}
+
+.card .buttonBar.visible {
+  bottom: 50px;
+}
+
+#dismissErrorButton {
+	background-image: url('/img/cross.png');
+	width: 30px;
+	height: 30px;
+	background-repeat: no-repeat;
+	background-position-y: 0;
+	background-position-x: 0;
+	border-radius: 50%;
+	float: right;
+	top: -36px;
+	right: 8;
+	background-color: rgba(255, 195, 195, 0);
+	border-width: 0px;
+	opacity: 0.6;
+}
+
+#addToken, #testAuth {
+	margin-top: 25px;
+	font-size: 90%;
+	box-shadow: 0 1px 6px rgba(0,0,0,0.13);
+}
+
+#sidebar label {
+	font-size: 90%;
+	display: inline-block;
+	margin-top: 6px;
+	color: #F7F7F7;
+	font-weight: normal;
+}
+
+.cardContent {
+	padding: 25px;
+}
+
+.cardLabel {
+  color: #5F5F5F;
+	margin-top: 10px;
+	font-size: 90%;
+}
+
+.issuer {
+	font-size: 120%;
+}
+
+.enrollmentTime {
+	font-size: 80%;
+  margin-top: 5px;
+  margin-bottom: 15px;
+}
+
+.keyHandle, .publicKey {
+	font-family: monospace;
+	word-wrap: break-word;
+	color: #9E9E9E;
+}
+
+#errormessage {
+	height: 30px;
+  width: 100%;
+  background: rgb(255, 170, 166);
+  padding: 10px 40px 0px 40px;
+}
+
+#errorbox {
+	height: 40px;
+	overflow: hidden;
+  transition: height 0.5s;
+}
+
+#errorbox.invisible {
+  height: 0px;
+}
+
+#infomessage {
+  height: 30px;
+  width: 100%;
+  background: rgb(255, 237, 145);
+  padding: 10px 40px 0px 40px;
+}
+
+#infobox {
+  height: 40px;
+  overflow: hidden;
+  transition: height 0.5s;
+}
+
+#infobox.invisible {
+  height: 0px;
+}
+
+#sidebar {
+	float: left;
+	width: 200px;
+	background-color: #4285F4;
+	padding: 40px 10px;
+	height: 100%;
+	overflow-y: hidden;
+}
+
+#downloadCrx {
+	position: absolute;
+	bottom: 0%;
+	width: 200px;
+	font-size: 90%;
+	margin-bottom: 20px;	
+}
+
+#downloadCrx a:link, a:hover, a:visited {
+	color: #fff;
+	text-decoration: none;
+}
+
+#downloadCrx a:hover {
+  text-decoration: underline;
+}

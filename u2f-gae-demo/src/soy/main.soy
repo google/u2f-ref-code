@@ -17,7 +17,7 @@
   <link rel="stylesheet" type="text/css" href="/css/u2fdemo.css">
   
   </head>
-  <body onload="initialFetchTokens();">
+  <body onload="fetchAllUserTokens();">
   {call .cardTemplate data="all"/}
   {call .sandbar data="all"/}
   
@@ -37,8 +37,8 @@
     <div class="spacer" style="height: 50px;"></div>    
   </div>
   <script>
-    $('#addToken').button().click(onAddToken); 
-    $('#testAuth').button().click(onTestAuthentication); 
+    $('#addToken').button().click(sendBeginEnrollRequest); 
+    $('#testAuth').button().click(sendBeginSignRequest); 
   </script>
   </body>
 </html>

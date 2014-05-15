@@ -15,6 +15,7 @@ import org.simpleframework.http.core.ContainerServer;
 import org.simpleframework.transport.connect.Connection;
 import org.simpleframework.transport.connect.SocketConnection;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.u2f.server.ChallengeGenerator;
 import com.google.u2f.server.DataStore;
 import com.google.u2f.server.SessionIdGenerator;
@@ -88,8 +89,9 @@ public class U2fHttpServer {
     DataStore dataStore = new MemoryDataStore(sessionIdGenerator);
     dataStore.addTrustedCertificate(trustedCertificate);
 
+    // this implementation will only accept signatures from http://localhost:8080
     u2fServer = new U2FServerReferenceImpl(challengeGenerator, dataStore, 
-        new BouncyCastleCrypto());
+        new BouncyCastleCrypto(), ImmutableSet.of("http://localhost:8080"));
     Container dispatchContainer = new RequestDispatcher()
     .registerContainer("/fido-u2f.js",
         new StaticHandler("application/javascript", "html/fido-u2f.js"))

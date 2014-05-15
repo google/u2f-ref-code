@@ -1,5 +1,7 @@
 package com.google.u2f.server.impl;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -11,6 +13,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.u2f.U2FConsts;
 import com.google.u2f.U2FException;
 import com.google.u2f.codec.RawMessageCodec;
@@ -30,17 +36,30 @@ import com.google.u2f.server.messages.SignRequest;
 import com.google.u2f.server.messages.SignResponse;
 
 public class U2FServerReferenceImpl implements U2FServer {
+  
+  private static final String TYPE_PARAM = "typ";
+  private static final String CHALLENGE_PARAM = "challenge";
+  private static final String ORIGIN_PARAM = "origin";
+
+  // TODO: use these for channel id checks in verifyBrowserData
+  @SuppressWarnings("unused")
+  private static final String CHANNEL_ID_PARAM = "cid_pubkey";
+  @SuppressWarnings("unused")
+  private static final String UNUSED_CHANNEL_ID = "";
+  
   private static final Logger Log = Logger.getLogger(U2FServerReferenceImpl.class.getName());
 
   private final ChallengeGenerator challengeGenerator;
   private final DataStore dataStore;
   private final Crypto cryto;
+  private final Set<String> allowedOrigins;
 
   public U2FServerReferenceImpl(ChallengeGenerator challengeGenerator,
-      DataStore dataStore, Crypto cryto) {
+      DataStore dataStore, Crypto cryto, Set<String> origins) {
     this.challengeGenerator = challengeGenerator;
     this.dataStore = dataStore;
     this.cryto = cryto;
+    this.allowedOrigins = canonicalizeOrigins(origins);
   }
 
   @Override
@@ -117,7 +136,7 @@ public class U2FServerReferenceImpl implements U2FServer {
       Log.warning("attestion cert is not trusted");    
     }
 
-    // TODO: verify browserData
+    verifyBrowserData(new JsonParser().parse(browserData), "navigator.id.finishEnrollment", sessionData);
     
     Log.info("Verifying signature of bytes " + Hex.encodeHexString(signedBytes));
     if (!cryto.verifySignature(attestationCertificate, signedBytes, signature)) {
@@ -205,8 +224,8 @@ public class U2FServerReferenceImpl implements U2FServer {
     Log.info("  browserData: " + browserData);
     Log.info("  rawSignData: " + Hex.encodeHexString(rawSignData));
 
-    // TODO: verify browserData
-
+    verifyBrowserData(new JsonParser().parse(browserData), "navigator.id.getAssertion", sessionData);
+    
     AuthenticateResponse authenticateResponse = RawMessageCodec.decodeAuthenticateResponse(rawSignData);
     byte userPresence = authenticateResponse.getUserPresence();
     int counter = authenticateResponse.getCounter();
@@ -242,6 +261,52 @@ public class U2FServerReferenceImpl implements U2FServer {
     return securityKeyData;
   }
 
+  private void verifyBrowserData(JsonElement browserDataAsElement, 
+      String messageType, EnrollSessionData sessionData) throws U2FException {
+    
+    if (!browserDataAsElement.isJsonObject()) {
+      throw new U2FException("browserdata has wrong format");
+    }
+    
+    JsonObject browserData = browserDataAsElement.getAsJsonObject();
+    
+    // check that the right "typ" parameter is present in the browserdata JSON
+    if (!browserData.has(TYPE_PARAM)) {
+      throw new U2FException("bad browserdata: missing 'typ' param");
+    }
+
+    String type = browserData.get(TYPE_PARAM).getAsString();
+    if (!messageType.equals(type)) {
+      throw new U2FException("bad browserdata: bad type " + type);
+    }
+
+    // check that the right challenge is in the browserdata
+    if (!browserData.has(CHALLENGE_PARAM)) {
+      throw new U2FException("bad browserdata: missing 'challenge' param");
+    }
+
+    if (browserData.has(ORIGIN_PARAM)) {
+      verifyOrigin(browserData.get(ORIGIN_PARAM).getAsString());
+    }
+
+    byte[] challengeFromBrowserData = 
+        Base64.decodeBase64(browserData.get(CHALLENGE_PARAM).getAsString());
+
+
+    if (!Arrays.equals(challengeFromBrowserData, sessionData.getChallenge())) {
+      throw new U2FException("wrong challenge signed in browserdata");
+    }
+
+    // TODO: Deal with ChannelID
+  }
+  
+  private void verifyOrigin(String origin) throws U2FException {
+    if (!allowedOrigins.contains(canonicalizeOrigin(origin))) {
+      throw new U2FException(origin +
+          " is not a recognized home origin for this backend");
+    }
+  }
+
   @Override
   public List<SecurityKeyData> getAllSecurityKeys(String accountName) {
     return dataStore.getSecurityKeyData(accountName);
@@ -251,5 +316,23 @@ public class U2FServerReferenceImpl implements U2FServer {
   public void removeSecurityKey(String accountName, byte[] publicKey)
       throws U2FException {
     dataStore.removeSecuityKey(accountName, publicKey);
+  }
+  
+  private static Set<String> canonicalizeOrigins(Set<String> origins) {
+    ImmutableSet.Builder<String> result = ImmutableSet.builder();
+    for (String origin : origins) {
+      result.add(canonicalizeOrigin(origin));
+    }
+    return result.build();
+  }
+
+  static String canonicalizeOrigin(String url) {
+    URI uri;
+    try {
+      uri = new URI(url);
+    } catch (URISyntaxException e) {
+      throw new RuntimeException("specified bad origin", e);
+    }
+    return uri.getScheme() + "://" + uri.getAuthority();
   }
 }

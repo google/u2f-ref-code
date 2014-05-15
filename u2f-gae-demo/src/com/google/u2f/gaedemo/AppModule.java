@@ -1,5 +1,6 @@
 package com.google.u2f.gaedemo;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -61,6 +62,11 @@ public class AppModule extends AbstractModule {
 
   @Provides @Singleton
   public U2FServer provideU2FServer(ChallengeGenerator challengeGenerator, Crypto crypto, DataStore dataStore) {
-    return new U2FServerReferenceImpl(challengeGenerator, dataStore, crypto);
+    return new U2FServerReferenceImpl(challengeGenerator, dataStore, crypto, 
+        ImmutableSet.of(
+            // this implementation will only accept signatures from the following origins:
+            "http://localhost:8888",
+            "https://u2fdemo.appspot.com",
+            "https://crxjs-dot-u2fdemo.appspot.com"));
   }
 }

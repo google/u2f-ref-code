@@ -10,9 +10,11 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -20,6 +22,7 @@ public class TestVectors {
   //Test vectors from FIDO U2F: Raw Message Formats - Draft 4
   protected static final int COUNTER_VALUE = 1;
   protected static final String ACCOUNT_NAME = "test@example.com";
+  protected static final Set<String> TRUSTED_DOMAINS = ImmutableSet.of("http://example.com");
   protected static final String SESSION_ID = "session_id";
   protected static final String APP_ID_ENROLL = "http://example.com";
   protected static final byte[] APP_ID_ENROLL_SHA256 = computeSha256(APP_ID_ENROLL);

@@ -117,6 +117,8 @@ public class U2FServerReferenceImpl implements U2FServer {
       Log.warning("attestion cert is not trusted");    
     }
 
+    // TODO: verify browserData
+    
     Log.info("Verifying signature of bytes " + Hex.encodeHexString(signedBytes));
     if (!cryto.verifySignature(attestationCertificate, signedBytes, signature)) {
       throw new U2FException("Signature is invalid");

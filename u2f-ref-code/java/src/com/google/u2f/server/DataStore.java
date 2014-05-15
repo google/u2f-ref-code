@@ -25,9 +25,11 @@ public interface DataStore {
 
   
   // security key management
-  public void storeSecurityKeyData(String accountName, SecurityKeyData securityKeyData);
+  public void addSecurityKeyData(String accountName, SecurityKeyData securityKeyData);
 
   public List<SecurityKeyData> getSecurityKeyData(String accountName);
   
   public void removeSecuityKey(String accountName, byte[] publicKey);
+  
+  public void updateSecurityKeyCounter(String accountName, byte[] publicKey, int newCounterValue);
 }

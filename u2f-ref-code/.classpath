@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="java/src"/>
 	<classpathentry kind="src" path="java/tests"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="libs/commons-codec-1.9.jar" sourcepath="libs/commons-codec-1.9-sources.jar"/>
 	<classpathentry kind="lib" path="libs/gson-2.2.4.jar" sourcepath="libs/gson-2.2.4-sources.jar"/>
 	<classpathentry kind="lib" path="libs/guava-17.0.jar" sourcepath="/Users/balfanz/Downloads/guava-17.0-sources.jar"/>

@@ -19,6 +19,7 @@ public class TokenStorageData {
   private byte[] keyHandle;
   private byte[] publicKey;
   private byte[] attestationCert;
+  private int counter;
 
   // used by the storage layer
   public TokenStorageData() { }
@@ -32,11 +33,16 @@ public class TokenStorageData {
     } catch (CertificateEncodingException e) {
       throw new RuntimeException();
     }
+    this.counter = tokenData.getCounter();
   }
 
+  public void updateCounter(int newCounterValue) {
+    counter = newCounterValue;
+  }
+  
   public SecurityKeyData getSecurityKeyData() {
     return new SecurityKeyData(enrollmentTime, keyHandle, 
-        publicKey, parseCertificate(attestationCert));
+        publicKey, parseCertificate(attestationCert), counter);
   }
   
   public JsonObject toJson() {
@@ -60,7 +66,8 @@ public class TokenStorageData {
         enrollmentTime,
         keyHandle,
         publicKey,
-        attestationCert);
+        attestationCert,
+        counter);
   }
 
   @Override
@@ -68,7 +75,8 @@ public class TokenStorageData {
     if (!(obj instanceof TokenStorageData))
       return false;
     TokenStorageData that = (TokenStorageData) obj;
-    return Objects.equal(this.enrollmentTime, that.enrollmentTime)
+    return (this.enrollmentTime == that.enrollmentTime)
+        && (this.counter == that.counter)
         && Arrays.equals(this.keyHandle, that.keyHandle)
         && Arrays.equals(this.publicKey, that.publicKey)
         && Arrays.equals(this.attestationCert, that.attestationCert);

@@ -111,7 +111,7 @@ public class DataStoreImpl implements DataStore {
   }
 
   @Override
-  public void storeSecurityKeyData(String accountName,
+  public void addSecurityKeyData(String accountName,
       SecurityKeyData securityKeyData) {
     UserTokens tokens = getUserTokens(accountName);
     TokenStorageData newToken = new TokenStorageData(securityKeyData);
@@ -143,6 +143,14 @@ public class DataStoreImpl implements DataStore {
   }
   
   private Collection<TokenStorageData> getAllTokens(String accountName) {
-      return getUserTokens(accountName).getTokens();
+    return getUserTokens(accountName).getTokens();
+  }
+
+  @Override
+  public void updateSecurityKeyCounter(String accountName, byte[] publicKey,
+      int newCounterValue) {
+    UserTokens tokens = getUserTokens(accountName);
+    tokens.updateCounter(publicKey, newCounterValue);
+    ofy().save().entity(tokens).now();
   }
 }

@@ -122,9 +122,12 @@ public class U2FServerReferenceImpl implements U2FServer {
       throw new U2FException("Signature is invalid");
     }
 
+    // The first time we create the SecurityKeyData, we set the counter value to 0.
+    // We don't actually know what the counter value of the real device is - but it will
+    // be something bigger (or equal) to 0, so subsequent signatures will check out ok.
     SecurityKeyData securityKeyData = new SecurityKeyData(currentTimeInMillis,
-        keyHandle, userPublicKey, attestationCertificate);
-    dataStore.storeSecurityKeyData(sessionData.getAccountName(), securityKeyData);
+        keyHandle, userPublicKey, attestationCertificate, /* initial counter value */ 0);
+    dataStore.addSecurityKeyData(sessionData.getAccountName(), securityKeyData);
 
     Log.info("<< processRegistrationResponse");
     return securityKeyData;
@@ -216,6 +219,10 @@ public class U2FServerReferenceImpl implements U2FServer {
       throw new U2FException("User presence invalid during authentication");
     }
 
+    if (counter <= securityKeyData.getCounter()) {
+      throw new U2FException("Counter value smaller than expected!");      
+    }
+    
     byte[] appIdSha256 = cryto.computeSha256(appId.getBytes());
     byte[] browserDataSha256 = cryto.computeSha256(browserData.getBytes());
     byte[] signedBytes = RawMessageCodec.encodeAuthenticateSignedBytes(appIdSha256, userPresence,
@@ -227,6 +234,8 @@ public class U2FServerReferenceImpl implements U2FServer {
       throw new U2FException("Signature is invalid");
     }
 
+    dataStore.updateSecurityKeyCounter(sessionData.getAccountName(), securityKeyData.getPublicKey(), counter);
+    
     Log.info("<< processSignResponse");
     return securityKeyData;
   }

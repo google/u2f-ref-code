@@ -44,7 +44,7 @@ public class MemoryDataStore implements DataStore {
   }
 
   @Override
-  public void storeSecurityKeyData(String accountName, SecurityKeyData securityKeyData) {
+  public void addSecurityKeyData(String accountName, SecurityKeyData securityKeyData) {
     List<SecurityKeyData> tokens = getSecurityKeyData(accountName);
     tokens.add(securityKeyData);
     securityKeyDataBase.put(accountName, tokens);
@@ -73,6 +73,18 @@ public class MemoryDataStore implements DataStore {
     for (SecurityKeyData token : tokens) {
       if (Arrays.equals(token.getPublicKey(), publicKey)) {
         tokens.remove(token);
+        break;
+      }
+    }
+  }
+
+  @Override
+  public void updateSecurityKeyCounter(String accountName, byte[] publicKey,
+      int newCounterValue) {
+    List<SecurityKeyData> tokens = getSecurityKeyData(accountName);
+    for (SecurityKeyData token : tokens) {
+      if (Arrays.equals(token.getPublicKey(), publicKey)) {
+        token.setCounter(newCounterValue);
         break;
       }
     }

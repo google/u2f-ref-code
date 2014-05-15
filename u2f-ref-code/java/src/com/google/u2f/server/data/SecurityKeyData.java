@@ -12,12 +12,19 @@ public class SecurityKeyData {
   private final byte[] keyHandle;
   private final byte[] publicKey;
   private final X509Certificate attestationCert;
+  private int counter;
 
-  public SecurityKeyData(long enrollmentTime, byte[] keyHandle, byte[] publicKey, X509Certificate attestationCert) {
+  public SecurityKeyData(
+		  long enrollmentTime, 
+		  byte[] keyHandle, 
+		  byte[] publicKey, 
+		  X509Certificate attestationCert,
+		  int counter) {
     this.enrollmentTime = enrollmentTime;
     this.keyHandle = keyHandle;
     this.publicKey = publicKey;
     this.attestationCert = attestationCert;
+    this.counter = counter;
   }
 
   /**
@@ -37,6 +44,14 @@ public class SecurityKeyData {
 
   public X509Certificate getAttestationCertificate() {
     return attestationCert;
+  }
+  
+  public int getCounter() {
+	return counter; 
+  }
+  
+  public void setCounter(int newCounterValue) {
+    counter = newCounterValue;
   }
   
   @Override
@@ -68,6 +83,9 @@ public class SecurityKeyData {
       .append("\n")
       .append("key_handle: ")
       .append(Base64.encodeBase64URLSafeString(keyHandle))
+      .append("\n")
+      .append("counter: ")
+      .append(counter)
       .append("\n")
       .append("attestation certificate:\n")
       .append(attestationCert.toString())

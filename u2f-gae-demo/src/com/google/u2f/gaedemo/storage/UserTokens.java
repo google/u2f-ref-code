@@ -34,6 +34,15 @@ public class UserTokens {
     }
   }
 
+  public void updateCounter(byte[] publicKey, int newCounterValue) {
+    for (TokenStorageData token : tokens) {
+      if (Arrays.equals(token.getSecurityKeyData().getPublicKey(), publicKey)) {
+        token.updateCounter(newCounterValue);
+        break;
+      }
+    }    
+  }
+
   public void addToken(TokenStorageData token) {
     tokens.add(token);
   }

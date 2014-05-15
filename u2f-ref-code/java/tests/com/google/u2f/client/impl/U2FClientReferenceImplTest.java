@@ -56,7 +56,7 @@ public class U2FClientReferenceImplTest extends TestVectors {
             SIGNATURE_ENROLL));
     when(mockU2fServer.processRegistrationResponse(
         new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID), 0L))
-        .thenReturn(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE));
+        .thenReturn(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0));
 
     u2fClient.register(ORIGIN, ACCOUNT_NAME);
   }
@@ -75,7 +75,7 @@ public class U2FClientReferenceImplTest extends TestVectors {
     when(mockU2fServer.processSignResponse(
         new SignResponse(BROWSER_DATA_SIGN_BASE64, SIGN_RESPONSE_DATA_BASE64,
             SERVER_CHALLENGE_SIGN_BASE64, SESSION_ID, APP_ID_SIGN)))
-        .thenReturn(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE));;
+        .thenReturn(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0));;
 
     u2fClient.authenticate(ORIGIN, ACCOUNT_NAME);
   }

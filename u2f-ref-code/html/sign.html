@@ -2,37 +2,43 @@
 	<body>
 		<h1>Sign</h1>
 		
-		<script src="/fido-u2f.js"></script>
+    <script src="chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js"></script>
 		<script src="/signData.js?userName=userName"></script>
 		
 		<div id="status">Waiting for user touch</div>
 		
 		<script>
-			// Constants
-			var extensionId = "dlfcjilkjfhdnfiecknlnddkmmiofjbg";
-			
-			var u2f = new FidoU2f(extensionId);
-			
-		    function callback(result) {
-		      if (result.errorCode) {
-		        document.getElementById('status')
-		        	.innerHTML = "Failed. Error code: " + result.errorCode;
-		        return;
-		      }
-		      
-		      location = "/signFinish"
-		            + "?browserData=" + result.browserData
-		            + "&appId=" + result.appId
-		            + "&challenge=" + result.challenge
-		            + "&signData=" + result.signData
-		            + "&sessionId=" + result.sessionId;
-		    }
-			
 			if ((typeof signData) == "undefined") {
 			  var statusDiv = document.getElementById('status');
 			  statusDiv.innerText = "No security keys registered";
 			} else {
-			  u2f.sign(signData, callback);
+				var incomingSignData = {};  // requests keyed on keyHandle
+			  var signRequests = [];
+			  signData.forEach(function (sd) {
+				  incomingSignData[sd.keyHandle] = sd;
+				  signRequests.push({
+					  appId: sd.appId,
+					  keyHandle: sd.keyHandle,
+					  challenge: sd.challenge,
+					  version: sd.version
+				  });
+			  });
+				
+			  u2f.sign(signRequests, function(result) {
+	        if (result.errorCode) {
+	            document.getElementById('status')
+	              .innerHTML = "Failed. Error code: " + result.errorCode;
+	            return;
+	          }
+	          
+	          var incomingRequest = incomingSignData[result.keyHandle];
+	          location = "/signFinish"
+	                + "?browserData=" + result.clientData
+	                + "&appId=" + incomingRequest.appId
+	                + "&challenge=" + incomingRequest.challenge
+	                + "&signData=" + result.signatureData
+	                + "&sessionId=" + incomingRequest.sessionId;				  
+			  });
 			}
 		</script>
 	</body>

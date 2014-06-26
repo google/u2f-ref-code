@@ -113,6 +113,7 @@ function sendBeginEnrollRequest() {
       }, null, 'json')
    .done(function(beginEnrollResponse) {
    	  console.log(beginEnrollResponse);
+      showMessage("please touch the token");
    	  u2f.register(
    	    [beginEnrollResponse.enroll_data],
    	    beginEnrollResponse.sign_data,

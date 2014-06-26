@@ -1,3 +1,9 @@
+// Copyright 2014 Google Inc. All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 package com.google.u2f.key.messages;
 
 import java.util.Arrays;
@@ -20,8 +26,8 @@ public class AuthenticateRequest extends U2FRequest {
   }
 
   /** The FIDO Client will set the control byte to one of the following values:
-   * 0x07 (“check-only”)
-   * 0x03 (“enforce-user-presence-and-sign”)
+   * 0x07 ("check-only")
+   * 0x03 ("enforce-user-presence-and-sign")
    */
   public byte getControl() {
     return control;

@@ -1,3 +1,9 @@
+// Copyright 2014 Google Inc. All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 package com.google.u2f.key.messages;
 
 import java.security.cert.X509Certificate;
@@ -20,7 +26,7 @@ public class RegisterResponse extends U2FResponse {
 
   /**
    * This is the (uncompressed) x,y-representation of a curve point on the P-256
-   * NIST elliptic curve.ì
+   * NIST elliptic curve.
    */
   public byte[] getUserPublicKey() {
     return userPublicKey;

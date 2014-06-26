@@ -1,3 +1,9 @@
+// Copyright 2014 Google Inc. All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 package com.google.u2f.key.messages;
 
 import java.util.Arrays;
@@ -16,7 +22,7 @@ public class AuthenticateResponse extends U2FResponse {
 
   /**
    * Bit 0 is set to 1, which means that user presence was verified. (This
-   * version of the protocol doesn’t specify a way to request authentication
+   * version of the protocol doesn't specify a way to request authentication
    * responses without requiring user presence.) A different value of Bit 0, as
    * well as Bits 1 through 7, are reserved for future use. The values of Bit 1
    * through 7 SHOULD be 0

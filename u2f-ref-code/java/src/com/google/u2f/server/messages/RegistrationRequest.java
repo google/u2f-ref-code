@@ -1,9 +1,15 @@
+// Copyright 2014 Google Inc. All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 package com.google.u2f.server.messages;
 
 public class RegistrationRequest {
   /**
    * Version of the protocol that the to-be-registered U2F token must speak. For
-   * the version of the protocol described herein, must be ÔU2F_V2Õ
+   * the version of the protocol described herein, must be "U2F_V2"
    */
   private final String version;
 

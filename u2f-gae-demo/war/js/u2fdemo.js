@@ -108,9 +108,17 @@ function sendBeginEnrollRequest() {
       }, null, 'json')
    .done(function(beginEnrollResponse) {
    	  console.log(beginEnrollResponse);
-      enrollHandler.handleRegistrationRequest(
-        [ beginEnrollResponse.enroll_data ], 
-        beginEnrollResponse.sign_data);
+   	  u2f.register(
+   	    [beginEnrollResponse.enroll_data],
+   	    beginEnrollResponse.sign_data,
+   	    function (response) {
+   	      if (response.errorCode) {
+   	        onError(response.errorCode, true);
+   	      } else {
+   	        response['sessionId'] = beginEnrollResponse.sessionId;
+   	        onTokenEnrollSuccess(response);
+   	      }
+   	    });
     });
 }
 
@@ -119,7 +127,20 @@ function sendBeginSignRequest() {
    .done(function(signData) {
       console.log(signData);
       showMessage("please touch the token");
-      signHandler.handleAuthenticationRequest(signData);
+      // Store sessionIds
+      var sessionIds = {};
+      for (var i = 0; i < signData.length; i++) {
+        sessionIds[signData[i].keyHandle] = signData[i].sessionId;
+        delete signData[i]['sessionId'];
+      }
+      u2f.sign(signData, function (response) {
+   	      if (response.errorCode) {
+   	        onError(response.errorCode, false);
+   	      } else {
+   	        response['sessionId'] = sessionIds[response.keyHandle];
+   	        onTokenSignSuccess(response);
+   	      }
+      })
    }) 
    .fail(function(xhr, status) {
       showError("can't authenticate: " + status);
@@ -150,46 +171,28 @@ function onTokenSignSuccess(responseData) {
       });
 }
 
-function onEnrollError(code) {
-  if (code == u2f.CryptoTokenCodeTypes.ALREADY_ENROLLED) {
-	showError('device already enrolled');
-  } else if (code == u2f.CryptoTokenCodeTypes.BROWSER_ERROR) {
-	showError('chrome error');
-  } else if (code == u2f.CryptoTokenCodeTypes.NO_EXTENSION) {
-	showError('the extension is not installed');
-  } else if (code == u2f.CryptoTokenCodeTypes.WAIT_TOUCH) {
-	showMessage('please touch the token');
-  } else if (code == u2f.CryptoTokenCodeTypes.NO_GNUBBIES) {
-	showError('no U2F tokens found');
-    // Don't do anything here
-  } else if (code == u2f.CryptoTokenCodeTypes.LONG_WAIT) {
-	showError('waiting on gnubby update');
-  } else if (code == u2f.CryptoTokenCodeTypes.UNKNOWN_ERROR) {
-	showError('unknown error code=' + code);
-  } else {
-	showError('other error code=' + code);
-  }
-}
-
-function onSignError(code) {
-  console.log(code);
-  if (code == u2f.CryptoTokenCodeTypes.NONE_PLUGGED_ENROLLED) {
-	showError('U2F token is not registered');
-  } else if (code == u2f.CryptoTokenCodeTypes.TOUCH_TIMEOUT) {
-	showError('touch timeout');
-  } else if (code == u2f.CryptoTokenCodeTypes.NO_DEVICES_ENROLLED) {
-	showError('no devices enrolled');
-  } else if (code == u2f.CryptoTokenCodeTypes.BROWSER_ERROR) {
-	showError('browser error');
-  } else if (code == u2f.CryptoTokenCodeTypes.NO_EXTENSION) {
-    showError('the extension is not installed');
-  } else if (code == u2f.CryptoTokenCodeTypes.WAIT_TOUCH ||
-    code == u2f.CryptoTokenCodeTypes.NO_GNUBBIES) {
-	showMessage('please touch the token');
-  } else {
+function onError(code, enrolling) {
+  switch (code) {
+  case u2f.ErrorCodes.OTHER_ERROR:
+    showError('sign error (other)');
+    break;
+  case u2f.ErrorCodes.BAD_REQUEST:
+    showError('bad request');
+    break;
+  case u2f.ErrorCodes.CONFIGURATION_UNSUPPORTED:
+    showError('configuration unsupported');
+    break;
+  case u2f.ErrorCodes.DEVICE_INELIGIBLE:
+    if (enrolling)
+      showError('U2F token is already registered');
+    else
+      showError('U2F token is not registered');
+    break;
+  case u2f.ErrorCodes.TIMEOUT:
+    showError('timeout');
+    break;
+  default:
     showError('unknown error code=' + code);
+    break;
   }
 }
-
-var enrollHandler = new u2f.CryptoTokenHandler(onTokenEnrollSuccess, onEnrollError);
-var signHandler = new u2f.CryptoTokenHandler(onTokenSignSuccess, onSignError);

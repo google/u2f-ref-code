@@ -61,7 +61,6 @@ public class BeginEnrollServlet extends HttpServlet {
           signServerData.addProperty("appId", signRequest.getAppId());
           signServerData.addProperty("challenge", signRequest.getChallenge());
           signServerData.addProperty("version", signRequest.getVersion());
-          signServerData.addProperty("sessionId", signRequest.getSessionId());
           signServerData.addProperty("keyHandle", signRequest.getKeyHandle());
           signData.add(signServerData);
         }
@@ -70,11 +69,11 @@ public class BeginEnrollServlet extends HttpServlet {
 	    enrollData.addProperty("appId", registrationRequest.getAppId());
 	    enrollData.addProperty("challenge", registrationRequest.getChallenge());
 	    enrollData.addProperty("version", registrationRequest.getVersion());
-	    enrollData.addProperty("sessionId", registrationRequest.getSessionId());
 		
 	    JsonObject result = new JsonObject();
 	    result.add("enroll_data", enrollData);
 	    result.add("sign_data", signData);
+	    result.addProperty("sessionId", registrationRequest.getSessionId());
 	    
 		resp.setContentType("application/json");
 		resp.getWriter().println(result.toString());

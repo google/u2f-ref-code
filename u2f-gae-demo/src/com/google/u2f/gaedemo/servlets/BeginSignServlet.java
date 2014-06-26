@@ -49,8 +49,8 @@ public class BeginSignServlet extends HttpServlet {
           signServerData.addProperty("appId", signRequest.getAppId());
           signServerData.addProperty("challenge", signRequest.getChallenge());
           signServerData.addProperty("version", signRequest.getVersion());
-          signServerData.addProperty("sessionId", signRequest.getSessionId());
           signServerData.addProperty("keyHandle", signRequest.getKeyHandle());
+          signServerData.addProperty("sessionId", signRequest.getSessionId());
           result.add(signServerData);
         }
         

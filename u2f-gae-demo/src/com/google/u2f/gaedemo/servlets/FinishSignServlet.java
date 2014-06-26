@@ -16,7 +16,10 @@ import com.google.u2f.gaedemo.storage.TokenStorageData;
 import com.google.u2f.server.DataStore;
 import com.google.u2f.server.U2FServer;
 import com.google.u2f.server.data.SecurityKeyData;
+import com.google.u2f.server.data.SignSessionData;
 import com.google.u2f.server.messages.SignResponse;
+
+import org.apache.commons.codec.binary.Base64;
 
 @SuppressWarnings("serial")
 @Singleton
@@ -35,25 +38,26 @@ public class FinishSignServlet extends HttpServlet {
   public void doPost(HttpServletRequest req, HttpServletResponse resp) 
       throws IOException, ServletException {
 
+    SignSessionData sessionData = dataStore
+        .getSignSessionData(req.getParameter("sessionId"));
+    
     // Simple XSRF protection. We don't want users to be tricked into
     // submitting other people's enrollment data. Here we're just checking 
     // that it's the same user that also started the enrollment - you might
     // want to do something more sophisticated.
     String currentUser = userService.getCurrentUser().getUserId();
-    String expectedUser = dataStore
-        .getSignSessionData(req.getParameter("sessionId"))
-        .getAccountName();
+    String expectedUser = sessionData.getAccountName();
     if (!currentUser.equals(expectedUser)) {
       throw new ServletException("Cross-site request prohibited");
     }   
     
     
     SignResponse signResponse = new SignResponse(
-        req.getParameter("browserData"),
+        req.getParameter("clientData"),
         req.getParameter("signatureData"),
-        req.getParameter("challenge"),
+        Base64.encodeBase64URLSafeString(sessionData.getChallenge()),
         req.getParameter("sessionId"),
-        req.getParameter("appId"));
+        sessionData.getAppId());
     
     SecurityKeyData securityKeyData;
     try {

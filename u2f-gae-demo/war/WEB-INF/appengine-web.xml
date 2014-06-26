@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
   <application>u2fdemo</application>
-  <version>1</version>
+  <version>crxjs</version>
 
   <!--
     Allows App Engine to send multiple requests to one instance in parallel:
@@ -13,11 +13,8 @@
     <property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
   </system-properties>
 
+  <sessions-enabled>true</sessions-enabled>
   <!--
-    HTTP Sessions are disabled by default. To enable HTTP sessions specify:
-
-      <sessions-enabled>true</sessions-enabled>
-
     It's possible to reduce request latency by configuring your application to
     asynchronously write HTTP session data to the datastore:
 

@@ -49,8 +49,8 @@ public class FinishEnrollServlet extends HttpServlet {
 
     
     RegistrationResponse registrationResponse = new RegistrationResponse(
-        req.getParameter("enrollData"), 
-        req.getParameter("browserData"),
+        req.getParameter("registrationData"), 
+        req.getParameter("clientData"),
         req.getParameter("sessionId"));
 
     SecurityKeyData newSecurityKeyData;

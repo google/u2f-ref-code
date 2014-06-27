@@ -13,15 +13,15 @@ function addTokenInfoToPage(token) {
     document
         .getElementById('tokens')
         .appendChild(tokenToDom(token));
-    
+
     // now that we've added the card into the dom, let's bind the mouseover
     // events to it:
     $("#" + token.public_key)
-      .mouseover(function() { 
-          $(this).find(".buttonBar").addClass("visible"); 
+      .mouseover(function() {
+          $(this).find(".buttonBar").addClass("visible");
         })
       .mouseout(function() { 
-          $(this).find(".buttonBar").removeClass("visible"); 
+          $(this).find(".buttonBar").removeClass("visible");
         });
 }
 
@@ -31,15 +31,15 @@ function tokenToDom(token) {
   var template = document.getElementById('cardTemplate');
   var card = template.content.cloneNode(true);
   card.querySelector('.card').setAttribute("id", token.public_key);
-  card.querySelector('.issuer').textContent = token.issuer;         
-  card.querySelector('.enrollmentTimeValue').textContent = timeString;          
-  card.querySelector('.keyHandle').textContent = token.key_handle;          
-  card.querySelector('.publicKey').textContent = token.public_key;  
+  card.querySelector('.issuer').textContent = token.issuer;
+  card.querySelector('.enrollmentTimeValue').textContent = timeString;
+  card.querySelector('.keyHandle').textContent = token.key_handle;
+  card.querySelector('.publicKey').textContent = token.public_key;
 
   $(card.querySelector('.removeCardButton'))
     .button()
-    .click(function() { 
-      sendRemoveTokenRequest(token.public_key); 
+    .click(function() {
+      sendRemoveTokenRequest(token.public_key);
      });
 
   return card;
@@ -112,19 +112,19 @@ function sendBeginEnrollRequest() {
         'reregistration' : document.querySelector('#reregistration').checked
       }, null, 'json')
    .done(function(beginEnrollResponse) {
-   	  console.log(beginEnrollResponse);
+      console.log(beginEnrollResponse);
       showMessage("please touch the token");
-   	  u2f.register(
-   	    [beginEnrollResponse.enroll_data],
-   	    beginEnrollResponse.sign_data,
-   	    function (response) {
-   	      if (response.errorCode) {
-   	        onError(response.errorCode, true);
-   	      } else {
-   	        response['sessionId'] = beginEnrollResponse.sessionId;
-   	        onTokenEnrollSuccess(response);
-   	      }
-   	    });
+      u2f.register(
+        [beginEnrollResponse.enroll_data],
+        beginEnrollResponse.sign_data,
+        function (response) {
+          if (response.errorCode) {
+            onError(response.errorCode, true);
+          } else {
+            response['sessionId'] = beginEnrollResponse.sessionId;
+            onTokenEnrollSuccess(response);
+          }
+        });
     });
 }
 
@@ -140,12 +140,12 @@ function sendBeginSignRequest() {
         delete signData[i]['sessionId'];
       }
       u2f.sign(signData, function (response) {
-   	      if (response.errorCode) {
-   	        onError(response.errorCode, false);
-   	      } else {
-   	        response['sessionId'] = sessionIds[response.keyHandle];
-   	        onTokenSignSuccess(response);
-   	      }
+          if (response.errorCode) {
+            onError(response.errorCode, false);
+          } else {
+            response['sessionId'] = sessionIds[response.keyHandle];
+            onTokenSignSuccess(response);
+          }
       })
    }) 
    .fail(function(xhr, status) {
@@ -168,13 +168,13 @@ function onTokenEnrollSuccess(finishEnrollData) {
 }
 
 function onTokenSignSuccess(responseData) {
-	console.log(responseData);
-    hideMessage();
-    $.post('/FinishSign', responseData, null, 'json')
-      .done(highlightTokenCardOnPage)
-      .fail(function(xhr, status) {
-        showError(status);
-      });
+  console.log(responseData);
+  hideMessage();
+  $.post('/FinishSign', responseData, null, 'json')
+    .done(highlightTokenCardOnPage)
+    .fail(function(xhr, status) {
+      showError(status);
+    });
 }
 
 function onError(code, enrolling) {

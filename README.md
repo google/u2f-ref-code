@@ -38,8 +38,7 @@ developer.
 
 To experience the end-to-end user experience you will need to get a physical
 USB device since the virtual device *does not* simulate the USB layer at this
-time. Please write to <asfas@asdads> to get pointers on how to acquire devices
-for testing.
+time.
 
 ## Getting started
 

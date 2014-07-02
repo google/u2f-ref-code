@@ -99,8 +99,6 @@ public class U2fHttpServer {
     u2fServer = new U2FServerReferenceImpl(challengeGenerator, dataStore, 
         new BouncyCastleCrypto(), ImmutableSet.of("http://localhost:8080"));
     Container dispatchContainer = new RequestDispatcher()
-    .registerContainer("/fido-u2f.js",
-        new StaticHandler("application/javascript", "html/fido-u2f.js"))
         .registerContainer("/", new StaticHandler("text/html","html/index.html"))
         .registerContainer("/enroll", new StaticHandler("text/html","html/enroll.html"))
         .registerContainer("/enrollData.js", new EnrollDataServlet(u2fServer))

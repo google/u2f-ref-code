@@ -1,0 +1,82 @@
+{
+  "name": "FIDO U2F (Universal 2nd Factor) extension",
+  "description": "Provides the FIDO U2F APIs for authentication. Pe-release, intended for testing by developers creating U2F servers or devices.",
+  "version": "0.8.50",
+  "manifest_version" : 2,
+  "minimum_chrome_version" : "32.0.1700.20",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqLLJ2LRanry7nH7cJjoIQeg6dorICc8JUQBu+NvkdnK5djBfWF2sHh2fBATBhXbs9UR5MaH8cCoBQNN4vdzYDSfH7NkwJjXMmy7KO2L3UlbMIoHWUolOOYL/ym2gu+fSBn4p5q+5lJ3siFwx9q7Dk36Tn5slwbvt2x+i882umtPI1lgxBE9Iqq6N8+36ZVkkSnS76p2OHP0t60bmTAO1IUkr4zUDhUsARpmDV/QaiYjMRO0VBUUPTtqmxSJ6W+LYTfDAXFEC9bhyLN3n2B70QZPT21TY2j/j0BjragsSv7PbLTloBmRjqCqUCW8/HZffPSTqpFdG5SlwoXDiTeOZ6QIDAQAB",
+
+  "permissions": [
+    "hid",
+    "usb",
+    { "usbDevices": [
+        {"vendorId":4176, "productId":512},   // Yubico HID
+        {"vendorId":4176, "productId":529},   // Yubico winusb
+        {"vendorId":9601, "productId":61904}  // PlugUp
+      ]
+    },
+    "https://*/*",
+    "http://*/*"
+  ],
+
+  "externally_connectable": {
+    "matches": [
+      "https://crxjs-dot-u2fdemo.appspot.com/*"
+    ],
+    "accepts_tls_channel_id": true
+  },
+
+  "web_accessible_resources": [
+    "u2f-comms.html",
+    "u2f-comms.js",
+    "u2f-api.js"
+  ],
+
+  "background": {
+    "persistent": true,
+    "scripts": [
+      "util.js",
+      "b64.js",
+      "closeable.js",
+      "countdown.js",
+      "countdowntimer.js",
+      "sha256.js",
+      "llgnubby.js",
+      "llhidgnubby.js",
+      "llusbgnubby.js",
+      "gnubbies.js",
+      "gnubby.js",
+      "gnubby-u2f.js",
+      "errorcodes.js",
+      "gnubbycodetypes.js",
+      "gnubbyfactory.js",
+      "gnubbymsgtypes.js",
+      "messagetypes.js",
+      "usbgnubbyfactory.js",
+      "devicestatuscodes.js",
+      "enroller.js",
+      "requestqueue.js",
+      "signer.js",
+      "requesthelper.js",
+      "delegatinghelper.js",
+      "externalhelper.js",
+      "generichelper.js",
+      "helperwhitelist.js",
+      "singlesigner.js",
+      "multiplesigner.js",
+      "usbenrollhandler.js",
+      "usbsignhandler.js",
+      "usbhelper.js",
+      "u2fbackground.js",
+      "webrequest.js",
+      "appid.js"
+    ]
+  },
+
+  "icons": {
+    "16": "gnubby-16.ico",
+    "32": "gnubby-32.ico",
+    "48": "gnubby-48.ico",
+    "128": "gnubby-128.ico"
+  }
+}

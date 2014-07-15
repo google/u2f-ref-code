@@ -33,5 +33,4 @@ function UsbHelper(gnubbyFactory, timerFactory) {
   });
 }
 
-UsbHelper.prototype = GenericRequestHelper.prototype;
-UsbHelper.prototype.constructor = UsbHelper;
+inherits(UsbHelper, GenericRequestHelper);

@@ -3,7 +3,7 @@
 This is an implementation of a U2F client for Chrome, intended for
 experimentation and testing. For general testing, we recommend installing it
 from the Chrome Web Store [here][webstore]. In this case, the extension will
-automatically update when new versions are released. Any origin to call the
+automatically update when new versions are released. Any origin may call the
 extension; side-loading is not necessary for this.
 
 [webstore]: https://chrome.google.com/webstore/detail/fido-u2f-universal-2nd-fa/pfboblefjcgdjicmnffhdgionmgcdmne

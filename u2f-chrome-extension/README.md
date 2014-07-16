@@ -95,4 +95,3 @@ The returned port will be a Chrome runtime port object, which has slightly
 different syntax for how event handlers are added. Again, see ``u2f-api.js``
 for a full example and how to wrap this in a HTML5 MessagePort compatible
 interface.
-

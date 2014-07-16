@@ -5,7 +5,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 /**
- * @fileoverview Contains a simple factory for creating and opening usbGnubby
+ * @fileoverview Contains a simple factory for creating and opening Gnubby
  * instances.
  */
 'use strict';
@@ -18,12 +18,12 @@
 function UsbGnubbyFactory(gnubbies) {
   /** @private {Gnubbies} */
   this.gnubbies_ = gnubbies;
-  usbGnubby.setGnubbies(gnubbies);
+  Gnubby.setGnubbies(gnubbies);
 }
 
 /**
  * Creates a new gnubby object, and opens the gnubby with the given index.
- * @param {llGnubbyDeviceId} which The device to open.
+ * @param {GnubbyDeviceId} which The device to open.
  * @param {boolean} forEnroll Whether this gnubby is being opened for enrolling.
  * @param {FactoryOpenCallback} cb Called with result of opening the gnubby.
  * @param {string=} logMsgUrl the url to post log messages to
@@ -31,7 +31,7 @@ function UsbGnubbyFactory(gnubbies) {
  */
 UsbGnubbyFactory.prototype.openGnubby =
     function(which, forEnroll, cb, logMsgUrl) {
-  var gnubby = new usbGnubby();
+  var gnubby = new Gnubby();
   gnubby.open(which, function(rc) {
     if (rc) {
       cb(rc, gnubby);
@@ -45,7 +45,7 @@ UsbGnubbyFactory.prototype.openGnubby =
 
 /**
  * Enumerates gnubbies.
- * @param {function(number, Array.<llGnubbyDeviceId>)} cb Enumerate callback
+ * @param {function(number, Array.<GnubbyDeviceId>)} cb Enumerate callback
  */
 UsbGnubbyFactory.prototype.enumerate = function(cb) {
   this.gnubbies_.enumerate(cb);
@@ -53,7 +53,7 @@ UsbGnubbyFactory.prototype.enumerate = function(cb) {
 
 /**
  * No-op prerequisite check.
- * @param {usbGnubby} gnubby The not-enrolled gnubby.
+ * @param {Gnubby} gnubby The not-enrolled gnubby.
  * @param {string} appIdHash The base64-encoded hash of the app id for which
  *     the gnubby being enrolled.
  * @param {FactoryOpenCallback} cb Called with the result of the prerequisite

@@ -13,82 +13,82 @@
  * Low level gnubby 'driver'. One per physical USB device.
  * @interface
  */
-function llGnubby() {}
+function GnubbyDevice() {}
 
 // Commands of the USB interface.
 /** Echo data through local processor only */
-llGnubby.CMD_PING = 0x81;
+GnubbyDevice.CMD_PING = 0x81;
 /** Perform reset action and read ATR string */
-llGnubby.CMD_ATR = 0x82;
+GnubbyDevice.CMD_ATR = 0x82;
 /** Send raw APDU */
-llGnubby.CMD_APDU = 0x83;
+GnubbyDevice.CMD_APDU = 0x83;
 /** Send lock channel command */
-llGnubby.CMD_LOCK = 0x84;
+GnubbyDevice.CMD_LOCK = 0x84;
 /** Obtain system information record */
-llGnubby.CMD_SYSINFO = 0x85;
+GnubbyDevice.CMD_SYSINFO = 0x85;
 /** Obtain an unused channel ID */
-llGnubby.CMD_INIT = 0x86;
+GnubbyDevice.CMD_INIT = 0x86;
 /** Control prompt flashing */
-llGnubby.CMD_PROMPT = 0x87;
+GnubbyDevice.CMD_PROMPT = 0x87;
 /** Send device identification wink */
-llGnubby.CMD_WINK = 0x88;
+GnubbyDevice.CMD_WINK = 0x88;
 /** USB test */
-llGnubby.CMD_USB_TEST = 0xb9;
+GnubbyDevice.CMD_USB_TEST = 0xb9;
 /** Device Firmware Upgrade */
-llGnubby.CMD_DFU = 0xba;
+GnubbyDevice.CMD_DFU = 0xba;
 /** Protocol resync command */
-llGnubby.CMD_SYNC = 0xbc;
+GnubbyDevice.CMD_SYNC = 0xbc;
 /** Error response */
-llGnubby.CMD_ERROR = 0xbf;
+GnubbyDevice.CMD_ERROR = 0xbf;
 
 // Low-level error codes.
 /** No error */
-llGnubby.OK = 0;
+GnubbyDevice.OK = 0;
 /** Invalid command */
-llGnubby.INVALID_CMD = 1;
+GnubbyDevice.INVALID_CMD = 1;
 /** Invalid parameter */
-llGnubby.INVALID_PAR = 2;
+GnubbyDevice.INVALID_PAR = 2;
 /** Invalid message length */
-llGnubby.INVALID_LEN = 3;
+GnubbyDevice.INVALID_LEN = 3;
 /** Invalid message sequencing */
-llGnubby.INVALID_SEQ = 4;
+GnubbyDevice.INVALID_SEQ = 4;
 /** Message has timed out */
-llGnubby.TIMEOUT = 5;
+GnubbyDevice.TIMEOUT = 5;
 /** CHannel is busy */
-llGnubby.BUSY = 6;
+GnubbyDevice.BUSY = 6;
 /** Access denied */
-llGnubby.ACCESS_DENIED = 7;
+GnubbyDevice.ACCESS_DENIED = 7;
 /** Device is gone */
-llGnubby.GONE = 8;
+GnubbyDevice.GONE = 8;
 /** Verification error */
-llGnubby.VERIFY_ERROR = 9;
+GnubbyDevice.VERIFY_ERROR = 9;
 /** Command requires channel lock */
-llGnubby.LOCK_REQUIRED = 10;
+GnubbyDevice.LOCK_REQUIRED = 10;
 /** Sync error */
-llGnubby.SYNC_FAIL = 11;
+GnubbyDevice.SYNC_FAIL = 11;
 /** Other unspecified error */
-llGnubby.OTHER = 127;
+GnubbyDevice.OTHER = 127;
 
 // Remote helper errors.
 /** Not a remote helper */
-llGnubby.NOTREMOTE = 263;
+GnubbyDevice.NOTREMOTE = 263;
 /** Could not reach remote endpoint */
-llGnubby.COULDNOTDIAL = 264;
+GnubbyDevice.COULDNOTDIAL = 264;
 
 // chrome.usb-related errors.
 /** No device */
-llGnubby.NODEVICE = 512;
+GnubbyDevice.NODEVICE = 512;
 /** Permission denied */
-llGnubby.NOPERMISSION = 666;
+GnubbyDevice.NOPERMISSION = 666;
 
 /** Destroys this low-level device instance. */
-llGnubby.prototype.destroy = function() {};
+GnubbyDevice.prototype.destroy = function() {};
 
 /**
  * Register a client for this gnubby.
  * @param {*} who The client.
  */
-llGnubby.prototype.registerClient = function(who) {};
+GnubbyDevice.prototype.registerClient = function(who) {};
 
 /**
  * De-register a client.
@@ -96,13 +96,13 @@ llGnubby.prototype.registerClient = function(who) {};
  * @return {number} The number of remaining listeners for this device, or -1
  *     if this had no clients to start with.
  */
-llGnubby.prototype.deregisterClient = function(who) {};
+GnubbyDevice.prototype.deregisterClient = function(who) {};
 
 /**
  * @param {*} who The client.
  * @return {boolean} Whether this device has who as a client.
  */
-llGnubby.prototype.hasClient = function(who) {};
+GnubbyDevice.prototype.hasClient = function(who) {};
 
 /**
  * Queue command to be sent.
@@ -111,7 +111,7 @@ llGnubby.prototype.hasClient = function(who) {};
  * @param {number} cmd The command to send.
  * @param {ArrayBuffer|Uint8Array} data Command data
  */
-llGnubby.prototype.queueCommand = function(cid, cmd, data) {};
+GnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {};
 
 /**
  * @typedef {{
@@ -126,7 +126,7 @@ var UsbDeviceSpec;
  * @param {function(!Array.<!UsbDeviceSpec>)} cb Called back with a list of USB
  *     device specifiers.
  */
-llGnubby.getPermittedUsbDevices = function(cb) {
+GnubbyDevice.getPermittedUsbDevices = function(cb) {
   chrome.permissions.getAll(function(perms) {
     if (!perms.hasOwnProperty('permissions')) {
       cb([]);

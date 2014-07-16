@@ -18,9 +18,9 @@
  * @param {number} inEndpoint The device's in endpoint.
  * @param {number} outEndpoint The device's out endpoint.
  * @constructor
- * @implements {llGnubby}
+ * @implements {GnubbyDevice}
  */
-function llUsbGnubby(gnubbies, dev, id, inEndpoint, outEndpoint) {
+function UsbGnubbyDevice(gnubbies, dev, id, inEndpoint, outEndpoint) {
   /** @private {Gnubbies} */
   this.gnubbies_ = gnubbies;
   this.dev = dev;
@@ -39,20 +39,20 @@ function llUsbGnubby(gnubbies, dev, id, inEndpoint, outEndpoint) {
 }
 
 /**
- * Namespace for the llUsbGnubby implementation.
+ * Namespace for the UsbGnubbyDevice implementation.
  * @const
  */
-llUsbGnubby.NAMESPACE = 'usb';
+UsbGnubbyDevice.NAMESPACE = 'usb';
 
 /** Destroys this low-level device instance. */
-llUsbGnubby.prototype.destroy = function() {
+UsbGnubbyDevice.prototype.destroy = function() {
   if (!this.dev) return;  // Already dead.
 
   this.gnubbies_.removeOpenDevice(
-      {namespace: llUsbGnubby.NAMESPACE, device: this.id});
+      {namespace: UsbGnubbyDevice.NAMESPACE, device: this.id});
   this.closing = true;
 
-  console.log(UTIL_fmt('llUsbGnubby.destroy()'));
+  console.log(UTIL_fmt('UsbGnubbyDevice.destroy()'));
 
   // Synthesize a close error frame to alert all clients,
   // some of which might be in read state.
@@ -60,9 +60,9 @@ llUsbGnubby.prototype.destroy = function() {
   // Use magic CID 0 to address all.
   this.publishFrame_(new Uint8Array([
         0, 0, 0, 0,  // broadcast CID
-        llGnubby.CMD_ERROR,
+        GnubbyDevice.CMD_ERROR,
         0, 1,  // length
-        llGnubby.GONE]).buffer);
+        GnubbyDevice.GONE]).buffer);
 
   // Set all clients to closed status and remove them.
   while (this.clients.length != 0) {
@@ -91,7 +91,7 @@ llUsbGnubby.prototype.destroy = function() {
  * @param {ArrayBuffer} f Data frame
  * @private
  */
-llUsbGnubby.prototype.publishFrame_ = function(f) {
+UsbGnubbyDevice.prototype.publishFrame_ = function(f) {
   var old = this.clients;
 
   var remaining = [];
@@ -114,7 +114,7 @@ llUsbGnubby.prototype.publishFrame_ = function(f) {
  * @return {boolean} whether this device is open and ready to use.
  * @private
  */
-llUsbGnubby.prototype.readyToUse_ = function() {
+UsbGnubbyDevice.prototype.readyToUse_ = function() {
   if (this.closing) return false;
   if (!this.dev) return false;
 
@@ -125,7 +125,7 @@ llUsbGnubby.prototype.readyToUse_ = function() {
  * Reads one reply from the low-level device.
  * @private
  */
-llUsbGnubby.prototype.readOneReply_ = function() {
+UsbGnubbyDevice.prototype.readOneReply_ = function() {
   if (!this.readyToUse_()) return;  // No point in continuing.
   if (this.updating) return;  // Do not bother waiting for final update reply.
 
@@ -178,7 +178,7 @@ llUsbGnubby.prototype.readOneReply_ = function() {
  * Register a client for this gnubby.
  * @param {*} who The client.
  */
-llUsbGnubby.prototype.registerClient = function(who) {
+UsbGnubbyDevice.prototype.registerClient = function(who) {
   for (var i = 0; i < this.clients.length; ++i) {
     if (this.clients[i] === who) return;  // Already registered.
   }
@@ -192,7 +192,7 @@ llUsbGnubby.prototype.registerClient = function(who) {
  * Returns number of remaining listeners for this device.
  *     if this had no clients to start with.
  */
-llUsbGnubby.prototype.deregisterClient = function(who) {
+UsbGnubbyDevice.prototype.deregisterClient = function(who) {
   var current = this.clients;
   if (current.length == 0) return -1;
   this.clients = [];
@@ -207,7 +207,7 @@ llUsbGnubby.prototype.deregisterClient = function(who) {
  * @param {*} who The client.
  * @return {boolean} Whether this device has who as a client.
  */
-llUsbGnubby.prototype.hasClient = function(who) {
+UsbGnubbyDevice.prototype.hasClient = function(who) {
   if (this.clients.length == 0) return false;
   for (var i = 0; i < this.clients.length; ++i) {
     if (who === this.clients[i])
@@ -220,7 +220,7 @@ llUsbGnubby.prototype.hasClient = function(who) {
  * Stuff queued frames from txqueue[] to device, one by one.
  * @private
  */
-llUsbGnubby.prototype.writeOneRequest_ = function() {
+UsbGnubbyDevice.prototype.writeOneRequest_ = function() {
   if (!this.readyToUse_()) return;  // No point in continuing.
 
   if (this.txqueue.length == 0) return;  // Nothing to send.
@@ -246,8 +246,8 @@ llUsbGnubby.prototype.writeOneRequest_ = function() {
   var u8 = new Uint8Array(frame);
 
   // See whether this requires scrubbing before logging.
-  var alternateLog = usbGnubby.hasOwnProperty('redactRequestLog') &&
-                     usbGnubby['redactRequestLog'](u8);
+  var alternateLog = Gnubby.hasOwnProperty('redactRequestLog') &&
+                     Gnubby['redactRequestLog'](u8);
   if (alternateLog) {
     console.log(UTIL_fmt('>' + alternateLog));
   } else {
@@ -272,22 +272,22 @@ llUsbGnubby.prototype.writeOneRequest_ = function() {
  * @return {boolean} true if not locked for this request.
  * @private
  */
-llUsbGnubby.prototype.checkLock_ = function(cid, cmd) {
+UsbGnubbyDevice.prototype.checkLock_ = function(cid, cmd) {
   if (this.lockCID) {
     // We have an active lock.
     if (this.lockCID != cid) {
       // Some other channel has active lock.
 
-      if (cmd != llGnubby.CMD_SYNC) {
+      if (cmd != GnubbyDevice.CMD_SYNC) {
         // Anything but SYNC gets an immediate busy.
         var busy = new Uint8Array(
             [(cid >> 24) & 255,
              (cid >> 16) & 255,
              (cid >> 8) & 255,
              cid & 255,
-             llGnubby.CMD_ERROR,
+             GnubbyDevice.CMD_ERROR,
              0, 1,  // length
-             llGnubby.BUSY]);
+             GnubbyDevice.BUSY]);
         // Log the synthetic busy too.
         console.log(UTIL_fmt('<' + UTIL_BytesToHex(busy)));
         this.publishFrame_(busy.buffer);
@@ -308,7 +308,7 @@ llUsbGnubby.prototype.checkLock_ = function(cid, cmd) {
  * @param {number} arg Command argument
  * @private
  */
-llUsbGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
+UsbGnubbyDevice.prototype.updateLock_ = function(cid, cmd, arg) {
   if (this.lockCID == 0 || this.lockCID == cid) {
     // It is this caller's or nobody's lock.
     if (this.lockTID) {
@@ -316,7 +316,7 @@ llUsbGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
       this.lockTID = null;
     }
 
-    if (cmd == llGnubby.CMD_LOCK) {
+    if (cmd == GnubbyDevice.CMD_LOCK) {
       var nseconds = arg;
       if (nseconds != 0) {
         this.lockCID = cid;
@@ -350,7 +350,7 @@ llUsbGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
  * @param {number} cmd The command to send.
  * @param {ArrayBuffer|Uint8Array} data Command argument data
  */
-llUsbGnubby.prototype.queueCommand = function(cid, cmd, data) {
+UsbGnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {
   if (!this.dev) return;
   if (!this.checkLock_(cid, cmd)) return;
 
@@ -378,7 +378,7 @@ llUsbGnubby.prototype.queueCommand = function(cid, cmd, data) {
 /**
  * @param {function(Array)} cb Enumerate callback
  */
-llUsbGnubby.enumerate = function(cb) {
+UsbGnubbyDevice.enumerate = function(cb) {
   var permittedDevs;
   var numEnumerated = 0;
   var allDevs = [];
@@ -390,7 +390,7 @@ llUsbGnubby.enumerate = function(cb) {
     }
   }
 
-  llGnubby.getPermittedUsbDevices(function(devs) {
+  GnubbyDevice.getPermittedUsbDevices(function(devs) {
     permittedDevs = devs;
     for (var i = 0; i < devs.length; i++) {
       chrome.usb.getDevices(devs[i], enumerated);
@@ -399,26 +399,55 @@ llUsbGnubby.enumerate = function(cb) {
 };
 
 /**
+ * @typedef {?{
+ *   address: number,
+ *   type: string,
+ *   direction: string,
+ *   maximumPacketSize: number,
+ *   synchronization: (string|undefined),
+ *   usage: (string|undefined),
+ *   pollingInterval: (number|undefined)
+ * }}
+ * @see http://developer.chrome.com/apps/usb.html#method-listInterfaces
+ */
+var InterfaceEndpoint;
+
+
+/**
+ * @typedef {?{
+ *   interfaceNumber: number,
+ *   alternateSetting: number,
+ *   interfaceClass: number,
+ *   interfaceSubclass: number,
+ *   interfaceProtocol: number,
+ *   description: (string|undefined),
+ *   endpoints: !Array.<!InterfaceEndpoint>
+ * }}
+ * @see http://developer.chrome.com/apps/usb.html#method-listInterfaces
+ */
+var InterfaceDescriptor;
+
+/**
  * @param {Gnubbies} gnubbies The gnubbies instances this device is enumerated
  *     in.
  * @param {number} which The index of the device to open.
  * @param {!chrome.usb.Device} dev The device to open.
- * @param {function(number, llGnubby=)} cb Called back with the
+ * @param {function(number, GnubbyDevice=)} cb Called back with the
  *     result of opening the device.
  */
-llUsbGnubby.open = function(gnubbies, which, dev, cb) {
+UsbGnubbyDevice.open = function(gnubbies, which, dev, cb) {
   /** @param {chrome.usb.ConnectionHandle=} handle Connection handle */
   function deviceOpened(handle) {
     if (!handle) {
       console.warn(UTIL_fmt('failed to open device. permissions issue?'));
-      cb(-llGnubby.NODEVICE);
+      cb(-GnubbyDevice.NODEVICE);
       return;
     }
     var nonNullHandle = /** @type {!chrome.usb.ConnectionHandle} */ (handle);
     chrome.usb.listInterfaces(nonNullHandle, function(descriptors) {
       var inEndpoint, outEndpoint;
       for (var i = 0; i < descriptors.length; i++) {
-        var descriptor = descriptors[i];
+        var descriptor = /** @type {InterfaceDescriptor} */ (descriptors[i]);
         for (var j = 0; j < descriptor.endpoints.length; j++) {
           var endpoint = descriptor.endpoints[j];
           if (inEndpoint == undefined && endpoint.type == 'bulk' &&
@@ -434,7 +463,7 @@ llUsbGnubby.open = function(gnubbies, which, dev, cb) {
       if (inEndpoint == undefined || outEndpoint == undefined) {
         console.warn(UTIL_fmt('device lacking an endpoint (broken?)'));
         chrome.usb.closeDevice(nonNullHandle);
-        cb(-llGnubby.NODEVICE);
+        cb(-GnubbyDevice.NODEVICE);
         return;
       }
       // Try getting it claimed now.
@@ -448,21 +477,21 @@ llUsbGnubby.open = function(gnubbies, which, dev, cb) {
           console.warn(UTIL_fmt('failed to claim interface. busy?'));
           // Claim failed? Let the callers know and bail out.
           chrome.usb.closeDevice(nonNullHandle);
-          cb(-llGnubby.BUSY);
+          cb(-GnubbyDevice.BUSY);
           return;
         }
-        var gnubby = new llUsbGnubby(gnubbies, nonNullHandle, which, inEndpoint,
-            outEndpoint);
-        cb(-llGnubby.OK, gnubby);
+        var gnubby = new UsbGnubbyDevice(gnubbies, nonNullHandle, which,
+            inEndpoint, outEndpoint);
+        cb(-GnubbyDevice.OK, gnubby);
       });
     });
   }
 
-  if (llUsbGnubby.runningOnCrOS === undefined) {
-    llUsbGnubby.runningOnCrOS =
+  if (UsbGnubbyDevice.runningOnCrOS === undefined) {
+    UsbGnubbyDevice.runningOnCrOS =
         (window.navigator.appVersion.indexOf('; CrOS ') != -1);
   }
-  if (llUsbGnubby.runningOnCrOS) {
+  if (UsbGnubbyDevice.runningOnCrOS) {
     chrome.usb.requestAccess(dev, 0, function(success) {
       // Even though the argument to requestAccess is a chrome.usb.Device, the
       // access request is for access to all devices with the same vid/pid.
@@ -479,11 +508,14 @@ llUsbGnubby.open = function(gnubbies, which, dev, cb) {
 
 /**
  * @param {*} dev Chrome usb device
- * @return {llGnubbyDeviceId} A device identifier for the device.
+ * @return {GnubbyDeviceId} A device identifier for the device.
  */
-llUsbGnubby.deviceToDeviceId = function(dev) {
+UsbGnubbyDevice.deviceToDeviceId = function(dev) {
   var usbDev = /** @type {!chrome.usb.Device} */ (dev);
-  var deviceId = { namespace: llUsbGnubby.NAMESPACE, device: usbDev.device };
+  var deviceId = {
+    namespace: UsbGnubbyDevice.NAMESPACE,
+    device: usbDev.device
+  };
   return deviceId;
 };
 
@@ -491,11 +523,11 @@ llUsbGnubby.deviceToDeviceId = function(dev) {
  * Registers this implementation with gnubbies.
  * @param {Gnubbies} gnubbies Gnubbies singleton instance
  */
-llUsbGnubby.register = function(gnubbies) {
+UsbGnubbyDevice.register = function(gnubbies) {
   var USB_GNUBBY_IMPL = {
-    enumerate: llUsbGnubby.enumerate,
-    deviceToDeviceId: llUsbGnubby.deviceToDeviceId,
-    open: llUsbGnubby.open
+    enumerate: UsbGnubbyDevice.enumerate,
+    deviceToDeviceId: UsbGnubbyDevice.deviceToDeviceId,
+    open: UsbGnubbyDevice.open
   };
-  gnubbies.registerNamespace(llUsbGnubby.NAMESPACE, USB_GNUBBY_IMPL);
+  gnubbies.registerNamespace(UsbGnubbyDevice.NAMESPACE, USB_GNUBBY_IMPL);
 };

@@ -16,9 +16,9 @@
  * @param {!chrome.hid.HidConnectInfo} dev The connection to the device.
  * @param {number} id The device's id.
  * @constructor
- * @implements {llGnubby}
+ * @implements {GnubbyDevice}
  */
-function llHidGnubby(gnubbies, dev, id) {
+function HidGnubbyDevice(gnubbies, dev, id) {
   /** @private {Gnubbies} */
   this.gnubbies_ = gnubbies;
   this.dev = dev;
@@ -33,20 +33,20 @@ function llHidGnubby(gnubbies, dev, id) {
 }
 
 /**
- * Namespace for the llHidGnubby implementation.
+ * Namespace for the HidGnubbyDevice implementation.
  * @const
  */
-llHidGnubby.NAMESPACE = 'hid';
+HidGnubbyDevice.NAMESPACE = 'hid';
 
 /** Destroys this low-level device instance. */
-llHidGnubby.prototype.destroy = function() {
+HidGnubbyDevice.prototype.destroy = function() {
   if (!this.dev) return;  // Already dead.
 
   this.gnubbies_.removeOpenDevice(
-      {namespace: llHidGnubby.NAMESPACE, device: this.id});
+      {namespace: HidGnubbyDevice.NAMESPACE, device: this.id});
   this.closing = true;
 
-  console.log(UTIL_fmt('llHidGnubby.destroy()'));
+  console.log(UTIL_fmt('HidGnubbyDevice.destroy()'));
 
   // Synthesize a close error frame to alert all clients,
   // some of which might be in read state.
@@ -54,9 +54,9 @@ llHidGnubby.prototype.destroy = function() {
   // Use magic CID 0 to address all.
   this.publishFrame_(new Uint8Array([
         0, 0, 0, 0,  // broadcast CID
-        llGnubby.CMD_ERROR,
+        GnubbyDevice.CMD_ERROR,
         0, 1,  // length
-        llGnubby.GONE]).buffer);
+        GnubbyDevice.GONE]).buffer);
 
   // Set all clients to closed status and remove them.
   while (this.clients.length != 0) {
@@ -82,7 +82,7 @@ llHidGnubby.prototype.destroy = function() {
  * @param {ArrayBuffer} f Data to push
  * @private
  */
-llHidGnubby.prototype.publishFrame_ = function(f) {
+HidGnubbyDevice.prototype.publishFrame_ = function(f) {
   var old = this.clients;
 
   var remaining = [];
@@ -105,7 +105,7 @@ llHidGnubby.prototype.publishFrame_ = function(f) {
  * Register a client for this gnubby.
  * @param {*} who The client.
  */
-llHidGnubby.prototype.registerClient = function(who) {
+HidGnubbyDevice.prototype.registerClient = function(who) {
   for (var i = 0; i < this.clients.length; ++i) {
     if (this.clients[i] === who) return;  // Already registered.
   }
@@ -123,7 +123,7 @@ llHidGnubby.prototype.registerClient = function(who) {
  * Returns number of remaining listeners for this device.
  *     if this had no clients to start with.
  */
-llHidGnubby.prototype.deregisterClient = function(who) {
+HidGnubbyDevice.prototype.deregisterClient = function(who) {
   var current = this.clients;
   if (current.length == 0) return -1;
   this.clients = [];
@@ -138,7 +138,7 @@ llHidGnubby.prototype.deregisterClient = function(who) {
  * @param {*} who The client.
  * @return {boolean} Whether this device has who as a client.
  */
-llHidGnubby.prototype.hasClient = function(who) {
+HidGnubbyDevice.prototype.hasClient = function(who) {
   if (this.clients.length == 0) return false;
   for (var i = 0; i < this.clients.length; ++i) {
     if (who === this.clients[i])
@@ -151,7 +151,7 @@ llHidGnubby.prototype.hasClient = function(who) {
  * Reads all incoming frames and notifies clients of their receipt.
  * @private
  */
-llHidGnubby.prototype.readLoop_ = function() {
+HidGnubbyDevice.prototype.readLoop_ = function() {
   //console.log(UTIL_fmt('entering readLoop'));
   if (!this.dev) return;
 
@@ -210,22 +210,22 @@ llHidGnubby.prototype.readLoop_ = function() {
  * @return {boolean} true if not locked for this request.
  * @private
  */
-llHidGnubby.prototype.checkLock_ = function(cid, cmd) {
+HidGnubbyDevice.prototype.checkLock_ = function(cid, cmd) {
   if (this.lockCID) {
     // We have an active lock.
     if (this.lockCID != cid) {
       // Some other channel has active lock.
 
-      if (cmd != llGnubby.CMD_SYNC) {
+      if (cmd != GnubbyDevice.CMD_SYNC) {
         // Anything but SYNC gets an immediate busy.
         var busy = new Uint8Array(
             [(cid >> 24) & 255,
              (cid >> 16) & 255,
              (cid >> 8) & 255,
              cid & 255,
-             llGnubby.CMD_ERROR,
+             GnubbyDevice.CMD_ERROR,
              0, 1,  // length
-             llGnubby.BUSY]);
+             GnubbyDevice.BUSY]);
         // Log the synthetic busy too.
         console.log(UTIL_fmt('<' + UTIL_BytesToHex(busy)));
         this.publishFrame_(busy.buffer);
@@ -246,7 +246,7 @@ llHidGnubby.prototype.checkLock_ = function(cid, cmd) {
  * @param {number} arg Command argument
  * @private
  */
-llHidGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
+HidGnubbyDevice.prototype.updateLock_ = function(cid, cmd, arg) {
   if (this.lockCID == 0 || this.lockCID == cid) {
     // It is this caller's or nobody's lock.
     if (this.lockTID) {
@@ -254,7 +254,7 @@ llHidGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
       this.lockTID = null;
     }
 
-    if (cmd == llGnubby.CMD_LOCK) {
+    if (cmd == GnubbyDevice.CMD_LOCK) {
       var nseconds = arg;
       if (nseconds != 0) {
         this.lockCID = cid;
@@ -288,14 +288,14 @@ llHidGnubby.prototype.updateLock_ = function(cid, cmd, arg) {
  * @param {number} cmd The command to send.
  * @param {ArrayBuffer|Uint8Array} data Command arguments
  */
-llHidGnubby.prototype.queueCommand = function(cid, cmd, data) {
+HidGnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {
   if (!this.dev) return;
   if (!this.checkLock_(cid, cmd)) return;
 
   var u8 = new Uint8Array(data);
   var f = new Uint8Array(64);
 
-  llHidGnubby.setCid_(f, cid);
+  HidGnubbyDevice.setCid_(f, cid);
   f[4] = cmd;
   f[5] = (u8.length >> 8);
   f[6] = (u8.length & 255);
@@ -311,7 +311,7 @@ llHidGnubby.prototype.queueCommand = function(cid, cmd, data) {
       this.queueFrame_(f.buffer, cid, cmd, lockArg);
 
       f = new Uint8Array(64);
-      llHidGnubby.setCid_(f, cid);
+      HidGnubbyDevice.setCid_(f, cid);
       cmd = f[4] = seq++;
       n = 5;
     }
@@ -327,7 +327,7 @@ llHidGnubby.prototype.queueCommand = function(cid, cmd, data) {
  * @param {number} cid The client's channel ID.
  * @private
  */
-llHidGnubby.setCid_ = function(frame, cid) {
+HidGnubbyDevice.setCid_ = function(frame, cid) {
   frame[0] = cid >>> 24;
   frame[1] = cid >>> 16;
   frame[2] = cid >>> 8;
@@ -343,7 +343,7 @@ llHidGnubby.setCid_ = function(frame, cid) {
  * @param {number} arg Command argument
  * @private
  */
-llHidGnubby.prototype.queueFrame_ = function(frame, cid, cmd, arg) {
+HidGnubbyDevice.prototype.queueFrame_ = function(frame, cid, cmd, arg) {
   this.updateLock_(cid, cmd, arg);
   var wasEmpty = (this.txqueue.length == 0);
   this.txqueue.push(frame);
@@ -354,7 +354,7 @@ llHidGnubby.prototype.queueFrame_ = function(frame, cid, cmd, arg) {
  * Stuff queued frames from txqueue[] to device, one by one.
  * @private
  */
-llHidGnubby.prototype.writePump_ = function() {
+HidGnubbyDevice.prototype.writePump_ = function() {
   if (!this.dev) return;  // Ignore.
 
   if (this.txqueue.length == 0) return;  // Done with current queue.
@@ -378,22 +378,27 @@ llHidGnubby.prototype.writePump_ = function() {
   var u8 = new Uint8Array(frame);
 
   // See whether this requires scrubbing before logging.
-  var alternateLog = usbGnubby.hasOwnProperty('redactRequestLog') &&
-                     usbGnubby['redactRequestLog'](u8);
+  var alternateLog = Gnubby.hasOwnProperty('redactRequestLog') &&
+                     Gnubby['redactRequestLog'](u8);
   if (alternateLog) {
     console.log(UTIL_fmt('>' + alternateLog));
   } else {
     console.log(UTIL_fmt('>' + UTIL_BytesToHex(u8)));
   }
 
-  var u8f = new Uint8Array(64);
+  // Outgoing USB HID reports have numbering, in the first byte.
+  // A zero indicates un-numbered and treats the rest of the bytes as
+  // payload. Since our payloads may start with zero, always insert
+  // that leading zero here.
+  var u8f = new Uint8Array(64 + 1);
+  u8f[0] = 0;
   for (var i = 0; i < u8.length; ++i) {
-    u8f[i] = u8[i];
+    u8f[i + 1] = u8[i];
   }
 
   chrome.hid.send(
       this.dev.connectionId,
-      0, // report Id
+      0,  // report Id. Must be 0 for our use.
       u8f.buffer,
       transferComplete
   );
@@ -402,7 +407,7 @@ llHidGnubby.prototype.writePump_ = function() {
 /**
  * @param {function(Array)} cb Enumeration callback
  */
-llHidGnubby.enumerate = function(cb) {
+HidGnubbyDevice.enumerate = function(cb) {
   var permittedDevs;
   var numEnumerated = 0;
   var allDevs = [];
@@ -414,7 +419,7 @@ llHidGnubby.enumerate = function(cb) {
     }
   }
 
-  llGnubby.getPermittedUsbDevices(function(devs) {
+  GnubbyDevice.getPermittedUsbDevices(function(devs) {
     permittedDevs = devs;
     for (var i = 0; i < devs.length; i++) {
       chrome.hid.getDevices(devs[i], enumerated);
@@ -427,32 +432,35 @@ llHidGnubby.enumerate = function(cb) {
  *     in.
  * @param {number} which The index of the device to open.
  * @param {!chrome.hid.HidDeviceInfo} dev The device to open.
- * @param {function(number, llGnubby=)} cb Called back with the
+ * @param {function(number, GnubbyDevice=)} cb Called back with the
  *     result of opening the device.
  */
-llHidGnubby.open = function(gnubbies, which, dev, cb) {
+HidGnubbyDevice.open = function(gnubbies, which, dev, cb) {
   chrome.hid.connect(dev.deviceId, function(handle) {
     if (chrome.runtime.lastError) {
       console.log(chrome.runtime.lastError);
     }
     if (!handle) {
       console.warn(UTIL_fmt('failed to connect device. permissions issue?'));
-      cb(-llGnubby.NODEVICE);
+      cb(-GnubbyDevice.NODEVICE);
       return;
     }
     var nonNullHandle = /** @type {!chrome.hid.HidConnectInfo} */ (handle);
-    var gnubby = new llHidGnubby(gnubbies, nonNullHandle, which);
-    cb(-llGnubby.OK, gnubby);
+    var gnubby = new HidGnubbyDevice(gnubbies, nonNullHandle, which);
+    cb(-GnubbyDevice.OK, gnubby);
   });
 };
 
 /**
  * @param {*} dev A browser API device object
- * @return {llGnubbyDeviceId} A device identifier for the device.
+ * @return {GnubbyDeviceId} A device identifier for the device.
  */
-llHidGnubby.deviceToDeviceId = function(dev) {
+HidGnubbyDevice.deviceToDeviceId = function(dev) {
   var hidDev = /** @type {!chrome.hid.HidDeviceInfo} */ (dev);
-  var deviceId = { namespace: llHidGnubby.NAMESPACE, device: hidDev.deviceId };
+  var deviceId = {
+    namespace: HidGnubbyDevice.NAMESPACE,
+    device: hidDev.deviceId
+  };
   return deviceId;
 };
 
@@ -460,11 +468,11 @@ llHidGnubby.deviceToDeviceId = function(dev) {
  * Registers this implementation with gnubbies.
  * @param {Gnubbies} gnubbies Gnubbies registry
  */
-llHidGnubby.register = function(gnubbies) {
+HidGnubbyDevice.register = function(gnubbies) {
   var HID_GNUBBY_IMPL = {
-    enumerate: llHidGnubby.enumerate,
-    deviceToDeviceId: llHidGnubby.deviceToDeviceId,
-    open: llHidGnubby.open
+    enumerate: HidGnubbyDevice.enumerate,
+    deviceToDeviceId: HidGnubbyDevice.deviceToDeviceId,
+    open: HidGnubbyDevice.open
   };
-  gnubbies.registerNamespace(llHidGnubby.NAMESPACE, HID_GNUBBY_IMPL);
+  gnubbies.registerNamespace(HidGnubbyDevice.NAMESPACE, HID_GNUBBY_IMPL);
 };

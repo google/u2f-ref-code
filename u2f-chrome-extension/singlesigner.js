@@ -16,7 +16,7 @@
 /**
  * @typedef {{
  *   code: number,
- *   gnubby: (usbGnubby|undefined),
+ *   gnubby: (Gnubby|undefined),
  *   challenge: (SignHelperChallenge|undefined),
  *   info: (ArrayBuffer|undefined)
  * }}
@@ -45,7 +45,7 @@ var SingleSignerResult;
  * when there is no need for this signer to continue trying new challenges.
  *
  * @param {!GnubbyFactory} factory Used to create and open the gnubby.
- * @param {llGnubbyDeviceId} gnubbyId Which gnubby to open.
+ * @param {GnubbyDeviceId} gnubbyId Which gnubby to open.
  * @param {boolean} forEnroll Whether this signer is signing for an attempted
  *     enroll operation.
  * @param {function(SingleSignerResult)}
@@ -61,7 +61,7 @@ function SingleGnubbySigner(factory, gnubbyId, forEnroll, completeCb, timer,
     opt_logMsgUrl) {
   /** @private {GnubbyFactory} */
   this.factory_ = factory;
-  /** @private {llGnubbyDeviceId} */
+  /** @private {GnubbyDeviceId} */
   this.gnubbyId_ = gnubbyId;
   /** @private {SingleGnubbySigner.State} */
   this.state_ = SingleGnubbySigner.State.INIT;
@@ -106,7 +106,7 @@ SingleGnubbySigner.State = {
 };
 
 /**
- * @return {llGnubbyDeviceId} This device id of the gnubby for this signer.
+ * @return {GnubbyDeviceId} This device id of the gnubby for this signer.
  */
 SingleGnubbySigner.prototype.getDeviceId = function() {
   return this.gnubbyId_;
@@ -208,8 +208,7 @@ SingleGnubbySigner.SIGN_DELAY_MILLIS = 200;
 
 /**
  * @param {number} rc The result of the open operation.
- * @param {usbGnubby=} gnubby The opened gnubby, if open was successful (or
- *     busy).
+ * @param {Gnubby=} gnubby The opened gnubby, if open was successful (or busy).
  * @private
  */
 SingleGnubbySigner.prototype.openCallback_ = function(rc, gnubby) {

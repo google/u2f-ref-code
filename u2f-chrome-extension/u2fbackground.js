@@ -12,11 +12,15 @@
 
 // Singleton tracking available devices.
 var gnubbies = new Gnubbies();
-llUsbGnubby.register(gnubbies);
+// Only include HID support if it's available in this browser. Register it
+// first, though, because it's more likely to succeed on HID devices than
+// chrome.usb is, on platforms where chrome.usb can see HID devices as well as
+// non-HID ones (Linux in particular.)
 // Only include HID support if it's available in this browser.
 if (chrome.hid) {
-  llHidGnubby.register(gnubbies);
+  HidGnubbyDevice.register(gnubbies);
 }
+UsbGnubbyDevice.register(gnubbies);
 
 var GNUBBY_FACTORY = new UsbGnubbyFactory(gnubbies);
 var TIMER_FACTORY = new CountdownTimerFactory();

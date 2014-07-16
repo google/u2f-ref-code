@@ -120,7 +120,7 @@ UsbSignHandler.prototype.signerFoundGnubby_ =
 
 /**
  * Reports the result of a successful sign operation.
- * @param {usbGnubby} gnubby Gnubby instance
+ * @param {Gnubby} gnubby Gnubby instance
  * @param {SignHelperChallenge} challenge Challenge signed
  * @param {Uint8Array} info Result data
  * @private

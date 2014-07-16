@@ -24,7 +24,7 @@ function UsbEnrollHandler(request, gnubbyFactory, timerFactory) {
   /** @private {!CountdownFactory} */
   this.timerFactory_ = timerFactory;
 
-  /** @private {Array.<usbGnubby>} */
+  /** @private {Array.<Gnubby>} */
   this.waitingForTouchGnubbies_ = [];
 
   /** @private {boolean} */
@@ -120,7 +120,7 @@ UsbEnrollHandler.prototype.signerFoundGnubby_ =
 /**
  * Called with the result of a gnubby prerequisite check.
  * @param {number} rc The result of the prerequisite check.
- * @param {usbGnubby=} opt_gnubby The gnubby whose prerequisites were checked.
+ * @param {Gnubby=} opt_gnubby The gnubby whose prerequisites were checked.
  * @private
  */
 UsbEnrollHandler.prototype.gnubbyPrerequisitesChecked_ =
@@ -134,7 +134,7 @@ UsbEnrollHandler.prototype.gnubbyPrerequisitesChecked_ =
     return;
   }
   // If the callback succeeded, the gnubby is not null.
-  var gnubby = /** @type {usbGnubby} */ (opt_gnubby);
+  var gnubby = /** @type {Gnubby} */ (opt_gnubby);
   this.anyGnubbiesFound_ = true;
   this.waitingForTouchGnubbies_.push(gnubby);
   this.matchEnrollVersionToGnubby_(gnubby);
@@ -143,7 +143,7 @@ UsbEnrollHandler.prototype.gnubbyPrerequisitesChecked_ =
 /**
  * Attempts to match the gnubby's U2F version with an appropriate enroll
  * challenge.
- * @param {usbGnubby} gnubby Gnubby instance
+ * @param {Gnubby} gnubby Gnubby instance
  * @private
  */
 UsbEnrollHandler.prototype.matchEnrollVersionToGnubby_ = function(gnubby) {
@@ -156,7 +156,7 @@ UsbEnrollHandler.prototype.matchEnrollVersionToGnubby_ = function(gnubby) {
 
 /**
  * Called with the result of a version command.
- * @param {usbGnubby} gnubby Gnubby instance
+ * @param {Gnubby} gnubby Gnubby instance
  * @param {number} rc result of version command.
  * @param {ArrayBuffer=} data version.
  * @private
@@ -172,7 +172,7 @@ UsbEnrollHandler.prototype.gnubbyVersioned_ = function(gnubby, rc, data) {
 
 /**
  * Drops the gnubby from the list of eligible gnubbies.
- * @param {usbGnubby} gnubby Gnubby instance
+ * @param {Gnubby} gnubby Gnubby instance
  * @private
  */
 UsbEnrollHandler.prototype.removeWaitingGnubby_ = function(gnubby) {
@@ -186,7 +186,7 @@ UsbEnrollHandler.prototype.removeWaitingGnubby_ = function(gnubby) {
 /**
  * Drops the gnubby from the list of eligible gnubbies, as it has the wrong
  * version.
- * @param {usbGnubby} gnubby Gnubby instance
+ * @param {Gnubby} gnubby Gnubby instance
  * @private
  */
 UsbEnrollHandler.prototype.removeWrongVersionGnubby_ = function(gnubby) {
@@ -205,7 +205,7 @@ UsbEnrollHandler.prototype.removeWrongVersionGnubby_ = function(gnubby) {
 /**
  * Attempts enrolling a particular gnubby with a challenge of the appropriate
  * version.
- * @param {usbGnubby} gnubby Gnubby instance
+ * @param {Gnubby} gnubby Gnubby instance
  * @param {string} version Protocol version
  * @private
  */
@@ -238,7 +238,7 @@ UsbEnrollHandler.prototype.getChallengeOfVersion_ = function(version) {
 
 /**
  * Called with the result of an enroll request to a gnubby.
- * @param {usbGnubby} gnubby Gnubby instance
+ * @param {Gnubby} gnubby Gnubby instance
  * @param {string} version Protocol version
  * @param {number} code Status code
  * @param {ArrayBuffer=} infoArray Returned data
@@ -251,7 +251,7 @@ UsbEnrollHandler.prototype.enrollCallback_ =
     return;
   }
   switch (code) {
-    case -llGnubby.GONE:
+    case -GnubbyDevice.GONE:
         // Close this gnubby.
         this.removeWaitingGnubby_(gnubby);
         if (!this.waitingForTouchGnubbies_.length) {

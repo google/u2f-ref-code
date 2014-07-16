@@ -15,7 +15,7 @@
 /**
  * @typedef {{
  *   code: number,
- *   gnubbyId: llGnubbyDeviceId,
+ *   gnubbyId: GnubbyDeviceId,
  *   challenge: (SignHelperChallenge|undefined),
  *   info: (ArrayBuffer|undefined)
  * }}
@@ -154,7 +154,7 @@ MultipleGnubbySigner.prototype.enumerateGnubbies_ = function() {
 /**
  * Called with the result of enumerating gnubbies.
  * @param {number} rc The return code from enumerating.
- * @param {Array.<llGnubbyDeviceId>} ids The gnubbies enumerated.
+ * @param {Array.<GnubbyDeviceId>} ids The gnubbies enumerated.
  * @private
  */
 MultipleGnubbySigner.prototype.enumerateCallback_ = function(rc, ids) {
@@ -227,7 +227,7 @@ MultipleGnubbySigner.prototype.maybeReEnumerateGnubbies_ =
  * callback could be called more than once, in violation of its contract.)
  * If this signer has challenges to sign, begins signing on the new gnubby with
  * them.
- * @param {llGnubbyDeviceId} gnubbyId The id of the gnubby to add.
+ * @param {GnubbyDeviceId} gnubbyId The id of the gnubby to add.
  * @return {boolean} Whether the gnubby was added successfully.
  * @private
  */

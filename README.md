@@ -16,9 +16,10 @@ registration and signatures (also see the sample web app below).
 
 This is a Java implementation of a U2F device. It generates registration and
 signature statements and is meant for testing against your server
-implementation. A physical U2F device will generate similar statements. 
+implementation. A physical U2F device will generate similar statements.
 
 ## A sample web app that uses U2F
+
 This is a sample application built on the Google Appengine web platform which
 demonstrates a possible UX for  user interaction with U2F in a web page.  The
 sample application is deployed and available live at
@@ -27,18 +28,19 @@ Java U2F implementation.  A developer can take the core ideas from here and
 integrate U2F into a web application on their own favorite web app platform.
 
 ## A U2F extension for the Chrome browser
+
 This extension brings U2F capability to the Chrome browser. A web application
 is able to access USB U2F devices using the U2F API provided by this extension.
-The extension is [available from the Chrome
-store](https://chrome.google.com/webstore/detail/fido-u2f-universal-2nd-fa/pfboblefjcgdjicmnffhdgionmgcdmne)
-for direct use. The source will be provided here shortly for the interested
-developer.
+The extension is [available from the Chrome store][webstore] for direct use.
+The source is available in ``u2f-chrome-extension`` for experimentation, see
+[the extension README](u2f-chrome-extension/README.md) for details.
 
+[webstore]: https://chrome.google.com/webstore/detail/fido-u2f-universal-2nd-fa/pfboblefjcgdjicmnffhdgionmgcdmne
 * * *
 
 To experience the end-to-end user experience you will need to get a physical
 USB device since the virtual device *does not* simulate the USB layer at this
-time. Please refer to https://goo.gl/NE4IRn to get pointers on how to acquire 
+time. Please refer to https://goo.gl/NE4IRn to get pointers on how to acquire
 devices for testing.
 
 ## Getting started

@@ -19,6 +19,7 @@ var GnubbyDeviceId;
 
 /**
  * @typedef {{
+ *   isSharedAccess: boolean,
  *   enumerate: function(function(Array)),
  *   deviceToDeviceId: function(*): GnubbyDeviceId,
  *   open: function(Gnubbies, number, *, function(number, GnubbyDevice=))
@@ -59,6 +60,15 @@ Gnubbies.prototype.registerNamespace = function(namespace, impl) {
     this.namespaces_.push(namespace);
   }
   this.impl_[namespace] = impl;
+};
+
+/**
+ * @param {GnubbyDeviceId} id The device id.
+ * @return {boolean} Whether the device is a shared access device.
+ */
+Gnubbies.prototype.isSharedAccess = function(id) {
+  if (!this.impl_.hasOwnProperty(id.namespace)) return false;
+  return this.impl_[id.namespace].isSharedAccess;
 };
 
 /**

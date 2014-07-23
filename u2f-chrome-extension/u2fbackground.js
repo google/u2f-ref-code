@@ -24,6 +24,7 @@ UsbGnubbyDevice.register(gnubbies);
 
 var GNUBBY_FACTORY = new UsbGnubbyFactory(gnubbies);
 var TIMER_FACTORY = new CountdownTimerFactory();
+var XHR_FETCHER = new XhrTextFetcher();
 var USB_HELPER = new UsbHelper(GNUBBY_FACTORY, TIMER_FACTORY);
 
 var REQUEST_HELPER = new DelegatingHelper();
@@ -64,12 +65,12 @@ function registerExternalHelper(id) {
 function handleWebPageRequest(request, sender, sendResponse) {
   switch (request.type) {
     case MessageTypes.U2F_REGISTER_REQUEST:
-      return handleU2fEnrollRequest(REQUEST_HELPER, TIMER_FACTORY, sender,
-          request, sendResponse);
+      return handleU2fEnrollRequest(REQUEST_HELPER, TIMER_FACTORY, XHR_FETCHER,
+          sender, request, sendResponse);
 
     case MessageTypes.U2F_SIGN_REQUEST:
-      return handleU2fSignRequest(REQUEST_HELPER, TIMER_FACTORY, sender,
-          request, sendResponse);
+      return handleU2fSignRequest(REQUEST_HELPER, TIMER_FACTORY, XHR_FETCHER,
+          sender, request, sendResponse);
 
     default:
       sendResponse(

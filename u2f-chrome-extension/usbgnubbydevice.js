@@ -525,6 +525,7 @@ UsbGnubbyDevice.deviceToDeviceId = function(dev) {
  */
 UsbGnubbyDevice.register = function(gnubbies) {
   var USB_GNUBBY_IMPL = {
+    isSharedAccess: false,
     enumerate: UsbGnubbyDevice.enumerate,
     deviceToDeviceId: UsbGnubbyDevice.deviceToDeviceId,
     open: UsbGnubbyDevice.open

@@ -95,3 +95,107 @@ The returned port will be a Chrome runtime port object, which has slightly
 different syntax for how event handlers are added. Again, see ``u2f-api.js``
 for a full example and how to wrap this in a HTML5 MessagePort compatible
 interface.
+
+### Extending the extension with an external helper
+
+The extension splits the handling of messages into a "top half" and a
+"bottom half". The responsibilities of the top half include validating
+the request, checking that the origin and appId match, and building the
+clientData used in registration and sign requests. The bottom half is
+responsible for finding security keys and performing the low-level
+register and sign requests on them. The bottom half included in the
+extension supports USB security keys.
+
+The extension includes support for deferring to an another extension
+as another bottom half helper. This can be useful for prototyping other
+token form factors or transports, e.g. Bluetooth.
+
+To register an extension with the U2F extension as a bottom half helper,
+the U2F extension needs to have the extension's id added to its whitelist.
+E.g. if the helper's extension id is 'mycoolnewhelper', modify the
+U2F extension's externally_connectable section in the manifest to include
+the helper's extension id, like so:
+
+```javascript
+"externally_connectable": {
+  "ids": [
+    "mycoolnewhelper",
+  ],
+  "matches": [
+  ...
+```
+
+Also modify the whitelist in u2fbackground.js like so:
+
+```javascript
+HELPER_WHITELIST.addAllowedExtension('mycoolnewhelper');
+```
+
+(Doing so will require that you side-load your modified copy of the U2F
+extension.)
+
+In your helper extension, at startup, notify the U2F extension of its
+presence by sending a message to the U2F extension with helper's extension
+id as the body of the message, like so:
+
+chrome.runtime.sendMessage('pfboblefjcgdjicmnffhdgionmgcdmne',
+    chrome.runtime.id);
+
+At this point, whenever the U2F extension receives a register or sign
+request, it'll send helper messages to your helper.
+
+A bottom half helper is expected to handle messages of the following format:
+
+```javascript
+var enroll_helper_request = {
+  "type": "enroll_helper_request",
+  "enrollChallenges": [
+    {
+      "appIdHash": URI
+      "challengeHash": websafe-b64
+      "version": undefined || "U2F_V1" || "U2F_V2",
+    }+
+  ],
+  "signData": [
+      // see sign_helper_request.signData
+  ],
+  "timeoutSeconds": float
+};
+
+var sign_helper_request = {
+  "type": "sign_helper_request",
+  "timeoutSeconds": float
+  "signData": [
+    {
+      "version": undefined || "U2F_V1" || "U2F_V2",
+      "appIdHash": websafe-b64
+      "challengeHash": websafe-b64
+      "keyHandle": websafe-b64
+    }+
+  ],
+};
+```
+
+It is expected to send in reply:
+
+```javascript
+var enroll_helper_reply = {
+  "type": "enroll_helper_reply",
+  "code": result,  // from DeviceStatusCodes
+  "version": undefined || "U2F_V1" || "U2F_V2",
+  "enrollData": websafe-b64
+};
+
+var sign_helper_reply = {
+  "type": "sign_helper_reply",
+  "code": result,  // from DeviceStatusCodes
+  "errorDetail": undefined || string,
+  "responseData": undefined || {
+      "version": undefined || "U2F_V1" || "U2F_V2",
+      "appIdHash": websafe-b64
+      "challengeHash": websafe-b64
+      "keyHandle": websafe-b64
+      "signatureData": websafe-b64
+  }
+};
+```

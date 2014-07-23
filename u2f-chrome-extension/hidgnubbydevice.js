@@ -470,6 +470,7 @@ HidGnubbyDevice.deviceToDeviceId = function(dev) {
  */
 HidGnubbyDevice.register = function(gnubbies) {
   var HID_GNUBBY_IMPL = {
+    isSharedAccess: true,
     enumerate: HidGnubbyDevice.enumerate,
     deviceToDeviceId: HidGnubbyDevice.deviceToDeviceId,
     open: HidGnubbyDevice.open

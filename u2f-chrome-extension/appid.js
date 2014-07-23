@@ -32,32 +32,6 @@ function getOriginsFromJson(text) {
 }
 
 /**
- * Fetches the app id, and calls a callback with list of allowed origins for it.
- * @param {string} appId The app id to fetch.
- * @param {function(number, Array.<string>=)} cb
- *     Called with the result of the app id fetch, and, if the fetch was
- *     successful, a list of allowed origins for the app id.
- */
-function fetchAppId(appId, cb) {
-  var origin = getOriginFromUrl(appId);
-  if (!origin) {
-    cb(404);
-    return;
-  }
-  var xhr = new XMLHttpRequest();
-  var origins = [];
-  xhr.open('GET', appId, true);
-  xhr.onloadend = function() {
-    if (xhr.status != 200) {
-      cb(xhr.status);
-      return;
-    }
-    cb(xhr.status, getOriginsFromJson(xhr.responseText));
-  };
-  xhr.send();
-}
-
-/**
  * Retrieves a set of distinct app ids from the sign challenges.
  * @param {Array.<SignChallenge>=} signChallenges Input sign challenges.
  * @return {Array.<string>} array of distinct app ids.
@@ -77,27 +51,8 @@ function getDistinctAppIds(signChallenges) {
 }
 
 /**
- * Checks whether an appId is valid for a given origin.
- * @param {!string} appId Application id
- * @param {!string} origin Origin
- * @param {!Array.<string>} allowedOrigins the list of allowed origins for each
- *    appId.
- * @return {boolean} whether the appId is allowed for the origin.
- */
-function isValidAppIdForOrigin(appId, origin, allowedOrigins) {
-  if (!appId)
-    return false;
-  if (appId == origin) {
-    // trivially allowed
-    return true;
-  }
-  if (!allowedOrigins)
-    return false;
-  return allowedOrigins.indexOf(origin) >= 0;
-}
-
-/**
  * Provides an object to track checking a list of appIds.
+ * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {!Countdown} timer A timer by which to resolve all provided app ids.
  * @param {string} origin The origin to check.
  * @param {!Array.<string>} appIds The app ids to check.
@@ -105,7 +60,10 @@ function isValidAppIdForOrigin(appId, origin, allowedOrigins) {
  * @param {string=} opt_logMsgUrl A log message URL.
  * @constructor
  */
-function AppIdChecker(timer, origin, appIds, allowHttp, opt_logMsgUrl) {
+function AppIdChecker(fetcher, timer, origin, appIds, allowHttp, opt_logMsgUrl)
+    {
+  /** @private {!TextFetcher} */
+  this.fetcher_ = fetcher;
   /** @private {!Countdown} */
   this.timer_ = timer;
   /** @private {string} */
@@ -130,22 +88,6 @@ function AppIdChecker(timer, origin, appIds, allowHttp, opt_logMsgUrl) {
   /** @private {number} */
   this.fetchedAppIds_ = 0;
 }
-
-/**
- * A fixed mapping from app id to allowed origins for that app id.
- * @private {Object.<string, !Array.<string>>}
- */
-AppIdChecker.fixedAllowedOrigins_ = {};
-
-/**
- * Sets pre-configured allowed app ids for origins, to work around legacy
- * app ids for which app id fetching will fail.
- * @param {Object.<string, !Array.<string>>} allowedOrigins A new set of
- *     allowed origins, keyed by app id.
- */
-AppIdChecker.setFixedAllowedOrigins = function(allowedOrigins) {
-  AppIdChecker.fixedAllowedOrigins_ = allowedOrigins;
-};
 
 /**
  * Checks all the app ids provided, and calls a callback indicating whether
@@ -224,22 +166,18 @@ AppIdChecker.prototype.fetchAllowedOriginsForAppId_ = function(appId, cb) {
     cb(200, allowedOrigins);
     return;
   }
-  // Fixed app ids get special-case treatment.
-  if (AppIdChecker.fixedAllowedOrigins_.hasOwnProperty(appId)) {
-    allowedOrigins = AppIdChecker.fixedAllowedOrigins_[appId];
-    cb(200, allowedOrigins);
+  var origin = getOriginFromUrl(appId);
+  if (!origin) {
+    cb(404, allowedOrigins);
     return;
   }
-  // Termination of this function relies in fetchAppId completing.
-  // (Not completing would be a bug in XMLHttpRequest.)
-  // TODO: provide a termination guarantee, e.g. with a timer?
-  fetchAppId(appId, function(rc, origins) {
+  this.fetcher_.fetch(appId, function(rc, responseText) {
     if (rc != 200) {
       console.log(UTIL_fmt('fetching ' + appId + ' failed: ' + rc));
-      allowedOrigins = [];
-    } else {
-      allowedOrigins = /** @type {!Array.<string>} */ (origins);
+      cb(rc, allowedOrigins);
+      return;
     }
+    allowedOrigins = getOriginsFromJson(/** @type {string} */ (responseText));
     cb(rc, allowedOrigins);
   });
 };
@@ -267,7 +205,7 @@ AppIdChecker.prototype.fetchedAllowedOriginsForAppId_ =
     }
     return;
   }
-  if (!isValidAppIdForOrigin(appId, this.origin_, allowedOrigins)) {
+  if (!this.isValidAppIdForOrigin_(appId, allowedOrigins)) {
     console.warn(UTIL_fmt('Origin ' + this.origin_ + ' not allowed by app id ' +
           appId));
     this.logInvalidOriginForAppId_(appId);
@@ -279,6 +217,23 @@ AppIdChecker.prototype.fetchedAllowedOriginsForAppId_ =
     // Last app id was fetched, and they were all valid: we're done.
     this.notify_(true);
   }
+};
+
+/**
+ * Checks whether an appId is valid for this origin.
+ * @param {!string} appId Application id
+ * @param {!Array.<string>} allowedOrigins the list of allowed origins for each
+ *    appId.
+ * @return {boolean} whether the appId is allowed for the origin.
+ * @private
+ */
+AppIdChecker.prototype.isValidAppIdForOrigin_ =
+    function(appId, allowedOrigins) {
+  if (appId == this.origin_) {
+    // trivially allowed
+    return true;
+  }
+  return allowedOrigins.indexOf(this.origin_) >= 0;
 };
 
 /**

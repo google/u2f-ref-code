@@ -630,8 +630,8 @@ Gnubby.prototype.sync = function(cb) {
     completionAction = syncCompletionAction;
   }
 
-  if (this.cid ==
-      Gnubby.defaultChannelId_(this.gnubbyInstance, this.which)) {
+  if (Gnubby.gnubbies_.isSharedAccess(this.which) &&
+      this.cid == Gnubby.defaultChannelId_(this.gnubbyInstance, this.which)) {
     setInit();
   } else {
     setSync();

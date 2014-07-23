@@ -13,6 +13,7 @@
 // A partial copy of goog.inherits, so inheritance works even in the absence of
 // Closure.
 function inherits(childCtor, parentCtor) {
+  /** @constructor */
   function tempCtor() {
   }
   tempCtor.prototype = parentCtor.prototype;

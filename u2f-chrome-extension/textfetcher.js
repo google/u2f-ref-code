@@ -40,7 +40,6 @@ function XhrTextFetcher() {
  */
 XhrTextFetcher.prototype.fetch = function(url, cb) {
   var xhr = new XMLHttpRequest();
-  var origins = [];
   xhr.open('GET', url, true);
   xhr.onloadend = function() {
     if (xhr.status != 200) {

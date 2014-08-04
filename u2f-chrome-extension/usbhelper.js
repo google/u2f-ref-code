@@ -10,26 +10,18 @@
 'use strict';
 
 /**
- * @param {!GnubbyFactory} gnubbyFactory Factory to create gnubbies.
- * @param {!CountdownFactory} timerFactory A factory to create timers.
  * @constructor
  * @extends {GenericRequestHelper}
  */
-function UsbHelper(gnubbyFactory, timerFactory) {
+function UsbHelper() {
   GenericRequestHelper.apply(this, arguments);
-  /** @private {!GnubbyFactory} */
-  this.gnubbyFactory_ = gnubbyFactory;
-  /** @private {!CountdownFactory} */
-  this.timerFactory_ = timerFactory;
 
   var self = this;
   this.registerHandlerFactory('enroll_helper_request', function(request) {
-    return new UsbEnrollHandler(/** @type {EnrollHelperRequest} */ (request),
-        self.gnubbyFactory_, self.timerFactory_);
+    return new UsbEnrollHandler(/** @type {EnrollHelperRequest} */ (request));
   });
   this.registerHandlerFactory('sign_helper_request', function(request) {
-    return new UsbSignHandler(/** @type {SignHelperRequest} */ (request),
-        self.gnubbyFactory_, self.timerFactory_);
+    return new UsbSignHandler(/** @type {SignHelperRequest} */ (request));
   });
 }
 

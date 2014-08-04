@@ -64,6 +64,8 @@ function AppIdChecker(fetcher, timer, origin, appIds, allowHttp, opt_logMsgUrl)
     {
   /** @private {!TextFetcher} */
   this.fetcher_ = fetcher;
+  /** @private {!EffectiveTldFetcher} */
+  this.etldChecker_ = new EffectiveTldFetcher(fetcher, true);
   /** @private {!Countdown} */
   this.timer_ = timer;
   /** @private {string} */
@@ -90,41 +92,64 @@ function AppIdChecker(fetcher, timer, origin, appIds, allowHttp, opt_logMsgUrl)
 }
 
 /**
- * Checks all the app ids provided, and calls a callback indicating whether
- * all of them can be asserted by the given orign.
- * @param {function(boolean)} cb Called with the result of the check.
+ * Checks whether all the app ids provided can be asserted by the given origin.
+ * @return {Promise.<boolean>} A promise for the result of the check
  */
-AppIdChecker.prototype.doCheck = function(cb) {
-  if (this.cb_) {
-    // Check already in progress: no go.
-    this.notify_(false);
-    return;
+AppIdChecker.prototype.doCheck = function() {
+  if (!this.distinctAppIds_.length)
+    return Promise.resolve(false);
+
+  if (this.allAppIdsEqualOrigin_()) {
+    // Trivially allowed.
+    return Promise.resolve(true);
+  } else {
+    // Begin checking remaining app ids. First make sure we know the origin's
+    // eTLD + 1, to know whether the origin can assert them.
+    var p = this.etldChecker_.getEffectiveTldPlusOne(this.origin_);
+    var self = this;
+    return p.then(function(originEtld) {
+      if (!originEtld)
+        return Promise.resolve(false);
+      /** @private {string} */
+      self.originEtld_ = originEtld;
+      var appIdChecks = self.distinctAppIds_.map(self.checkAppId_.bind(self));
+      return Promise.all(appIdChecks).then(function(results) {
+        return results.every(function(result) {
+          if (!result)
+            self.anyInvalidAppIds_ = true;
+          return result;
+        });
+      });
+    });
   }
-  /** @private {function(boolean)} */
-  this.cb_ = cb;
-  if (!this.distinctAppIds_.length) {
-    this.notify_(false);
-    return;
+};
+
+/**
+ * Checks if a single appId can be asserted by the given origin.
+ * @param {string} appId The appId to check
+ * @return {Promise.<boolean>} A promise for the result of the check
+ * @private
+ */
+AppIdChecker.prototype.checkAppId_ = function(appId) {
+  if (appId == this.origin_) {
+    // Trivially allowed
+    return Promise.resolve(true);
   }
-  for (var i = 0; i < this.distinctAppIds_.length; i++) {
-    var appId = this.distinctAppIds_[i];
-    if (appId == this.origin_) {
-      // Trivially allowed.
-      this.fetchedAppIds_++;
-      if (this.fetchedAppIds_ == this.distinctAppIds_.length &&
-          !this.anyInvalidAppIds_) {
-        // Last app id was fetched, and they were all valid: we're done.
-        // (Note that the case when anyInvalidAppIds_ is true doesn't need to
-        // be handled here: the callback was already called with false at that
-        // point, see fetchedAllowedOriginsForAppId_.)
-        this.notify_(true);
+  var self = this;
+  var p = this.checkOriginAllowedToAssertAppId_(appId);
+  return p.then(function(allowed) {
+    if (!allowed)
+      return false;
+    var p = self.fetchAllowedOriginsForAppId_(appId);
+    return p.then(function(allowedOrigins) {
+      if (allowedOrigins.indexOf(self.origin_) == -1) {
+        console.warn(UTIL_fmt('Origin ' + self.origin_ +
+              ' not allowed by app id ' + appId));
+        return false;
       }
-    } else {
-      var start = new Date();
-      this.fetchAllowedOriginsForAppId_(appId,
-          this.fetchedAllowedOriginsForAppId_.bind(this, appId, start));
-    }
-  }
+      return true;
+    });
+  });
 };
 
 /**
@@ -135,127 +160,121 @@ AppIdChecker.prototype.close = function() {
 };
 
 /**
- * Notifies the callback with the result.
- * @param {boolean} result The result to notify.
- * @private
+ * Sets the app ID whitelist.
+ * @param {!Object.<string, !Array.<string>>} whitelist The whitelist to set,
+ *     as a map from eTLD + 1 of the asking origin to the app ID origins
+ *     allowed from that eTLD + 1.
  */
-AppIdChecker.prototype.notify_ = function(result) {
-  if (!this.closed_) {
-    this.closed_ = true;
-    if (this.cb_) {
-      this.cb_(result);
+AppIdChecker.setAppIdWhitelist = function(whitelist) {
+  AppIdChecker.whitelistedAppIdOriginsByEtld_ = whitelist;
+  // Set the fixed eTLDs known by the EffectiveTldFetcher, to avoid having to
+  // fetch the canonical list if we don't have to.
+  var etlds = {};
+  for (var etldPlusOne in whitelist) {
+    var dot = etldPlusOne.indexOf('.');
+    if (dot >= 0) {
+      var etld = etldPlusOne.substring(dot + 1);
+      if (etld) {
+        etlds[etld] = etld;
+      }
     }
   }
+  var etldList = Object.keys(etlds);
+  if (etldList.length) {
+    EffectiveTldFetcher.setFixedTldList(etldList);
+  }
+};
+
+/** @private {!Object.<string, !Array.<string>>} */
+AppIdChecker.whitelistedAppIdOriginsByEtld_ = {};
+
+/**
+ * @return {boolean} Whether all the app ids being checked are equal to the
+ * calling origin.
+ * @private
+ */
+AppIdChecker.prototype.allAppIdsEqualOrigin_ = function() {
+  var self = this;
+  return this.distinctAppIds_.every(function(appId) {
+    return appId == self.origin_;
+  });
+};
+
+/**
+ * Checks whether this origin is allowed to assert the given app id.
+ * @param {string} appId The app id to check.
+ * @return {Promise.<boolean>} A promise for whether this origin is
+ *     allowed to assert the given app id.
+ * @private
+ */
+AppIdChecker.prototype.checkOriginAllowedToAssertAppId_ = function(appId) {
+  var appIdOrigin = getOriginFromUrl(appId);
+  if (!appIdOrigin)
+    return Promise.resolve(false);
+  var appIdOriginString = /** @type {string} */ (appIdOrigin);
+  var p = this.etldChecker_.getEffectiveTldPlusOne(appIdOriginString);
+  var self = this;
+  return p.then(function(appIdEtld) {
+    if (self.originEtld_ == appIdEtld) {
+      // Origin and app id are from the same eTLD + 1: allowed.
+      return true;
+    }
+    // Origin eTLD + 1 != app id eTLD + 1: only allowed if the app id's
+    // origin is explicitly whitelisted for this origin's eTLD + 1.
+    return self.isAppIdOriginWhitelistedForOrigin_(appIdOriginString);
+  });
+};
+
+/**
+ * Checks whether an origin is allowed to assert an app ID that doesn't belong
+ * to the same eTLD + 1 as it, according to AppIdChecker's internal whitelist.
+ * @param {string} appIdOrigin The app ID origin being requested.
+ * @return {boolean} Whether this origin's eTLD + 1 is allowed to assert the
+ *     given app ID.
+ * @private
+ */
+AppIdChecker.prototype.isAppIdOriginWhitelistedForOrigin_ =
+    function(appIdOrigin) {
+  if (!AppIdChecker.whitelistedAppIdOriginsByEtld_
+      .hasOwnProperty(this.originEtld_)) {
+    return false;
+  }
+  var allowed = AppIdChecker.whitelistedAppIdOriginsByEtld_[this.originEtld_]
+      .indexOf(appIdOrigin) >= 0;
+  return allowed;
 };
 
 /**
  * Fetches the allowed origins for an appId.
  * @param {string} appId Application id
- * @param {function(number, !Array.<string>)} cb Called back with an HTTP
- *     response code and a list of allowed origins for appId.
+ * @return {Promise.<!Array.<string>>} A promise for a list of allowed origins
+ *     for appId
  * @private
  */
-AppIdChecker.prototype.fetchAllowedOriginsForAppId_ = function(appId, cb) {
-  var allowedOrigins = [];
+AppIdChecker.prototype.fetchAllowedOriginsForAppId_ = function(appId) {
   if (!appId) {
-    cb(200, allowedOrigins);
-    return;
+    return Promise.resolve([]);
   }
+
   if (appId.indexOf('http://') == 0 && !this.allowHttp_) {
     console.log(UTIL_fmt('http app ids disallowed, ' + appId + ' requested'));
-    cb(200, allowedOrigins);
-    return;
+    return Promise.resolve([]);
   }
+
   var origin = getOriginFromUrl(appId);
   if (!origin) {
-    cb(404, allowedOrigins);
-    return;
+    return Promise.resolve([]);
   }
-  this.fetcher_.fetch(appId, function(rc, responseText) {
-    if (rc != 200) {
-      console.log(UTIL_fmt('fetching ' + appId + ' failed: ' + rc));
-      cb(rc, allowedOrigins);
-      return;
+
+  var p = this.fetcher_.fetch(appId);
+  var self = this;
+  return p.then(getOriginsFromJson, function(rc_) {
+    var rc = /** @type {number} */(rc_);
+    console.log(UTIL_fmt('fetching ' + appId + ' failed: ' + rc));
+    if (!(rc >= 400 && rc < 500) && !self.timer_.expired()) {
+      // Retry
+      return self.fetchAllowedOriginsForAppId_(appId);
     }
-    allowedOrigins = getOriginsFromJson(/** @type {string} */ (responseText));
-    cb(rc, allowedOrigins);
+    return [];
   });
-};
-
-/**
- * Called with the result of an app id fetch.
- * @param {string} appId the app id that was fetched.
- * @param {Date} start the time the fetch request started.
- * @param {number} rc The HTTP response code for the app id fetch.
- * @param {!Array.<string>} allowedOrigins The origins allowed for this app id.
- * @private
- */
-AppIdChecker.prototype.fetchedAllowedOriginsForAppId_ =
-    function(appId, start, rc, allowedOrigins) {
-  var end = new Date();
-  this.fetchedAppIds_++;
-  this.logFetchAppIdResult_(appId, end - start, allowedOrigins);
-  if (rc != 200 && !(rc >= 400 && rc < 500)) {
-    if (this.timer_.expired()) {
-      this.notify_(false);
-    } else {
-      start = new Date();
-      this.fetchAllowedOriginsForAppId_(appId,
-          this.fetchedAllowedOriginsForAppId_.bind(this, appId, start));
-    }
-    return;
-  }
-  if (!this.isValidAppIdForOrigin_(appId, allowedOrigins)) {
-    console.warn(UTIL_fmt('Origin ' + this.origin_ + ' not allowed by app id ' +
-          appId));
-    this.logInvalidOriginForAppId_(appId);
-    this.anyInvalidAppIds_ = true;
-    this.notify_(false);
-  }
-  if (this.fetchedAppIds_ == this.distinctAppIds_.length &&
-      !this.anyInvalidAppIds_) {
-    // Last app id was fetched, and they were all valid: we're done.
-    this.notify_(true);
-  }
-};
-
-/**
- * Checks whether an appId is valid for this origin.
- * @param {!string} appId Application id
- * @param {!Array.<string>} allowedOrigins the list of allowed origins for each
- *    appId.
- * @return {boolean} whether the appId is allowed for the origin.
- * @private
- */
-AppIdChecker.prototype.isValidAppIdForOrigin_ =
-    function(appId, allowedOrigins) {
-  if (appId == this.origin_) {
-    // trivially allowed
-    return true;
-  }
-  return allowedOrigins.indexOf(this.origin_) >= 0;
-};
-
-/**
- * Logs the result of fetching an appId.
- * @param {!string} appId Application Id
- * @param {number} millis elapsed time while fetching the appId.
- * @param {Array.<string>} allowedOrigins the allowed origins retrieved.
- * @private
- */
-AppIdChecker.prototype.logFetchAppIdResult_ =
-    function(appId, millis, allowedOrigins) {
-  var logMsg = 'log=fetchappid&appid=' + appId + '&millis=' + millis +
-      '&numorigins=' + allowedOrigins.length;
-  logMessage(logMsg, this.logMsgUrl_);
-};
-
-/**
- * Logs a mismatch between an origin and an appId.
- * @param {!string} appId Application id
- * @private
- */
-AppIdChecker.prototype.logInvalidOriginForAppId_ = function(appId) {
-  var logMsg = 'log=originrejected&origin=' + this.origin_ + '&appid=' + appId;
-  logMessage(logMsg, this.logMsgUrl_);
 };

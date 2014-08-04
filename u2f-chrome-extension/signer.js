@@ -15,17 +15,13 @@ var signRequestQueue = new OriginKeyedRequestQueue();
 
 /**
  * Handles a web sign request.
- * @param {!RequestHelper} helper Helper for handling requests.
- * @param {!CountdownTimerFactory} timerFactory Factory for creating timers.
- * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's sign request.
  * @param {Function} sendResponse Called back with the result of the sign.
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
  */
-function handleWebSignRequest(helper, timerFactory, fetcher, sender, request,
-    sendResponse) {
+function handleWebSignRequest(sender, request, sendResponse) {
   var sentResponse = false;
   var queuedSignRequest;
 
@@ -45,24 +41,21 @@ function handleWebSignRequest(helper, timerFactory, fetcher, sender, request,
   }
 
   queuedSignRequest =
-      validateAndEnqueueSignRequest(helper, timerFactory, fetcher, sender,
-          request, 'signData', sendErrorResponse, sendSuccessResponse);
+      validateAndEnqueueSignRequest(
+          sender, request, 'signData', sendErrorResponse,
+          sendSuccessResponse);
   return queuedSignRequest;
 }
 
 /**
  * Handles a U2F sign request.
- * @param {!RequestHelper} helper Helper for handling requests.
- * @param {!CountdownTimerFactory} timerFactory Factory for creating timers.
- * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's sign request.
  * @param {Function} sendResponse Called back with the result of the sign.
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
  */
-function handleU2fSignRequest(helper, timerFactory, fetcher, sender, request,
-    sendResponse) {
+function handleU2fSignRequest(sender, request, sendResponse) {
   var sentResponse = false;
   var queuedSignRequest;
 
@@ -80,8 +73,9 @@ function handleU2fSignRequest(helper, timerFactory, fetcher, sender, request,
   }
 
   queuedSignRequest =
-      validateAndEnqueueSignRequest(helper, timerFactory, fetcher, sender,
-          request, 'signRequests', sendErrorResponse, sendSuccessResponse);
+      validateAndEnqueueSignRequest(
+          sender, request, 'signRequests', sendErrorResponse,
+          sendSuccessResponse);
   return queuedSignRequest;
 }
 
@@ -127,9 +121,6 @@ function addSignatureAndBrowserDataToResponseData(responseData, signatureData,
 /**
  * Validates a sign request using the given sign challenges name, and, if valid,
  * enqueues the sign request for eventual processing.
- * @param {!RequestHelper} helper Helper for handling requests.
- * @param {!CountdownTimerFactory} timerFactory Factory for creating timers.
- * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's sign request.
  * @param {string} signChallengesName The name of the sign challenges value in
@@ -139,8 +130,8 @@ function addSignatureAndBrowserDataToResponseData(responseData, signatureData,
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
  */
-function validateAndEnqueueSignRequest(helper, timerFactory, fetcher, sender,
-    request, signChallengesName, errorCb, successCb) {
+function validateAndEnqueueSignRequest(sender, request,
+    signChallengesName, errorCb, successCb) {
   var origin = getOriginFromUrl(/** @type {string} */ (sender.url));
   if (!origin) {
     errorCb(ErrorCodes.BAD_REQUEST);
@@ -158,13 +149,14 @@ function validateAndEnqueueSignRequest(helper, timerFactory, fetcher, sender,
   // A valid sign data has at least one challenge, so get the first appId from
   // the first challenge.
   var firstAppId = signChallenges[0]['appId'];
-  var timer = createTimerForRequest(timerFactory, request);
+  var timer = createTimerForRequest(
+      FACTORY_REGISTRY.getCountdownFactory(), request);
   var logMsgUrl = request['logMsgUrl'];
 
   // Queue sign requests from the same origin, to protect against simultaneous
   // sign-out on many tabs resulting in repeated sign-in requests.
-  var queuedSignRequest = new QueuedSignRequest(signChallenges, helper,
-      fetcher, timer, nonNullOrigin, errorCb, successCb, sender.tlsChannelId,
+  var queuedSignRequest = new QueuedSignRequest(signChallenges,
+      timer, nonNullOrigin, errorCb, successCb, sender.tlsChannelId,
       logMsgUrl);
   var requestToken = signRequestQueue.queueRequest(firstAppId, nonNullOrigin,
       queuedSignRequest.begin.bind(queuedSignRequest), timer);
@@ -193,8 +185,6 @@ function isValidSignRequest(request, signChallengesName) {
 /**
  * Adapter class representing a queued sign request.
  * @param {!Array.<SignChallenge>} signChallenges The sign challenges.
- * @param {!RequestHelper} helper Helper for handling requests.
- * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {Countdown} timer Timeout timer
  * @param {string} origin Signature origin
  * @param {function(ErrorCodes)} errorCb Error callback
@@ -204,14 +194,10 @@ function isValidSignRequest(request, signChallengesName) {
  * @constructor
  * @implements {Closeable}
  */
-function QueuedSignRequest(signChallenges, helper, fetcher, timer, origin,
-    errorCb, successCb, opt_tlsChannelId, opt_logMsgUrl) {
+function QueuedSignRequest(signChallenges, timer, origin, errorCb,
+    successCb, opt_tlsChannelId, opt_logMsgUrl) {
   /** @private {!Array.<SignChallenge>} */
   this.signChallenges_ = signChallenges;
-  /** @private {!RequestHelper} */
-  this.helper_ = helper;
-  /** @private {!TextFetcher} */
-  this.fetcher_ = fetcher;
   /** @private {Countdown} */
   this.timer_ = timer;
   /** @private {string} */
@@ -257,8 +243,7 @@ QueuedSignRequest.prototype.setToken = function(token) {
 QueuedSignRequest.prototype.begin = function(token) {
   this.begun_ = true;
   this.setToken(token);
-  this.signer_ = new Signer(this.helper_, this.fetcher_, this.timer_,
-      this.origin_,
+  this.signer_ = new Signer(this.timer_, this.origin_,
       this.signerFailed_.bind(this), this.signerSucceeded_.bind(this),
       this.tlsChannelId_, this.logMsgUrl_);
   if (!this.signer_.setChallenges(this.signChallenges_)) {
@@ -292,8 +277,6 @@ QueuedSignRequest.prototype.signerSucceeded_ =
 
 /**
  * Creates an object to track signing with a gnubby.
- * @param {!RequestHelper} helper Helper for handling request.
- * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {Countdown} timer Timer for sign request.
  * @param {string} origin The origin making the request.
  * @param {function(ErrorCodes)} errorCb Called when the sign operation fails.
@@ -304,12 +287,8 @@ QueuedSignRequest.prototype.signerSucceeded_ =
  * @param {string=} opt_logMsgUrl The url to post log messages to.
  * @constructor
  */
-function Signer(helper, fetcher, timer, origin, errorCb, successCb,
+function Signer(timer, origin, errorCb, successCb,
     opt_tlsChannelId, opt_logMsgUrl) {
-  /** @private {RequestHelper} */
-  this.helper_ = helper;
-  /** @private {!TextFetcher} */
-  this.fetcher_ = fetcher;
   /** @private {Countdown} */
   this.timer_ = timer;
   /** @private {string} */
@@ -368,10 +347,11 @@ Signer.prototype.checkAppIds_ = function() {
     return;
   }
   /** @private {!AppIdChecker} */
-  this.appIdChecker_ = new AppIdChecker(this.fetcher_, this.timer_.clone(),
-      this.origin_, /** @type {!Array.<string>} */ (appIds), this.allowHttp_,
+  this.appIdChecker_ = new AppIdChecker(FACTORY_REGISTRY.getTextFetcher(),
+      this.timer_.clone(), this.origin_,
+      /** @type {!Array.<string>} */ (appIds), this.allowHttp_,
       this.logMsgUrl_);
-  this.appIdChecker_.doCheck(this.appIdChecked_.bind(this));
+  this.appIdChecker_.doCheck().then(this.appIdChecked_.bind(this));
 };
 
 /**
@@ -416,7 +396,8 @@ Signer.prototype.doSign_ = function() {
   var request = makeSignHelperRequest(encodedChallenges, timeoutSeconds,
       this.logMsgUrl_);
   this.handler_ =
-      this.helper_.getHandler(/** @type {HelperRequest} */ (request));
+      FACTORY_REGISTRY.getRequestHelper()
+          .getHandler(/** @type {HelperRequest} */ (request));
   if (!this.handler_)
     return false;
   return this.handler_.run(this.helperComplete_.bind(this));
@@ -440,6 +421,7 @@ Signer.prototype.close = function() {
   }
   if (this.handler_) {
     this.handler_.close();
+    this.handler_ = null;
   }
   this.timer_.clearTimeout();
 };

@@ -36,15 +36,10 @@ var SingleSignerResult;
  *
  * For sign, success is defined as any challenge yielding ok.
  *
- * At most one of the success or failure callbacks will be called, and it will
- * be called at most once. Neither callback is guaranteed to be called: if
- * a final set of challenges is never given to this gnubby, or if the gnubby
- * stays busy, the signer has no way to know whether the set of challenges it's
- * been given has succeeded or failed.
- * The callback is called only when the signer reaches success or failure, i.e.
- * when there is no need for this signer to continue trying new challenges.
+ * The complete callback is called only when the signer reaches success or
+ * failure, i.e.  when there is no need for this signer to continue trying new
+ * challenges.
  *
- * @param {!GnubbyFactory} factory Used to create and open the gnubby.
  * @param {GnubbyDeviceId} gnubbyId Which gnubby to open.
  * @param {boolean} forEnroll Whether this signer is signing for an attempted
  *     enroll operation.
@@ -57,10 +52,8 @@ var SingleSignerResult;
  * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @constructor
  */
-function SingleGnubbySigner(factory, gnubbyId, forEnroll, completeCb, timer,
+function SingleGnubbySigner(gnubbyId, forEnroll, completeCb, timer,
     opt_logMsgUrl) {
-  /** @private {GnubbyFactory} */
-  this.factory_ = factory;
   /** @private {GnubbyDeviceId} */
   this.gnubbyId_ = gnubbyId;
   /** @private {SingleGnubbySigner.State} */
@@ -119,10 +112,11 @@ SingleGnubbySigner.prototype.getDeviceId = function() {
 SingleGnubbySigner.prototype.open = function() {
   if (this.state_ == SingleGnubbySigner.State.INIT) {
     this.state_ = SingleGnubbySigner.State.OPENING;
-    this.factory_.openGnubby(this.gnubbyId_,
-                             this.forEnroll_,
-                             this.openCallback_.bind(this),
-                             this.logMsgUrl_);
+    DEVICE_FACTORY_REGISTRY.getGnubbyFactory().openGnubby(
+        this.gnubbyId_,
+        this.forEnroll_,
+        this.openCallback_.bind(this),
+        this.logMsgUrl_);
   }
 };
 
@@ -235,10 +229,11 @@ SingleGnubbySigner.prototype.openCallback_ = function(rc, gnubby) {
         var self = this;
         window.setTimeout(function() {
           if (self.gnubby_) {
-            self.factory_.openGnubby(self.gnubbyId_,
-                                     self.forEnroll_,
-                                     self.openCallback_.bind(self),
-                                     self.logMsgUrl_);
+            DEVICE_FACTORY_REGISTRY.getGnubbyFactory().openGnubby(
+                self.gnubbyId_,
+                self.forEnroll_,
+                self.openCallback_.bind(self),
+                self.logMsgUrl_);
           }
         }, SingleGnubbySigner.OPEN_DELAY_MILLIS);
       } else {

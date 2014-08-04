@@ -11,18 +11,12 @@
 
 /**
  * @param {!EnrollHelperRequest} request The enroll request.
- * @param {!GnubbyFactory} gnubbyFactory A factory for Gnubby instances.
- * @param {!CountdownFactory} timerFactory A factory to create timers.
  * @constructor
  * @implements {RequestHandler}
  */
-function UsbEnrollHandler(request, gnubbyFactory, timerFactory) {
+function UsbEnrollHandler(request) {
   /** @private {!EnrollHelperRequest} */
   this.request_ = request;
-  /** @private {!GnubbyFactory} */
-  this.gnubbyFactory_ = gnubbyFactory;
-  /** @private {!CountdownFactory} */
-  this.timerFactory_ = timerFactory;
 
   /** @private {Array.<Gnubby>} */
   this.waitingForTouchGnubbies_ = [];
@@ -50,13 +44,12 @@ UsbEnrollHandler.prototype.run = function(cb) {
       this.request_.timeoutSeconds * 1000 :
       UsbEnrollHandler.DEFAULT_TIMEOUT_MILLIS;
   /** @private {Countdown} */
-  this.timer_ = this.timerFactory_.createTimer(timeoutMillis);
+  this.timer_ = DEVICE_FACTORY_REGISTRY.getCountdownFactory().createTimer(
+      timeoutMillis);
   this.enrollChallenges = this.request_.enrollChallenges;
   /** @private {RequestHandlerCallback} */
   this.cb_ = cb;
   this.signer_ = new MultipleGnubbySigner(
-      this.gnubbyFactory_,
-      this.timerFactory_,
       true /* forEnroll */,
       this.signerCompleted_.bind(this),
       this.signerFoundGnubby_.bind(this),
@@ -112,8 +105,8 @@ UsbEnrollHandler.prototype.signerFoundGnubby_ =
     // A valid helper request contains at least one enroll challenge, so use
     // the app id hash from the first challenge.
     var appIdHash = this.request_.enrollChallenges[0].appIdHash;
-    this.gnubbyFactory_.notEnrolledPrerequisiteCheck(gnubby, appIdHash,
-        this.gnubbyPrerequisitesChecked_.bind(this));
+    DEVICE_FACTORY_REGISTRY.getGnubbyFactory().notEnrolledPrerequisiteCheck(
+        gnubby, appIdHash, this.gnubbyPrerequisitesChecked_.bind(this));
   }
 };
 
@@ -282,7 +275,7 @@ UsbEnrollHandler.prototype.enrollCallback_ =
           this.notifyError_(DeviceStatusCodes.TIMEOUT_STATUS);
         }
       } else {
-        this.timerFactory_.createTimer(
+        DEVICE_FACTORY_REGISTRY.getCountdownFactory().createTimer(
             UsbEnrollHandler.ENUMERATE_DELAY_INTERVAL_MILLIS,
             this.tryEnroll_.bind(this, gnubby, version));
       }

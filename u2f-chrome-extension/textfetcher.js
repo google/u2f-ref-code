@@ -19,11 +19,10 @@ function TextFetcher() {}
 
 /**
  * @param {string} url The URL to fetch.
- * @param {function(number, string=)} cb Called back with the HTTP status code
- *     of the fetch, and, if the fetch was successful, the text that was
- *     fetched.
+ * @return {!Promise.<string>} A promise for the fetched text. In case of an
+ *     error, this promise is rejected with an HTTP status code.
  */
-TextFetcher.prototype.fetch = function(url, cb) {};
+TextFetcher.prototype.fetch = function(url) {};
 
 /**
  * @constructor
@@ -34,19 +33,20 @@ function XhrTextFetcher() {
 
 /**
  * @param {string} url The URL to fetch.
- * @param {function(number, string=)} cb Called back with the HTTP status code
- *     of the fetch, and, if the fetch was successful, the text that was
- *     fetched.
+ * @return {!Promise.<string>} A promise for the fetched text. In case of an
+ *     error, this promise is rejected with an HTTP status code.
  */
-XhrTextFetcher.prototype.fetch = function(url, cb) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', url, true);
-  xhr.onloadend = function() {
-    if (xhr.status != 200) {
-      cb(xhr.status);
-      return;
-    }
-    cb(xhr.status, xhr.responseText);
-  };
-  xhr.send();
+XhrTextFetcher.prototype.fetch = function(url) {
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onloadend = function() {
+      if (xhr.status != 200) {
+        reject(xhr.status);
+        return;
+      }
+      resolve(xhr.responseText);
+    };
+    xhr.send();
+  });
 };

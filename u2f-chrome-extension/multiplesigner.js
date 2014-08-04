@@ -25,9 +25,6 @@ var MultipleSignerResult;
 /**
  * Creates a new sign handler that manages signing with all the available
  * gnubbies.
- * @param {!GnubbyFactory} gnubbyFactory Used to create and open the gnubbies.
- * @param {!CountdownFactory} timerFactory Used to create timers to reenumerate
- *     gnubbies.
  * @param {boolean} forEnroll Whether this signer is signing for an attempted
  *     enroll operation.
  * @param {function(boolean)} allCompleteCb Called when this signer completes
@@ -46,12 +43,8 @@ var MultipleSignerResult;
  * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @constructor
  */
-function MultipleGnubbySigner(gnubbyFactory, timerFactory, forEnroll,
-    allCompleteCb, gnubbyCompleteCb, timeoutMillis, opt_logMsgUrl) {
-  /** @private {!GnubbyFactory} */
-  this.gnubbyFactory_ = gnubbyFactory;
-  /** @private {!CountdownFactory} */
-  this.timerFactory_ = timerFactory;
+function MultipleGnubbySigner(forEnroll, allCompleteCb, gnubbyCompleteCb,
+    timeoutMillis, opt_logMsgUrl) {
   /** @private {boolean} */
   this.forEnroll_ = forEnroll;
   /** @private {function(boolean)} */
@@ -72,9 +65,11 @@ function MultipleGnubbySigner(gnubbyFactory, timerFactory, forEnroll,
   /** @private {!Object.<string, GnubbyTracker>} */
   this.gnubbies_ = {};
   /** @private {Countdown} */
-  this.timer_ = timerFactory.createTimer(timeoutMillis);
+  this.timer_ = DEVICE_FACTORY_REGISTRY.getCountdownFactory()
+      .createTimer(timeoutMillis);
   /** @private {Countdown} */
-  this.reenumerateTimer_ = timerFactory.createTimer(timeoutMillis);
+  this.reenumerateTimer_ = DEVICE_FACTORY_REGISTRY.getCountdownFactory()
+      .createTimer(timeoutMillis);
 }
 
 /**
@@ -148,7 +143,8 @@ MultipleGnubbySigner.prototype.reScanDevices = function() {
  * @private
  */
 MultipleGnubbySigner.prototype.enumerateGnubbies_ = function() {
-  this.gnubbyFactory_.enumerate(this.enumerateCallback_.bind(this));
+  DEVICE_FACTORY_REGISTRY.getGnubbyFactory().enumerate(
+      this.enumerateCallback_.bind(this));
 };
 
 /**
@@ -217,8 +213,8 @@ MultipleGnubbySigner.prototype.maybeReEnumerateGnubbies_ =
   }
   /** @private {Countdown} */
   this.reenumerateIntervalTimer_ =
-      this.timerFactory_.createTimer(reenumerateTimeoutMillis,
-          this.enumerateGnubbies_.bind(this));
+      DEVICE_FACTORY_REGISTRY.getCountdownFactory().createTimer(
+          reenumerateTimeoutMillis, this.enumerateGnubbies_.bind(this));
 };
 
 /**
@@ -244,7 +240,6 @@ MultipleGnubbySigner.prototype.addGnubby_ = function(gnubbyId) {
       signer: null
   };
   tracker.signer = new SingleGnubbySigner(
-      this.gnubbyFactory_,
       gnubbyId,
       this.forEnroll_,
       this.signCompletedCallback_.bind(this, tracker),

@@ -184,18 +184,17 @@ HidGnubbyDevice.prototype.readLoop_ = function() {
   var self = this;
   chrome.hid.receive(
     this.dev.connectionId,
-    64,
-    function(x) {
-      if (chrome.runtime.lastError || !x) {
+    function(report_id, data) {
+      if (chrome.runtime.lastError || !data) {
         console.log(UTIL_fmt('got lastError'));
         console.log(chrome.runtime.lastError);
         window.setTimeout(function() { self.destroy(); }, 0);
         return;
       }
-      var u8 = new Uint8Array(x);
+      var u8 = new Uint8Array(data);
       console.log(UTIL_fmt('<' + UTIL_BytesToHex(u8)));
 
-      self.publishFrame_(x);
+      self.publishFrame_(data);
 
       // Read more.
       window.setTimeout(function() { self.readLoop_(); }, 0);
@@ -386,14 +385,9 @@ HidGnubbyDevice.prototype.writePump_ = function() {
     console.log(UTIL_fmt('>' + UTIL_BytesToHex(u8)));
   }
 
-  // Outgoing USB HID reports have numbering, in the first byte.
-  // A zero indicates un-numbered and treats the rest of the bytes as
-  // payload. Since our payloads may start with zero, always insert
-  // that leading zero here.
-  var u8f = new Uint8Array(64 + 1);
-  u8f[0] = 0;
+  var u8f = new Uint8Array(64);
   for (var i = 0; i < u8.length; ++i) {
-    u8f[i + 1] = u8[i];
+    u8f[i] = u8[i];
   }
 
   chrome.hid.send(

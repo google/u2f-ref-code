@@ -314,14 +314,15 @@ function makeSignBrowserData(serverChallenge, origin, opt_tlsChannelId) {
  * @param {Array.<SignChallenge>} signChallenges The sign challenges to encode.
  * @param {function(string, string): string=} opt_challengeHashFunction
  *     A function that produces, from a key handle and a raw challenge, a hash
- *     of the raw challenge. If none is provided, the identity function is used.
+ *     of the raw challenge. If none is provided, a default hash function is
+ *     used.
  * @return {!Array.<SignHelperChallenge>} The sign challenges, encoded.
  */
 function encodeSignChallenges(signChallenges, opt_challengeHashFunction) {
-  function identityHashFn(keyHandle, challenge) {
-    return challenge;
+  function encodedSha256(keyHandle, challenge) {
+    return B64_encode(sha256HashOfString(challenge));
   }
-  var challengeHashFn = opt_challengeHashFunction || identityHashFn;
+  var challengeHashFn = opt_challengeHashFunction || encodedSha256;
   var encodedSignChallenges = [];
   if (signChallenges) {
     for (var i = 0; i < signChallenges.length; i++) {

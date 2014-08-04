@@ -12,17 +12,13 @@
 
 /**
  * Handles a web enroll request.
- * @param {!RequestHelper} helper Helper for handling requests.
- * @param {!CountdownTimerFactory} timerFactory Factory for creating timers.
- * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's enroll request.
  * @param {Function} sendResponse Called back with the result of the enroll.
  * @return {Closeable} A handler object to be closed when the browser channel
  *     closes.
  */
-function handleWebEnrollRequest(helper, timerFactory, fetcher, sender, request,
-    sendResponse) {
+function handleWebEnrollRequest(sender, request, sendResponse) {
   var sentResponse = false;
   var closeable;
 
@@ -48,25 +44,21 @@ function handleWebEnrollRequest(helper, timerFactory, fetcher, sender, request,
   }
 
   closeable =
-      validateAndBeginEnrollRequest(helper, timerFactory, fetcher, sender,
-          request, 'enrollChallenges', 'signData', sendErrorResponse,
-          sendSuccessResponse);
+      validateAndBeginEnrollRequest(
+          sender, request, 'enrollChallenges', 'signData',
+          sendErrorResponse, sendSuccessResponse);
   return closeable;
 }
 
 /**
  * Handles a U2F enroll request.
- * @param {!RequestHelper} helper Helper for handling requests.
- * @param {!CountdownTimerFactory} timerFactory Factory for creating timers.
- * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's enroll request.
  * @param {Function} sendResponse Called back with the result of the enroll.
  * @return {Closeable} A handler object to be closed when the browser channel
  *     closes.
  */
-function handleU2fEnrollRequest(helper, timerFactory, fetcher, sender, request,
-    sendResponse) {
+function handleU2fEnrollRequest(sender, request, sendResponse) {
   var sentResponse = false;
   var closeable;
 
@@ -91,18 +83,15 @@ function handleU2fEnrollRequest(helper, timerFactory, fetcher, sender, request,
   }
 
   closeable =
-      validateAndBeginEnrollRequest(helper, timerFactory, fetcher, sender,
-          request, 'registerRequests', 'signRequests', sendErrorResponse,
-          sendSuccessResponse);
+      validateAndBeginEnrollRequest(
+          sender, request, 'registerRequests', 'signRequests',
+          sendErrorResponse, sendSuccessResponse);
   return closeable;
 }
 
 /**
  * Validates an enroll request using the given parameters, and, if valid, begins
  * handling the enroll request.
- * @param {!RequestHelper} helper Helper for handling requests.
- * @param {!CountdownTimerFactory} timerFactory Factory for creating timers.
- * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {MessageSender} sender The sender of the message.
  * @param {Object} request The web page's enroll request.
  * @param {string} enrollChallengesName The name of the enroll challenges value
@@ -115,8 +104,8 @@ function handleU2fEnrollRequest(helper, timerFactory, fetcher, sender, request,
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
  */
-function validateAndBeginEnrollRequest(helper, timerFactory, fetcher, sender,
-    request, enrollChallengesName, signChallengesName, errorCb, successCb) {
+function validateAndBeginEnrollRequest(sender, request,
+    enrollChallengesName, signChallengesName, errorCb, successCb) {
   var origin = getOriginFromUrl(/** @type {string} */ (sender.url));
   if (!origin) {
     errorCb(ErrorCodes.BAD_REQUEST);
@@ -133,9 +122,10 @@ function validateAndBeginEnrollRequest(helper, timerFactory, fetcher, sender,
   var signChallenges = request[signChallengesName];
   var logMsgUrl = request['logMsgUrl'];
 
-  var timer = createTimerForRequest(timerFactory, request);
-  var enroller = new Enroller(helper, fetcher, timer, origin, errorCb,
-      successCb, sender.tlsChannelId, logMsgUrl);
+  var timer = createTimerForRequest(
+      FACTORY_REGISTRY.getCountdownFactory(), request);
+  var enroller = new Enroller(timer, origin, errorCb, successCb,
+      sender.tlsChannelId, logMsgUrl);
   enroller.doEnroll(enrollChallenges, signChallenges);
   return /** @type {Closeable} */ (enroller);
 }
@@ -258,8 +248,6 @@ function makeEnrollResponseData(enrollChallenge, u2fVersion, enrollDataName,
 
 /**
  * Creates a new object to track enrolling with a gnubby.
- * @param {!RequestHelper} helper Helper for handling requests.
- * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {!Countdown} timer Timer for enroll request.
  * @param {string} origin The origin making the request.
  * @param {function(ErrorCodes)} errorCb Called upon enroll failure with an
@@ -272,12 +260,8 @@ function makeEnrollResponseData(enrollChallenge, u2fVersion, enrollDataName,
  * @param {string=} opt_logMsgUrl The url to post log messages to.
  * @constructor
  */
-function Enroller(helper, fetcher, timer, origin, errorCb, successCb,
-    opt_tlsChannelId, opt_logMsgUrl) {
-  /** @private {RequestHelper} */
-  this.helper_ = helper;
-  /** @private {!TextFetcher} */
-  this.fetcher_ = fetcher;
+function Enroller(timer, origin, errorCb, successCb, opt_tlsChannelId,
+    opt_logMsgUrl) {
   /** @private {Countdown} */
   this.timer_ = timer;
   /** @private {string} */
@@ -341,7 +325,7 @@ Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges) {
   var self = this;
   this.checkAppIds_(enrollAppIds, signChallenges, function(result) {
     if (result) {
-      self.handler_ = self.helper_.getHandler(request);
+      self.handler_ = FACTORY_REGISTRY.getRequestHelper().getHandler(request);
       if (self.handler_) {
         var helperComplete =
             /** @type {function(HelperReply)} */
@@ -433,9 +417,10 @@ Enroller.prototype.checkAppIds_ = function(enrollAppIds, signChallenges, cb) {
   var distinctAppIds =
       UTIL_unionArrays(enrollAppIds, getDistinctAppIds(signChallenges));
   /** @private {!AppIdChecker} */
-  this.appIdChecker_ = new AppIdChecker(this.fetcher_, this.timer_.clone(),
-      this.origin_, distinctAppIds, this.allowHttp_, this.logMsgUrl_);
-  this.appIdChecker_.doCheck(cb);
+  this.appIdChecker_ = new AppIdChecker(FACTORY_REGISTRY.getTextFetcher(),
+      this.timer_.clone(), this.origin_, distinctAppIds, this.allowHttp_,
+      this.logMsgUrl_);
+  this.appIdChecker_.doCheck().then(cb);
 };
 
 /** Closes this enroller. */
@@ -445,6 +430,7 @@ Enroller.prototype.close = function() {
   }
   if (this.handler_) {
     this.handler_.close();
+    this.handler_ = null;
   }
 };
 

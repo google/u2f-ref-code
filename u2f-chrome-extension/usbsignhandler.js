@@ -13,18 +13,12 @@ var CORRUPT_sign = false;
 
 /**
  * @param {!SignHelperRequest} request The sign request.
- * @param {!GnubbyFactory} gnubbyFactory Factory for gnubby instances
- * @param {!CountdownFactory} timerFactory A factory to create timers.
  * @constructor
  * @implements {RequestHandler}
  */
-function UsbSignHandler(request, gnubbyFactory, timerFactory) {
+function UsbSignHandler(request) {
   /** @private {!SignHelperRequest} */
   this.request_ = request;
-  /** @private {!GnubbyFactory} */
-  this.gnubbyFactory_ = gnubbyFactory;
-  /** @private {!CountdownFactory} */
-  this.timerFactory_ = timerFactory;
 
   /** @private {boolean} */
   this.notified_ = false;
@@ -63,8 +57,6 @@ UsbSignHandler.prototype.run = function(cb) {
       UsbSignHandler.DEFAULT_TIMEOUT_MILLIS;
   /** @private {MultipleGnubbySigner} */
   this.signer_ = new MultipleGnubbySigner(
-      this.gnubbyFactory_,
-      this.timerFactory_,
       false /* forEnroll */,
       this.signerCompleted_.bind(this),
       this.signerFoundGnubby_.bind(this),

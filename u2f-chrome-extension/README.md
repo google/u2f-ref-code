@@ -106,15 +106,16 @@ responsible for finding security keys and performing the low-level
 register and sign requests on them. The bottom half included in the
 extension supports USB security keys.
 
-The extension includes support for deferring to an another extension
-as another bottom half helper. This can be useful for prototyping other
-token form factors or transports, e.g. Bluetooth.
+The extension includes support for deferring to an another extension or
+packaged app as another bottom half helper. This can be useful for prototyping
+other token form factors or transports, e.g. Bluetooth. (Note that the
+Chrome Bluetooth APIs are only available from packaged apps.)
 
-To register an extension with the U2F extension as a bottom half helper,
-the U2F extension needs to have the extension's id added to its whitelist.
-E.g. if the helper's extension id is 'mycoolnewhelper', modify the
-U2F extension's externally_connectable section in the manifest to include
-the helper's extension id, like so:
+To register an app/extension with the U2F extension as a bottom half helper,
+the U2F extension needs to have the helper's id added to its whitelist.
+E.g. if the helper's id is 'mycoolnewhelper', modify the U2F extension's
+externally_connectable section in the manifest to include the helper's id,
+like so:
 
 ```javascript
 "externally_connectable": {
@@ -122,6 +123,16 @@ the helper's extension id, like so:
     "mycoolnewhelper",
   ],
   "matches": [
+  ...
+```
+
+You'll need to make a similar entry in your helper's manifest to allow the
+U2F extension to send messages to it:
+```javascript
+"externally_connectable": {
+  "ids": [
+    "pfboblefjcgdjicmnffhdgionmgcdmne",
+  ],
   ...
 ```
 
@@ -134,12 +145,14 @@ HELPER_WHITELIST.addAllowedExtension('mycoolnewhelper');
 (Doing so will require that you side-load your modified copy of the U2F
 extension.)
 
-In your helper extension, at startup, notify the U2F extension of its
-presence by sending a message to the U2F extension with helper's extension
-id as the body of the message, like so:
+In your helper, at startup, notify the U2F extension of its presence by
+sending a message to the U2F extension with helper's id as the body of the
+message, like so:
 
+```javascript
 chrome.runtime.sendMessage('pfboblefjcgdjicmnffhdgionmgcdmne',
     chrome.runtime.id);
+```
 
 At this point, whenever the U2F extension receives a register or sign
 request, it'll send helper messages to your helper.
@@ -151,7 +164,7 @@ var enroll_helper_request = {
   "type": "enroll_helper_request",
   "enrollChallenges": [
     {
-      "appIdHash": URI
+      "appIdHash": websafe-b64
       "challengeHash": websafe-b64
       "version": undefined || "U2F_V1" || "U2F_V2",
     }+

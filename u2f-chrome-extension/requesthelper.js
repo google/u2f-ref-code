@@ -56,3 +56,6 @@ var RequestHandlerCallback;
  * @return {boolean} Whether this handler could be run.
  */
 RequestHandler.prototype.run = function(cb) {};
+
+/** Closes this handler. */
+RequestHandler.prototype.close = function() {};

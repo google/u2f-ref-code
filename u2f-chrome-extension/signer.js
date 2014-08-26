@@ -346,6 +346,23 @@ Signer.prototype.checkAppIds_ = function() {
     this.notifyError_(ErrorCodes.BAD_REQUEST);
     return;
   }
+  FACTORY_REGISTRY.getOriginChecker().canClaimAppIds(this.origin_, appIds)
+      .then(this.originChecked_.bind(this, appIds));
+};
+
+/**
+ * Called with the result of checking the origin. When the origin is allowed
+ * to claim the app ids, begins checking whether the app ids also list the
+ * origin.
+ * @param {!Array.<string>} appIds The app ids.
+ * @param {boolean} result Whether the origin could claim the app ids.
+ * @private
+ */
+Signer.prototype.originChecked_ = function(appIds, result) {
+  if (!result) {
+    this.notifyError_(ErrorCodes.BAD_REQUEST);
+    return;
+  }
   /** @private {!AppIdChecker} */
   this.appIdChecker_ = new AppIdChecker(FACTORY_REGISTRY.getTextFetcher(),
       this.timer_.clone(), this.origin_,

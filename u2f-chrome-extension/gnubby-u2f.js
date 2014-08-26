@@ -40,16 +40,21 @@ Gnubby.U2F_V2 = 'U2F_V2';
  * @param {ArrayBuffer|Uint8Array} challenge Enrollment challenge
  * @param {ArrayBuffer|Uint8Array} appIdHash Hashed application id
  * @param {function(...)} cb Result callback
+ * @param {boolean=} opt_individualAttestation Request the individual
+ *     attestation cert rather than the batch one.
  */
-Gnubby.prototype.enroll = function(challenge, appIdHash, cb) {
+Gnubby.prototype.enroll = function(challenge, appIdHash, cb,
+    opt_individualAttestation) {
+  var p1 = Gnubby.P1_TUP_REQUIRED | Gnubby.P1_TUP_CONSUME;
+  if (opt_individualAttestation) {
+    p1 |= Gnubby.P1_INDIVIDUAL_KEY;
+  }
   var apdu = new Uint8Array(
       [0x00,
        Gnubby.U2F_ENROLL,
-       Gnubby.P1_TUP_REQUIRED | Gnubby.P1_TUP_CONSUME |
-         Gnubby.P1_INDIVIDUAL_KEY,
+       p1,
        0x00, 0x00, 0x00,
        challenge.length + appIdHash.length]);
-  // TODO: only use P1_INDIVIDUAL_KEY for corp appIdHashes.
   var u8 = new Uint8Array(apdu.length + challenge.length +
       appIdHash.length + 2);
   for (var i = 0; i < apdu.length; ++i) u8[i] = apdu[i];

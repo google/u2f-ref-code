@@ -154,8 +154,8 @@ EffectiveTldFetcher.prototype.getEffectiveTldsFromText_ = function(text) {
     }
     // For now, ignore non-alpha first characters, e.g. *.mz or !teledata.mz,
     // because interpreting them correctly is more difficult: wildcard matching
-    // rules aren't defined to my knowledge, and the conflicting rules imply
-    // precedence within the origins list.
+    // rules imply precedence within the origins list. See the rule definition
+    // at https://publicsuffix.org/list/
     // TODO: This test also doesn't match non-alpha starting
     // characters. Implement for these cases too.
     if (!/^[a-zA-Z]/.test(line)) {

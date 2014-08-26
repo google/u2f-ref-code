@@ -12,14 +12,17 @@
 
 /**
  * @param {!CountdownFactory} countdownFactory A countdown timer factory.
+ * @param {!OriginChecker} originChecker An origin checker.
  * @param {!RequestHelper} requestHelper A request helper.
  * @param {!TextFetcher} textFetcher A text fetcher.
  * @constructor
  */
-function FactoryRegistry(countdownFactory, requestHelper,
+function FactoryRegistry(countdownFactory, originChecker, requestHelper,
     textFetcher) {
   /** @private {!CountdownFactory} */
   this.countdownFactory_ = countdownFactory;
+  /** @private {!OriginChecker} */
+  this.originChecker_ = originChecker;
   /** @private {!RequestHelper} */
   this.requestHelper_ = requestHelper;
   /** @private {!TextFetcher} */
@@ -29,6 +32,11 @@ function FactoryRegistry(countdownFactory, requestHelper,
 /** @return {!CountdownFactory} A countdown factory. */
 FactoryRegistry.prototype.getCountdownFactory = function() {
   return this.countdownFactory_;
+};
+
+/** @return {!OriginChecker} An origin checker. */
+FactoryRegistry.prototype.getOriginChecker = function() {
+  return this.originChecker_;
 };
 
 /** @return {!RequestHelper} A request helper. */

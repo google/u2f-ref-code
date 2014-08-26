@@ -208,10 +208,12 @@ UsbEnrollHandler.prototype.tryEnroll_ = function(gnubby, version) {
     this.removeWrongVersionGnubby_(gnubby);
     return;
   }
-  var challengeChallenge = B64_decode(challenge['challenge']);
+  var challengeValue = B64_decode(challenge['challengeHash']);
   var appIdHash = B64_decode(challenge['appIdHash']);
-  gnubby.enroll(challengeChallenge, appIdHash,
-      this.enrollCallback_.bind(this, gnubby, version));
+  gnubby.enroll(challengeValue, appIdHash,
+      this.enrollCallback_.bind(this, gnubby, version),
+      DEVICE_FACTORY_REGISTRY.getIndividualAttestation().
+          requestIndividualAttestation(appIdHash));
 };
 
 /**

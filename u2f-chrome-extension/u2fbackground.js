@@ -29,12 +29,14 @@ REQUEST_HELPER.addHelper(new UsbHelper());
 
 var FACTORY_REGISTRY = new FactoryRegistry(
     TIMER_FACTORY,
+    new EtldOriginChecker(),
     REQUEST_HELPER,
     new XhrTextFetcher());
 
 var DEVICE_FACTORY_REGISTRY = new DeviceFactoryRegistry(
     new UsbGnubbyFactory(gnubbies),
-    TIMER_FACTORY);
+    TIMER_FACTORY,
+    new NoIndividualAttestation());
 
 /**
  * Whitelist of allowed external request helpers.

@@ -356,7 +356,9 @@ Enroller.encodeEnrollChallenge_ = function(enrollChallenge) {
     version = 'U2F_V1';
   }
   encodedChallenge['version'] = version;
+  // TODO: remove once external helpers look for challengeHash
   encodedChallenge['challenge'] = enrollChallenge['challenge'];
+  encodedChallenge['challengeHash'] = enrollChallenge['challenge'];
   encodedChallenge['appIdHash'] =
       B64_encode(sha256HashOfString(enrollChallenge['appId']));
   return /** @type {EnrollHelperChallenge} */ (encodedChallenge);
@@ -414,11 +416,29 @@ Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges) {
  * @private
  */
 Enroller.prototype.checkAppIds_ = function(enrollAppIds, signChallenges, cb) {
-  var distinctAppIds =
+  var appIds =
       UTIL_unionArrays(enrollAppIds, getDistinctAppIds(signChallenges));
+  FACTORY_REGISTRY.getOriginChecker().canClaimAppIds(this.origin_, appIds)
+      .then(this.originChecked_.bind(this, appIds, cb));
+};
+
+/**
+ * Called with the result of checking the origin. When the origin is allowed
+ * to claim the app ids, begins checking whether the app ids also list the
+ * origin.
+ * @param {!Array.<string>} appIds The app ids.
+ * @param {function(boolean)} cb Called with the result of the check.
+ * @param {boolean} result Whether the origin could claim the app ids.
+ * @private
+ */
+Enroller.prototype.originChecked_ = function(appIds, cb, result) {
+  if (!result) {
+    this.notifyError_(ErrorCodes.BAD_REQUEST);
+    return;
+  }
   /** @private {!AppIdChecker} */
   this.appIdChecker_ = new AppIdChecker(FACTORY_REGISTRY.getTextFetcher(),
-      this.timer_.clone(), this.origin_, distinctAppIds, this.allowHttp_,
+      this.timer_.clone(), this.origin_, appIds, this.allowHttp_,
       this.logMsgUrl_);
   this.appIdChecker_.doCheck().then(cb);
 };

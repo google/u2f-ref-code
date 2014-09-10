@@ -278,8 +278,9 @@ UsbGnubbyDevice.prototype.checkLock_ = function(cid, cmd) {
     if (this.lockCID != cid) {
       // Some other channel has active lock.
 
-      if (cmd != GnubbyDevice.CMD_SYNC) {
-        // Anything but SYNC gets an immediate busy.
+      if (cmd != GnubbyDevice.CMD_SYNC &&
+          cmd != GnubbyDevice.CMD_INIT) {
+        // Anything but SYNC|INIT gets an immediate busy.
         var busy = new Uint8Array(
             [(cid >> 24) & 255,
              (cid >> 16) & 255,
@@ -294,8 +295,9 @@ UsbGnubbyDevice.prototype.checkLock_ = function(cid, cmd) {
         return false;
       }
 
-      // SYNC gets to go to the device to flush OS tx/rx queues.
-      // The usb firmware always responds to SYNC, regardless of lock status.
+      // SYNC|INIT get to go to the device to flush OS tx/rx queues.
+      // The usb firmware is to always respond to SYNC|INIT,
+      // regardless of lock status.
     }
   }
   return true;
@@ -376,26 +378,29 @@ UsbGnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {
 };
 
 /**
+ * @const
+ */
+UsbGnubbyDevice.WINUSB_VID_PIDS = [
+  {'vendorId': 4176, 'productId': 529}  // Yubico WinUSB
+];
+
+/**
  * @param {function(Array)} cb Enumerate callback
  */
 UsbGnubbyDevice.enumerate = function(cb) {
-  var permittedDevs;
   var numEnumerated = 0;
   var allDevs = [];
 
   function enumerated(devs) {
     allDevs = allDevs.concat(devs);
-    if (++numEnumerated == permittedDevs.length) {
+    if (++numEnumerated == UsbGnubbyDevice.WINUSB_VID_PIDS.length) {
       cb(allDevs);
     }
   }
 
-  GnubbyDevice.getPermittedUsbDevices(function(devs) {
-    permittedDevs = devs;
-    for (var i = 0; i < devs.length; i++) {
-      chrome.usb.getDevices(devs[i], enumerated);
-    }
-  });
+  for (var i = 0; i < UsbGnubbyDevice.WINUSB_VID_PIDS.length; i++) {
+    chrome.usb.getDevices(UsbGnubbyDevice.WINUSB_VID_PIDS[i], enumerated);
+  }
 };
 
 /**
@@ -438,7 +443,7 @@ var InterfaceDescriptor;
 UsbGnubbyDevice.open = function(gnubbies, which, dev, cb) {
   /** @param {chrome.usb.ConnectionHandle=} handle Connection handle */
   function deviceOpened(handle) {
-    if (!handle) {
+    if (chrome.runtime.lastError) {
       console.warn(UTIL_fmt('failed to open device. permissions issue?'));
       cb(-GnubbyDevice.NODEVICE);
       return;

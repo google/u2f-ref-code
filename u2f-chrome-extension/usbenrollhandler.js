@@ -209,11 +209,12 @@ UsbEnrollHandler.prototype.tryEnroll_ = function(gnubby, version) {
     return;
   }
   var challengeValue = B64_decode(challenge['challengeHash']);
-  var appIdHash = B64_decode(challenge['appIdHash']);
-  gnubby.enroll(challengeValue, appIdHash,
-      this.enrollCallback_.bind(this, gnubby, version),
+  var appIdHash = challenge['appIdHash'];
+  var individualAttest =
       DEVICE_FACTORY_REGISTRY.getIndividualAttestation().
-          requestIndividualAttestation(appIdHash));
+          requestIndividualAttestation(appIdHash);
+  gnubby.enroll(challengeValue, B64_decode(appIdHash),
+      this.enrollCallback_.bind(this, gnubby, version), individualAttest);
 };
 
 /**

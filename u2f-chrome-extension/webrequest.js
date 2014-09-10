@@ -69,6 +69,35 @@ function logMessage(logMsg, opt_logMsgUrl) {
 }
 
 /**
+ * @param {Object} request Request object
+ * @param {MessageSender} sender Sender frame
+ * @param {Function} sendResponse Response callback
+ * @return {?Closeable} Optional handler object that should be closed when port
+ *     closes
+ */
+function handleWebPageRequest(request, sender, sendResponse) {
+  switch (request.type) {
+    case GnubbyMsgTypes.ENROLL_WEB_REQUEST:
+      return handleWebEnrollRequest(sender, request, sendResponse);
+
+    case GnubbyMsgTypes.SIGN_WEB_REQUEST:
+      return handleWebSignRequest(sender, request, sendResponse);
+
+    case MessageTypes.U2F_REGISTER_REQUEST:
+      return handleU2fEnrollRequest(sender, request, sendResponse);
+
+    case MessageTypes.U2F_SIGN_REQUEST:
+      return handleU2fSignRequest(sender, request, sendResponse);
+
+    default:
+      sendResponse(
+          makeU2fErrorResponse(request, ErrorCodes.BAD_REQUEST, undefined,
+              MessageTypes.U2F_REGISTER_RESPONSE));
+      return null;
+  }
+}
+
+/**
  * Makes a response to a request.
  * @param {Object} request The request to make a response to.
  * @param {string} responseSuffix How to name the response's type.

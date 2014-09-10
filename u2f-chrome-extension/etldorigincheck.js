@@ -27,7 +27,7 @@ function EtldOriginChecker() {
 }
 
 /**
- * Gets an EffectiveTldFetcher instnace, creating one if necessary.
+ * Gets an EffectiveTldFetcher instance, creating one if necessary.
  * @return {!EffectiveTldFetcher}
  * @private
  */

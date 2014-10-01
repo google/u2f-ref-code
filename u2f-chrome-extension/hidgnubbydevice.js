@@ -73,6 +73,12 @@ HidGnubbyDevice.prototype.destroy = function() {
   this.dev = null;
 
   chrome.hid.disconnect(dev.connectionId, function() {
+    if (chrome.runtime.lastError) {
+      console.warn(UTIL_fmt('Device ' + dev.connectionId +
+          ' couldn\'t be disconnected:'));
+      console.warn(chrome.runtime.lastError);
+      return;
+    }
     console.log(UTIL_fmt('Device ' + dev.connectionId + ' closed'));
   });
 };
@@ -415,12 +421,18 @@ HidGnubbyDevice.enumerate = function(cb) {
     }
   }
 
-  GnubbyDevice.getPermittedUsbDevices(function(devs) {
-    permittedDevs = devs;
-    for (var i = 0; i < devs.length; i++) {
-      chrome.hid.getDevices(devs[i], enumerated);
-    }
-  });
+  try {
+    chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]}, cb);
+  } catch (e) {
+    console.log(e);
+    console.log(UTIL_fmt('falling back to vid/pid enumeration'));
+    GnubbyDevice.getPermittedUsbDevices(function(devs) {
+      permittedDevs = devs;
+      for (var i = 0; i < devs.length; i++) {
+        chrome.hid.getDevices(devs[i], enumerated);
+      }
+    });
+  }
 };
 
 /**

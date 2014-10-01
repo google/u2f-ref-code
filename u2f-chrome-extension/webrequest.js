@@ -28,25 +28,54 @@ function getOriginFromUrl(url) {
 }
 
 /**
- * Returns whether the array of SignChallenges appears to be valid.
- * @param {Array.<SignChallenge>} signChallenges The array of sign challenges.
+ * Returns whether the registered key appears to be valid.
+ * @param {Object} registeredKey The registered key object.
+ * @param {boolean} appIdRequired Whether the appId property is required on
+ *     each challenge.
+ * @return {boolean} Whether the object appears valid.
+ */
+function isValidRegisteredKey(registeredKey, appIdRequired) {
+  if (appIdRequired && !registeredKey.hasOwnProperty('appId')) {
+    return false;
+  }
+  if (!registeredKey.hasOwnProperty('keyHandle'))
+    return false;
+  if (registeredKey['version']) {
+    if (registeredKey['version'] != 'U2F_V1' &&
+        registeredKey['version'] != 'U2F_V2') {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Returns whether the array of registered keys appears to be valid.
+ * @param {Array.<Object>} registeredKeys The array of registered keys.
+ * @param {boolean} appIdRequired Whether the appId property is required on
+ *     each challenge.
  * @return {boolean} Whether the array appears valid.
  */
-function isValidSignChallengeArray(signChallenges) {
+function isValidRegisteredKeyArray(registeredKeys, appIdRequired) {
+  return registeredKeys.every(function(key) {
+    return isValidRegisteredKey(key, appIdRequired);
+  });
+}
+
+/**
+ * Returns whether the array of SignChallenges appears to be valid.
+ * @param {Array.<SignChallenge>} signChallenges The array of sign challenges.
+ * @param {boolean} appIdRequired Whether the appId property is required on
+ *     each challenge.
+ * @return {boolean} Whether the array appears valid.
+ */
+function isValidSignChallengeArray(signChallenges, appIdRequired) {
   for (var i = 0; i < signChallenges.length; i++) {
     var incomingChallenge = signChallenges[i];
     if (!incomingChallenge.hasOwnProperty('challenge'))
       return false;
-    if (!incomingChallenge.hasOwnProperty('appId')) {
+    if (!isValidRegisteredKey(incomingChallenge, appIdRequired)) {
       return false;
-    }
-    if (!incomingChallenge.hasOwnProperty('keyHandle'))
-      return false;
-    if (incomingChallenge['version']) {
-      if (incomingChallenge['version'] != 'U2F_V1' &&
-          incomingChallenge['version'] != 'U2F_V2') {
-        return false;
-      }
     }
   }
   return true;
@@ -201,24 +230,27 @@ function mapErrorCodeToGnubbyCodeType(errorCode, forSign) {
 }
 
 /**
- * Maps a helper's error code from the DeviceStatusCodes namespace to the
- * ErrorCodes namespace.
+ * Maps a helper's error code from the DeviceStatusCodes namespace to a
+ * U2fError.
  * @param {number} code Error code from DeviceStatusCodes namespace.
- * @return {ErrorCodes} A ErrorCodes error code.
+ * @return {U2fError} An error.
  */
-function mapDeviceStatusCodeToErrorCode(code) {
-  var reportedError = ErrorCodes.OTHER_ERROR;
+function mapDeviceStatusCodeToU2fError(code) {
   switch (code) {
     case DeviceStatusCodes.WRONG_DATA_STATUS:
-      reportedError = ErrorCodes.DEVICE_INELIGIBLE;
-      break;
+      return {errorCode: ErrorCodes.DEVICE_INELIGIBLE};
 
     case DeviceStatusCodes.TIMEOUT_STATUS:
     case DeviceStatusCodes.WAIT_TOUCH_STATUS:
-      reportedError = ErrorCodes.TIMEOUT;
-      break;
+      return {errorCode: ErrorCodes.TIMEOUT};
+
+    default:
+      var reportedError = {
+        errorCode: ErrorCodes.OTHER_ERROR,
+        errorMessage: 'device status code: ' + code.toString(16)
+      };
+      return reportedError;
   }
-  return reportedError;
 }
 
 /**
@@ -341,13 +373,16 @@ function makeSignBrowserData(serverChallenge, origin, opt_tlsChannelId) {
 /**
  * Encodes the sign data as an array of sign helper challenges.
  * @param {Array.<SignChallenge>} signChallenges The sign challenges to encode.
+ * @param {string=} opt_defaultAppId The app id to use for each challenge, if
+ *     the challenge contains none.
  * @param {function(string, string): string=} opt_challengeHashFunction
  *     A function that produces, from a key handle and a raw challenge, a hash
  *     of the raw challenge. If none is provided, a default hash function is
  *     used.
  * @return {!Array.<SignHelperChallenge>} The sign challenges, encoded.
  */
-function encodeSignChallenges(signChallenges, opt_challengeHashFunction) {
+function encodeSignChallenges(signChallenges, opt_defaultAppId,
+    opt_challengeHashFunction) {
   function encodedSha256(keyHandle, challenge) {
     return B64_encode(sha256HashOfString(challenge));
   }
@@ -358,9 +393,15 @@ function encodeSignChallenges(signChallenges, opt_challengeHashFunction) {
       var challenge = signChallenges[i];
       var challengeHash =
           challengeHashFn(challenge['keyHandle'], challenge['challenge']);
+      var appId;
+      if (challenge.hasOwnProperty('appId')) {
+        appId = challenge['appId'];
+      } else {
+        appId = opt_defaultAppId;
+      }
       var encodedChallenge = {
         'challengeHash': challengeHash,
-        'appIdHash': B64_encode(sha256HashOfString(challenge['appId'])),
+        'appIdHash': B64_encode(sha256HashOfString(appId)),
         'keyHandle': challenge['keyHandle'],
         'version': (challenge['version'] || 'U2F_V1')
       };

@@ -264,7 +264,7 @@ MultipleGnubbySigner.prototype.addGnubby_ = function(gnubbyId) {
 MultipleGnubbySigner.prototype.signCompletedCallback_ =
     function(tracker, result) {
   console.log(
-      UTIL_fmt(result.code ? 'failure.' : 'success!' +
+      UTIL_fmt((result.code ? 'failure.' : 'success!') +
           ' gnubby ' + tracker.index +
           ' got code ' + result.code.toString(16)));
   if (!tracker.stillGoing) {

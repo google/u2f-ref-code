@@ -5,7 +5,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 /**
- * @fileoverview Error codes reported by top-level request handlers.
+ * @fileoverview Errors reported by top-level request handlers.
  */
 'use strict';
 
@@ -22,3 +22,12 @@ var ErrorCodes = {
   'DEVICE_INELIGIBLE': 4,
   'TIMEOUT': 5
 };
+
+/**
+ * An error object for responses
+ * @typedef {{
+ *   errorCode: ErrorCodes,
+ *   errorMessage: (?string|undefined)
+ * }}
+ */
+var U2fError;

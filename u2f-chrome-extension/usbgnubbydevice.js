@@ -79,8 +79,20 @@ UsbGnubbyDevice.prototype.destroy = function() {
   this.dev = null;
 
   chrome.usb.releaseInterface(dev, 0, function() {
+    if (chrome.runtime.lastError) {
+      console.warn(UTIL_fmt('Device ' + dev.handle +
+          ' couldn\'t be released:'));
+      console.warn(chrome.runtime.lastError);
+      return;
+    }
     console.log(UTIL_fmt('Device ' + dev.handle + ' released'));
     chrome.usb.closeDevice(dev, function() {
+      if (chrome.runtime.lastError) {
+        console.warn(UTIL_fmt('Device ' + dev.handle +
+            ' couldn\'t be closed:'));
+        console.warn(chrome.runtime.lastError);
+        return;
+      }
       console.log(UTIL_fmt('Device ' + dev.handle + ' closed'));
     });
   });

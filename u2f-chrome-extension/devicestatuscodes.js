@@ -17,6 +17,12 @@ var DeviceStatusCodes = {};
 DeviceStatusCodes.OK_STATUS = 0;
 
 /**
+ * Device operation wrong length status.
+ * @const
+ */
+DeviceStatusCodes.WRONG_LENGTH_STATUS = 0x6700;
+
+/**
  * Device operation wait touch status.
  * @const
  */

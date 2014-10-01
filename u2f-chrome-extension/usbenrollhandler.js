@@ -100,7 +100,8 @@ UsbEnrollHandler.prototype.signerFoundGnubby_ =
     // caller, as the gnubby is already enrolled. Map ok to WRONG_DATA, so the
     // caller knows what to do.
     this.notifyError_(DeviceStatusCodes.WRONG_DATA_STATUS);
-  } else if (signResult.code == DeviceStatusCodes.WRONG_DATA_STATUS) {
+  } else if (signResult.code == DeviceStatusCodes.WRONG_DATA_STATUS ||
+      signResult.code == DeviceStatusCodes.WRONG_LENGTH_STATUS) {
     var gnubby = signResult['gnubby'];
     // A valid helper request contains at least one enroll challenge, so use
     // the app id hash from the first challenge.

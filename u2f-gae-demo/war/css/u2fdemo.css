@@ -258,6 +258,11 @@ h1 {
 	text-decoration: none;
 }
 
+#downloadCrx a {
+	display: block;
+	margin-top: 20px;
+}
+
 #downloadCrx a:hover {
   text-decoration: underline;
 }

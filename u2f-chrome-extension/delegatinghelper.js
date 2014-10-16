@@ -10,6 +10,15 @@
  */
 
 /**
+ * @typedef {{
+ *   helper: !RequestHelper,
+ *   handler: RequestHandler,
+ *   complete: boolean
+ * }}
+ */
+var DelegatedHandlerTracker;
+
+/**
  * @param {!HelperRequest} request Request to handle.
  * @param {!Array.<!RequestHelper>} helpers Helpers to delegate to.
  * @constructor
@@ -18,12 +27,18 @@
 function DelegatingRequestHandler(request, helpers) {
   /** @private {!HelperRequest} */
   this.request_ = request;
-  /** @private {!Array.<!RequestHelper>} */
-  this.helpers_ = helpers;
+  /** @private {!Array.<!DelegatedHandlerTracker>} */
+  this.trackers_ = [];
+  for (var i = 0; i < helpers.length; i++) {
+    var tracker = {
+      helper: helpers[i],
+      handler: null,
+      done: false
+    };
+    this.trackers_.push(tracker);
+  }
   /** @private {boolean} */
   this.done_ = false;
-  /** @private {!Array.<RequestHandler>} */
-  this.handlers_ = [];
   /** @private {number} */
   this.stillRunningHelpers_ = 0;
 }
@@ -42,13 +57,12 @@ DelegatingRequestHandler.prototype.run = function(cb) {
   this.cb_ = cb;
 
   var accepted = false;
-  for (var i = 0; i < this.helpers_.length; i++) {
-    var helper = this.helpers_[i];
-    var handler = helper.getHandler(this.request_);
-    if (handler) {
-      if (handler.run(this.helperComplete_.bind(this, i))) {
-        console.log(UTIL_fmt('helper ' + i + ' accepted sign request'));
-        this.handlers_.push(handler);
+  for (var i = 0; i < this.trackers_.length; i++) {
+    var tracker = this.trackers_[i];
+    tracker.handler = tracker.helper.getHandler(this.request_);
+    if (tracker.handler) {
+      if (tracker.handler.run(this.helperComplete_.bind(this, tracker, i))) {
+        console.log(UTIL_fmt('helper ' + i + ' accepted request'));
         accepted = true;
         this.stillRunningHelpers_++;
       }
@@ -60,19 +74,23 @@ DelegatingRequestHandler.prototype.run = function(cb) {
 /** Closes this helper. */
 DelegatingRequestHandler.prototype.close = function() {
   this.done_ = true;
-  for (var i = 0; i < this.handlers_.length; i++)
-    this.handlers_[i].close();
+  for (var i = 0; i < this.trackers_.length; i++) {
+    if (this.trackers_[i].handler) {
+      this.trackers_[i].handler.close();
+    }
+  }
 };
 
 /**
  * Called by a helper upon completion.
+ * @param {DelegatedHandlerTracker} tracker The object tracking the helper.
  * @param {number} index The index of the helper that completed.
  * @param {HelperReply} reply The result of the sign request.
  * @param {string=} opt_source The source of the sign result.
  * @private
  */
 DelegatingRequestHandler.prototype.helperComplete_ =
-    function(index, reply, opt_source) {
+    function(tracker, index, reply, opt_source) {
   var logMsg = 'helper ' + index + ' completed ';
   if (reply.code !== undefined) {
     logMsg += 'with ' + reply.code.toString(16);
@@ -82,9 +100,17 @@ DelegatingRequestHandler.prototype.helperComplete_ =
     console.log(UTIL_fmt(logMsg));
     return;
   }
+  if (tracker.complete) {
+    logMsg += ' after helper completion, ignoring';
+    console.warn(UTIL_fmt(logMsg));
+    return;
+  }
   console.log(UTIL_fmt(logMsg));
+  tracker.complete = true;
   if (reply.code) {
-    if (!--this.stillRunningHelpers_) {
+    if (!this.stillRunningHelpers_) {
+      console.error('Wtf? helperComplete has no helper left.');
+    } else if (!--this.stillRunningHelpers_) {
       this.close();
       console.log(UTIL_fmt('last delegated helper completed, returning ' +
           reply.code.toString(16)));

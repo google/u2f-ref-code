@@ -21,7 +21,7 @@
 function EtldOriginChecker() {
   // The instance of this class is managed by FactoryRegistry, which also
   // manages a TextFetcher on which EffectiveTldFetcher depends. Thus, we must
-  // initialize the EffectiveTldFetcher lazily (see getFetcher_).
+  // initialize the EffectiveTldFetcher lazily (see getFetcher).
   /** @private {EffectiveTldFetcher} */
   this.etldFetcher_ = null;
 }
@@ -29,9 +29,8 @@ function EtldOriginChecker() {
 /**
  * Gets an EffectiveTldFetcher instance, creating one if necessary.
  * @return {!EffectiveTldFetcher}
- * @private
  */
-EtldOriginChecker.prototype.getFetcher_ = function() {
+EtldOriginChecker.prototype.getFetcher = function() {
   if (!this.etldFetcher_) {
     var fetcher = FACTORY_REGISTRY.getTextFetcher();
     this.etldFetcher_ = new EffectiveTldFetcher(fetcher, true);
@@ -48,7 +47,7 @@ EtldOriginChecker.prototype.getFetcher_ = function() {
 EtldOriginChecker.prototype.canClaimAppIds = function(origin, appIds) {
   // First make sure we know the origin's eTLD + 1, to know whether the origin
   // can assert the app ids.
-  var p = this.getFetcher_().getEffectiveTldPlusOne(origin);
+  var p = this.getFetcher().getEffectiveTldPlusOne(origin);
   var self = this;
   return p.then(function(originEtldPlusOne) {
     if (!originEtldPlusOne)
@@ -81,7 +80,7 @@ EtldOriginChecker.prototype.checkAppId_ =
   if (!appIdOrigin)
     return Promise.resolve(false);
   var appIdOriginString = /** @type {string} */ (appIdOrigin);
-  var p = this.getFetcher_().getEffectiveTldPlusOne(appIdOriginString);
+  var p = this.getFetcher().getEffectiveTldPlusOne(appIdOriginString);
   return p.then(function(appIdEtldPlusOne) {
     return originEtldPlusOne == appIdEtldPlusOne;
   });

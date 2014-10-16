@@ -11,14 +11,17 @@
 'use strict';
 
 /**
+ * @param {!ApprovedOrigins} approvedOrigins An origin approval implementation.
  * @param {!CountdownFactory} countdownFactory A countdown timer factory.
  * @param {!OriginChecker} originChecker An origin checker.
  * @param {!RequestHelper} requestHelper A request helper.
  * @param {!TextFetcher} textFetcher A text fetcher.
  * @constructor
  */
-function FactoryRegistry(countdownFactory, originChecker, requestHelper,
-    textFetcher) {
+function FactoryRegistry(approvedOrigins, countdownFactory, originChecker,
+    requestHelper, textFetcher) {
+  /** @private {!ApprovedOrigins} */
+  this.approvedOrigins_ = approvedOrigins;
   /** @private {!CountdownFactory} */
   this.countdownFactory_ = countdownFactory;
   /** @private {!OriginChecker} */
@@ -28,6 +31,11 @@ function FactoryRegistry(countdownFactory, originChecker, requestHelper,
   /** @private {!TextFetcher} */
   this.textFetcher_ = textFetcher;
 }
+
+/** @return {!ApprovedOrigins} An origin approval implementation. */
+FactoryRegistry.prototype.getApprovedOrigins = function() {
+  return this.approvedOrigins_;
+};
 
 /** @return {!CountdownFactory} A countdown factory. */
 FactoryRegistry.prototype.getCountdownFactory = function() {

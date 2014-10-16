@@ -46,9 +46,8 @@ UsbSignHandler.prototype.run = function(cb) {
   /** @private {RequestHandlerCallback} */
   this.cb_ = cb;
   if (!this.request_.signData || !this.request_.signData.length) {
-    // Fail a sign request with an empty set of challenges, and pretend to have
-    // alerted the caller in case the enumerate is still pending.
-    this.notified_ = true;
+    // Fail a sign request with an empty set of challenges.
+    this.notifyError_(DeviceStatusCodes.INVALID_DATA_STATUS);
     return false;
   }
   var timeoutMillis =

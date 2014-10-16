@@ -57,3 +57,9 @@ DeviceStatusCodes.BUSY_STATUS = -6;
  * @const
  */
 DeviceStatusCodes.GONE_STATUS = -8;
+
+/**
+ * Defer to CrypoToken status.
+ * @const
+ */
+DeviceStatusCodes.DEFER_TO_CRYPTO_TOKEN = -256;

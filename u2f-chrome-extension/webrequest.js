@@ -225,6 +225,9 @@ function mapErrorCodeToGnubbyCodeType(errorCode, forSign) {
 
     case ErrorCodes.TIMEOUT:
       return GnubbyCodeTypes.WAIT_TOUCH;
+
+    case ErrorCodes.DEFER_TO_CRYPTO_TOKEN:
+      return GnubbyCodeTypes.DEFER_TO_CRYPTO_TOKEN;
   }
   return GnubbyCodeTypes.UNKNOWN_ERROR;
 }
@@ -244,6 +247,8 @@ function mapDeviceStatusCodeToU2fError(code) {
     case DeviceStatusCodes.WAIT_TOUCH_STATUS:
       return {errorCode: ErrorCodes.TIMEOUT};
 
+    case DeviceStatusCodes.DEFER_TO_CRYPTO_TOKEN:
+      return {errorCode: ErrorCodes.DEFER_TO_CRYPTO_TOKEN};
     default:
       var reportedError = {
         errorCode: ErrorCodes.OTHER_ERROR,

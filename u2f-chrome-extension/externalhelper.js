@@ -74,12 +74,7 @@ ExternalHandler.prototype.close = function() {
  * @private
  */
 ExternalHandler.prototype.makeDefaultErrorReply_ = function(request) {
-  var type = request.type.replace(/_request$/, '_reply');
-  var reply = {
-    'type': type,
-    'code': this.helperConfig_.defaultError
-  };
-  return reply;
+  return makeHelperErrorResponse(request, this.helperConfig_.defaultError);
 };
 
 /**

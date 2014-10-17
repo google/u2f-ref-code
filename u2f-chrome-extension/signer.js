@@ -189,6 +189,10 @@ function isValidSignRequest(request, signChallengesName) {
     return false;
   var signChallenges = request[signChallengesName];
   var hasAppId = request.hasOwnProperty('appId');
+  // If the sign challenge array is empty, the global appId is required.
+  if (!hasAppId && (!signChallenges || !signChallenges.length)) {
+    return false;
+  }
   return isValidSignChallengeArray(signChallenges, !hasAppId);
 }
 

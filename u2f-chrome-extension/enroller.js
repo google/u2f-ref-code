@@ -57,12 +57,7 @@ function handleWebEnrollRequest(messageSender, request, sendResponse) {
     var registerRequests = request['enrollChallenges'];
     var signRequests = getSignRequestsFromEnrollRequest(request, 'signData');
     closeable = /** @type {Closeable} */ (enroller);
-    getTabIdWhenPossible(sender).then(function() {
-      enroller.doEnroll(registerRequests, signRequests, request['appId']);
-    }, function() {
-      enroller.close();
-      sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
-    });
+    enroller.doEnroll(registerRequests, signRequests, request['appId']);
   }
   return closeable;
 }
@@ -115,12 +110,7 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
     var signRequests = getSignRequestsFromEnrollRequest(request,
         'signRequests', 'registeredKeys');
     closeable = /** @type {Closeable} */ (enroller);
-    getTabIdWhenPossible(sender).then(function() {
-      enroller.doEnroll(registerRequests, signRequests, request['appId']);
-    }, function() {
-      enroller.close();
-      sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
-    });
+    enroller.doEnroll(registerRequests, signRequests, request['appId']);
   }
   return closeable;
 }
@@ -369,9 +359,53 @@ Enroller.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
  */
 Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
     opt_appId) {
+  /** @private {Array.<EnrollChallenge>} */
+  this.enrollChallenges_ = enrollChallenges;
+  /** @private {Array.<SignChallenge>} */
+  this.signChallenges_ = signChallenges;
+  /** @private {(string|undefined)} */
+  this.appId_ = opt_appId;
+  var self = this;
+  getTabIdWhenPossible(this.sender_).then(function() {
+    if (self.done_) return;
+    self.approveOrigin_();
+  }, function() {
+    self.close();
+    self.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
+  });
+};
+
+/**
+ * Ensures the user has approved this origin to use security keys, sending
+ * to the request to the handler if/when the user has done so.
+ * @private
+ */
+Enroller.prototype.approveOrigin_ = function() {
+  var self = this;
+  FACTORY_REGISTRY.getApprovedOrigins()
+      .isApprovedOrigin(this.sender_.origin, this.sender_.tabId)
+      .then(function(result) {
+        if (self.done_) return;
+        if (!result) {
+          // Origin not approved: fail the result.
+          self.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
+          return;
+        }
+        self.sendEnrollRequestToHelper_();
+      });
+};
+
+/**
+ * Performs an enroll request with this instance's enroll and sign challenges,
+ * by encoding them into a helper request and passing the resulting request to
+ * the factory registry's helper.
+ * @private
+ */
+Enroller.prototype.sendEnrollRequestToHelper_ = function() {
   var encodedEnrollChallenges =
-      this.encodeEnrollChallenges_(enrollChallenges, opt_appId);
-  var encodedSignChallenges = encodeSignChallenges(signChallenges, opt_appId);
+      this.encodeEnrollChallenges_(this.enrollChallenges_, this.appId_);
+  var encodedSignChallenges =
+      encodeSignChallenges(this.signChallenges_, this.appId_);
   var request = {
     type: 'enroll_helper_request',
     enrollChallenges: encodedEnrollChallenges,
@@ -385,12 +419,12 @@ Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
 
   // Begin fetching/checking the app ids.
   var enrollAppIds = [];
-  if (opt_appId) {
-    enrollAppIds.push(opt_appId);
+  if (this.appId_) {
+    enrollAppIds.push(this.appId_);
   }
-  for (var i = 0; i < enrollChallenges.length; i++) {
-    if (enrollChallenges[i].hasOwnProperty('appId')) {
-      enrollAppIds.push(enrollChallenges[i]['appId']);
+  for (var i = 0; i < this.enrollChallenges_.length; i++) {
+    if (this.enrollChallenges_[i].hasOwnProperty('appId')) {
+      enrollAppIds.push(this.enrollChallenges_[i]['appId']);
     }
   }
   // Sanity check
@@ -400,7 +434,8 @@ Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
     return;
   }
   var self = this;
-  this.checkAppIds_(enrollAppIds, signChallenges, function(result) {
+  this.checkAppIds_(enrollAppIds, function(result) {
+    if (self.done_) return;
     if (result) {
       self.handler_ = FACTORY_REGISTRY.getRequestHelper().getHandler(request);
       if (self.handler_) {
@@ -498,14 +533,12 @@ Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges,
  * with the result of the check.
  * @param {!Array.<string>} enrollAppIds The app ids in the enroll challenge
  *     portion of the enroll request.
- * @param {Array.<SignChallenge>} signChallenges The sign challenges associated
- *     with the request.
  * @param {function(boolean)} cb Called with the result of the check.
  * @private
  */
-Enroller.prototype.checkAppIds_ = function(enrollAppIds, signChallenges, cb) {
+Enroller.prototype.checkAppIds_ = function(enrollAppIds, cb) {
   var appIds =
-      UTIL_unionArrays(enrollAppIds, getDistinctAppIds(signChallenges));
+      UTIL_unionArrays(enrollAppIds, getDistinctAppIds(this.signChallenges_));
   FACTORY_REGISTRY.getOriginChecker()
       .canClaimAppIds(this.sender_.origin, appIds)
       .then(this.originChecked_.bind(this, appIds, cb));
@@ -541,6 +574,7 @@ Enroller.prototype.close = function() {
     this.handler_.close();
     this.handler_ = null;
   }
+  this.done_ = true;
 };
 
 /**

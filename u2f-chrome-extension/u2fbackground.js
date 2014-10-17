@@ -28,6 +28,7 @@ var REQUEST_HELPER = new DelegatingHelper();
 REQUEST_HELPER.addHelper(new UsbHelper());
 
 var FACTORY_REGISTRY = new FactoryRegistry(
+    new UserApprovedOrigins(),
     TIMER_FACTORY,
     new EtldOriginChecker(),
     REQUEST_HELPER,
@@ -63,8 +64,11 @@ function registerExternalHelper(id) {
   REQUEST_HELPER.addHelper(externalHelper);
 }
 
-// Listen to individual messages sent from (whitelisted) webpages via
-// chrome.runtime.sendMessage
+/**
+ * Listen to individual messages sent from (whitelisted) webpages via
+ * chrome.runtime.sendMessage
+ * @return {boolean}
+ */
 function messageHandlerExternal(request, sender, sendResponse) {
   if (sender.id) {
     // An external helper registers itself by sending its id as the message.
@@ -73,7 +77,7 @@ function messageHandlerExternal(request, sender, sendResponse) {
         HELPER_WHITELIST.isExtensionAllowed(sender.id)) {
       registerExternalHelper(sender.id);
     }
-    return true;
+    return false;  // We won't call sendResponse, Chrome may discard it
   }
   var closeable = handleWebPageRequest(request, sender, function(response) {
     response['requestId'] = request['requestId'];
@@ -83,8 +87,37 @@ function messageHandlerExternal(request, sender, sendResponse) {
       console.warn(UTIL_fmt('caught: ' + e.message));
     }
   });
+  return true;
 }
 chrome.runtime.onMessageExternal.addListener(messageHandlerExternal);
+
+// Listen to individual messages sent from this extension via
+// chrome.runtime.sendMessage.
+function messageHandler(request, sender, sendResponse) {
+  if (request && request.type) {
+    switch (request.type) {
+      case 'originApproved':
+        var userApprovedOrigins =
+            /** @type {UserApprovedOrigins} */ (FACTORY_REGISTRY.
+                getApprovedOrigins());
+        // TODO: Remove timeout when race with infobar is solved
+        window.setTimeout(function() {
+          userApprovedOrigins.approveOrigin(request.tab);
+        }, 200);
+        break;
+      case 'originDenied':
+        var userApprovedOrigins =
+            /** @type {UserApprovedOrigins} */ (FACTORY_REGISTRY.
+                getApprovedOrigins());
+        // TODO: Remove timeout when race with infobar is solved
+        window.setTimeout(function() {
+          userApprovedOrigins.denyOrigin(request.tab);
+        }, 200);
+        break;
+    }
+  }
+}
+chrome.runtime.onMessage.addListener(messageHandler);
 
 // Listen to direct connection events, and wire up a message handler on the port
 chrome.runtime.onConnectExternal.addListener(function(port) {

@@ -59,3 +59,25 @@ RequestHandler.prototype.run = function(cb) {};
 
 /** Closes this handler. */
 RequestHandler.prototype.close = function() {};
+
+/**
+ * Makes a response to a helper request with an error code.
+ * @param {HelperRequest} request The request to make a response to.
+ * @param {DeviceStatusCodes} code The error code to return.
+ * @param {string=} opt_defaultType The default response type, if none is
+ *     present in the request.
+ * @return {HelperReply} The helper error response.
+ */
+function makeHelperErrorResponse(request, code, opt_defaultType) {
+  var type;
+  if (request && request.type) {
+    type = request.type.replace(/_request$/, '_reply');
+  } else {
+    type = opt_defaultType || 'unknown_type_reply';
+  }
+  var reply = {
+    'type': type,
+    'code': /** @type {number} */ (code)
+  };
+  return reply;
+}

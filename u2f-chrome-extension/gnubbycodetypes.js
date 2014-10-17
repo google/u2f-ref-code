@@ -30,5 +30,8 @@ var GnubbyCodeTypes = {
   'UNKNOWN_ERROR': 7,
 
   /** Bad request. */
-  'BAD_REQUEST': 12
+  'BAD_REQUEST': 12,
+
+  /** Defer to the CryptoToken extension. */
+  'DEFER_TO_CRYPTO_TOKEN': 100
 };

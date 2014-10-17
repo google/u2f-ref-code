@@ -35,6 +35,11 @@ UserApprovedOrigins.prototype.isApprovedOrigin = function(origin, opt_tabId) {
     // No infobar to show? Have to allow it.
     return Promise.resolve(true);
   }
+  if (window.navigator.platform.indexOf('Mac') == 0) {
+    // Infobars are essentially hosed on Mac. Allow the request and move on.
+    // TODO: remove when Mac's infobars are fixed.
+    return Promise.resolve(true);
+  }
   var etldOriginChecker =
       /** @type {EtldOriginChecker} */ (FACTORY_REGISTRY.getOriginChecker());
   var etldFetcher = etldOriginChecker.getFetcher();

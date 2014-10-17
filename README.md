@@ -40,8 +40,8 @@ The source is available in ``u2f-chrome-extension`` for experimentation, see
 
 To experience the end-to-end user experience you will need to get a physical
 USB device since the virtual device *does not* simulate the USB layer at this
-time. Please refer to https://goo.gl/NE4IRn to get pointers on how to acquire
-devices for testing.
+time. You can visit https://goo.gl/z0taoW to find FIDO U2F compliant devices
+available for sale.
 
 ## Getting started
 

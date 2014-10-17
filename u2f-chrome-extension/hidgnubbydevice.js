@@ -76,7 +76,7 @@ HidGnubbyDevice.prototype.destroy = function() {
     if (chrome.runtime.lastError) {
       console.warn(UTIL_fmt('Device ' + dev.connectionId +
           ' couldn\'t be disconnected:'));
-      console.warn(chrome.runtime.lastError);
+      console.warn(UTIL_fmt(chrome.runtime.lastError.message));
       return;
     }
     console.log(UTIL_fmt('Device ' + dev.connectionId + ' closed'));
@@ -192,8 +192,8 @@ HidGnubbyDevice.prototype.readLoop_ = function() {
     this.dev.connectionId,
     function(report_id, data) {
       if (chrome.runtime.lastError || !data) {
-        console.log(UTIL_fmt('got lastError'));
-        console.log(chrome.runtime.lastError);
+        console.log(UTIL_fmt('receive got lastError:'));
+        console.log(UTIL_fmt(chrome.runtime.lastError.message));
         window.setTimeout(function() { self.destroy(); }, 0);
         return;
       }
@@ -371,8 +371,8 @@ HidGnubbyDevice.prototype.writePump_ = function() {
   var self = this;
   function transferComplete() {
     if (chrome.runtime.lastError) {
-      console.log(UTIL_fmt('got lastError'));
-      console.log(chrome.runtime.lastError);
+      console.log(UTIL_fmt('send got lastError:'));
+      console.log(UTIL_fmt(chrome.runtime.lastError.message));
       window.setTimeout(function() { self.destroy(); }, 0);
       return;
     }
@@ -446,7 +446,8 @@ HidGnubbyDevice.enumerate = function(cb) {
 HidGnubbyDevice.open = function(gnubbies, which, dev, cb) {
   chrome.hid.connect(dev.deviceId, function(handle) {
     if (chrome.runtime.lastError) {
-      console.log(chrome.runtime.lastError);
+      console.log(UTIL_fmt('connect got lastError:'));
+      console.log(UTIL_fmt(chrome.runtime.lastError.message));
     }
     if (!handle) {
       console.warn(UTIL_fmt('failed to connect device. permissions issue?'));

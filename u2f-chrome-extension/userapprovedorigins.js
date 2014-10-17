@@ -31,6 +31,10 @@ function UserApprovedOrigins() {
  * @return {Promise.<boolean>} A promise for the result of the check.
  */
 UserApprovedOrigins.prototype.isApprovedOrigin = function(origin, opt_tabId) {
+  if (!chrome.infobars) {
+    // No infobar to show? Have to allow it.
+    return Promise.resolve(true);
+  }
   var etldOriginChecker =
       /** @type {EtldOriginChecker} */ (FACTORY_REGISTRY.getOriginChecker());
   var etldFetcher = etldOriginChecker.getFetcher();

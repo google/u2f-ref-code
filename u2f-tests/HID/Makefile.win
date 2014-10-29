@@ -1,0 +1,47 @@
+# Copyright 2014 Google Inc. All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+all: list.exe HIDTest.exe U2FTest.exe
+
+CFLAGS=-nologo -EHsc -W3 -Ihidapi/hidapi -Icore/include -D__OS_WIN
+LDFLAGS=setupapi.lib ws2_32.lib
+HIDAPI=hid.obj
+hid.obj: hidapi/windows/hid.c
+	$(CC) -c $(CFLAGS) hidapi/windows/hid.c
+
+# Crypto code.
+LIBMINCRYPT=dsa_sig.obj p256.obj p256_ec.obj p256_ecdsa.obj sha256.obj
+
+dsa_sig.obj: core/libmincrypt/dsa_sig.c
+	$(CC) -Dinline="" -D"dst[P256_NBYTES]"="*dst" -c $(CFLAGS) core/libmincrypt/dsa_sig.c
+
+p256.obj: core/libmincrypt/p256.c
+	$(CC) -c $(CFLAGS) core/libmincrypt/p256.c
+
+p256_ec.obj: core/libmincrypt/p256_ec.c
+	$(CC) -c $(CFLAGS) core/libmincrypt/p256_ec.c
+
+p256_ecdsa.obj: core/libmincrypt/p256_ecdsa.c
+	$(CC) -c $(CFLAGS) core/libmincrypt/p256_ecdsa.c
+
+sha256.obj: core/libmincrypt/sha256.c
+	$(CC) -c $(CFLAGS) core/libmincrypt/sha256.c
+
+# utility tools.
+u2f_util.obj: u2f_util.cc u2f_util.h
+	$(CXX) -c $(CFLAGS) u2f_util.cc
+
+# simple hidapi tool to list devices to see paths.
+list.exe: list.c $(HIDAPI)
+	$(CC) $(CFLAGS) list.c $(HIDAPI) $(LDFLAGS)
+
+# Low-level HID framing test.
+HIDTest.exe: HIDTest.cc u2f_util.obj $(HIDAPI)
+	$(CXX) $(CFLAGS) HIDTest.cc u2f_util.obj $(HIDAPI) $(LDFLAGS)
+
+# U2F messaging crypto test.
+U2FTest.exe: U2FTest.cc u2f_util.obj $(HIDAPI) $(LIBMINCRYPT)
+	$(CXX) $(CFLAGS) U2FTest.cc u2f_util.obj $(HIDAPI) $(LIBMINCRYPT) $(LDFLAGS)

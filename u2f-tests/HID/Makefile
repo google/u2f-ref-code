@@ -47,7 +47,7 @@ sha256.o: core/libmincrypt/sha256.c
 	gcc -c $(CFLAGS) -Wall $^
 
 # utility tools.
-u2f_util.o: u2f_util.cc u2f_util.h
+u2f_util.o: u2f_util.cc u2f_util.h u2f.h u2f_hid.h
 	g++ -c $(CFLAGS) -Wall -o u2f_util.o u2f_util.cc
 
 # simple hidapi tool to list devices to see paths.
@@ -55,9 +55,9 @@ list: list.c $(HIDAPI)
 	gcc $(CFLAGS) -Wall -o $@ $^ $(LDFLAGS)
 
 # Low-level HID framing test.
-HIDTest: HIDTest.cc u2f_util.o $(HIDAPI) u2f.h u2f_hid.h
+HIDTest: HIDTest.cc u2f_util.o $(HIDAPI)
 	g++ $(CFLAGS) -Wall -o $@ $^ $(LDFLAGS)
 
 # U2F messaging crypto test.
-U2FTest: U2FTest.cc u2f_util.o $(HIDAPI) $(LIBMINCRYPT) u2f.h u2f_hid.h
+U2FTest: U2FTest.cc u2f_util.o $(HIDAPI) $(LIBMINCRYPT)
 	g++ $(CFLAGS) -Wall -o $@ $^ $(LDFLAGS)

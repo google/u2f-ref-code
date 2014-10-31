@@ -164,7 +164,7 @@ function onTokenEnrollSuccess(finishEnrollData) {
    .done(addTokenInfoToPage)
    .fail(function(xhr, status) { 
       showError(status); 
-   })
+   });
 }
 
 function onTokenSignSuccess(responseData) {

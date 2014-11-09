@@ -170,7 +170,8 @@ function validateAndEnqueueSignRequest(sender, request,
   // Queue sign requests from the same origin, to protect against simultaneous
   // sign-out on many tabs resulting in repeated sign-in requests.
   var queuedSignRequest = new QueuedSignRequest(signChallenges,
-      timer, sender, errorCb, successCb, appId, logMsgUrl);
+      timer, sender, errorCb, successCb, request['challenge'],
+      appId, logMsgUrl);
   var requestToken = signRequestQueue.queueRequest(appId, sender.origin,
       queuedSignRequest.begin.bind(queuedSignRequest), timer);
   queuedSignRequest.setToken(requestToken);
@@ -188,12 +189,14 @@ function isValidSignRequest(request, signChallengesName) {
   if (!request.hasOwnProperty(signChallengesName))
     return false;
   var signChallenges = request[signChallengesName];
+  var hasDefaultChallenge = request.hasOwnProperty('challenge');
   var hasAppId = request.hasOwnProperty('appId');
   // If the sign challenge array is empty, the global appId is required.
   if (!hasAppId && (!signChallenges || !signChallenges.length)) {
     return false;
   }
-  return isValidSignChallengeArray(signChallenges, !hasAppId);
+  return isValidSignChallengeArray(signChallenges, hasDefaultChallenge,
+      !hasAppId);
 }
 
 /**
@@ -203,13 +206,15 @@ function isValidSignRequest(request, signChallengesName) {
  * @param {WebRequestSender} sender Message sender.
  * @param {function(U2fError)} errorCb Error callback
  * @param {function(SignChallenge, string, string)} successCb Success callback
+ * @param {string|undefined} opt_defaultChallenge A default sign challenge
+ *     value, if a request does not provide one.
  * @param {string|undefined} opt_appId The app id for the entire request.
  * @param {string|undefined} opt_logMsgUrl Url to post log messages to
  * @constructor
  * @implements {Closeable}
  */
 function QueuedSignRequest(signChallenges, timer, sender, errorCb,
-    successCb, opt_appId, opt_logMsgUrl) {
+    successCb, opt_defaultChallenge, opt_appId, opt_logMsgUrl) {
   /** @private {!Array.<SignChallenge>} */
   this.signChallenges_ = signChallenges;
   /** @private {Countdown} */
@@ -220,6 +225,8 @@ function QueuedSignRequest(signChallenges, timer, sender, errorCb,
   this.errorCb_ = errorCb;
   /** @private {function(SignChallenge, string, string)} */
   this.successCb_ = successCb;
+  /** @private {string|undefined} */
+  this.defaultChallenge_ = opt_defaultChallenge;
   /** @private {string|undefined} */
   this.appId_ = opt_appId;
   /** @private {string|undefined} */
@@ -260,7 +267,8 @@ QueuedSignRequest.prototype.begin = function(token) {
   this.signer_ = new Signer(this.timer_, this.sender_,
       this.signerFailed_.bind(this), this.signerSucceeded_.bind(this),
       this.logMsgUrl_);
-  if (!this.signer_.setChallenges(this.signChallenges_, this.appId_)) {
+  if (!this.signer_.setChallenges(this.signChallenges_, this.defaultChallenge_,
+      this.appId_)) {
     token.complete();
     this.errorCb_({errorCode: ErrorCodes.BAD_REQUEST});
   }
@@ -332,14 +340,19 @@ function Signer(timer, sender, errorCb, successCb, opt_logMsgUrl) {
 /**
  * Sets the challenges to be signed.
  * @param {Array.<SignChallenge>} signChallenges The challenges to set.
+ * @param {string=} opt_defaultChallenge A default sign challenge
+ *     value, if a request does not provide one.
  * @param {string=} opt_appId The app id for the entire request.
  * @return {boolean} Whether the challenges could be set.
  */
-Signer.prototype.setChallenges = function(signChallenges, opt_appId) {
+Signer.prototype.setChallenges = function(signChallenges, opt_defaultChallenge,
+    opt_appId) {
   if (this.challengesSet_ || this.done_)
     return false;
   /** @private {Array.<SignChallenge>} */
   this.signChallenges_ = signChallenges;
+  /** @private {string|undefined} */
+  this.defaultChallenge_ = opt_defaultChallenge;
   /** @private {string|undefined} */
   this.appId_ = opt_appId;
   /** @private {boolean} */
@@ -426,7 +439,16 @@ Signer.prototype.doSign_ = function() {
   // Create the browser data for each challenge.
   for (var i = 0; i < this.signChallenges_.length; i++) {
     var challenge = this.signChallenges_[i];
-    var serverChallenge = challenge['challenge'];
+    var serverChallenge;
+    if (challenge.hasOwnProperty('challenge')) {
+      serverChallenge = challenge['challenge'];
+    } else {
+      serverChallenge = this.defaultChallenge_;
+    }
+    if (!serverChallenge) {
+      console.warn(UTIL_fmt('challenge missing'));
+      return false;
+    }
     var keyHandle = challenge['keyHandle'];
 
     var browserData =
@@ -437,7 +459,7 @@ Signer.prototype.doSign_ = function() {
   }
 
   var encodedChallenges = encodeSignChallenges(this.signChallenges_,
-      this.appId_, this.getChallengeHash_.bind(this));
+      this.defaultChallenge_, this.appId_, this.getChallengeHash_.bind(this));
 
   var timeoutSeconds = this.timer_.millisecondsUntilExpired() / 1000.0;
   var request = makeSignHelperRequest(encodedChallenges, timeoutSeconds,

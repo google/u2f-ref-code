@@ -23,16 +23,16 @@ function EffectiveTldFetcher(fetcher, opt_cache) {
   this.cacheEtlds_ = opt_cache || false;
   /** @private {(!Array.<string>)|undefined} */
   this.eTlds_ = undefined;
+  if (!EffectiveTldFetcher.effectiveTldListUrls_.length) {
+    // Lazily initialize static etld URL list to avoid initialization order
+    // snafus.
+    EffectiveTldFetcher.effectiveTldListUrls_.push(
+        'chrome-extension://' + chrome.runtime.id + '/effective_tld_names.dat');
+  }
 }
 
-/** @const */
-EffectiveTldFetcher.EFFECTIVE_TLD_LIST_URLS = [
-  // Preferred for its HSTS pinning:
-  'https://git.chromium.org/gitweb/?p=chromium/src/net.git;a=blob_plain;' +
-  'f=base/registry_controlled_domains/effective_tld_names.dat;hb=HEAD',
-  // Other authoritative source maintained by Mozilla.
-  'https://publicsuffix.org/list/effective_tld_names.dat'
-];
+/** @private {!Array.<string>} */
+EffectiveTldFetcher.effectiveTldListUrls_ = [];
 
 /**
  * A fixed list of known TLDs.
@@ -43,7 +43,7 @@ EffectiveTldFetcher.fixed_tld_list_ = [];
 /**
  * Sets a fixed list of known TLDs. This list is not canonical: if an origin
  * is not found to be in this list, a canonical list is fetched from
- * EffectiveTldFetcher.EFFECTIVE_TLD_LIST_URLS.
+ * EffectiveTldFetcher.effectiveTldListUrls_.
  * @param {!Array.<string>} tlds The list of known TLDs.
  */
 EffectiveTldFetcher.setFixedTldList = function(tlds) {
@@ -89,6 +89,9 @@ EffectiveTldFetcher.prototype.getEffectiveTldPlusOne_ =
   if (host.indexOf(':') != -1) {
     host = host.substring(0, host.indexOf(':'));
   }
+  if (host == 'localhost') {
+    return host;
+  }
   // Loop over each possible subdomain, from longest to shortest, in order to
   // find the longest matching eTLD first.
   var next = host;
@@ -105,7 +108,7 @@ EffectiveTldFetcher.prototype.getEffectiveTldPlusOne_ =
 
 /**
  * Retrieves the list of extended TLDs.
- * @param {number=} opt_index Which url from EFFECTIVE_TLD_LIST_URLS
+ * @param {number=} opt_index Which url from effectiveTldListUrls_
  *     to fetch, default 0.
  * @return {Promise.<!Array.<string>>} A promise for an array of eTLDs.
  * @private
@@ -116,7 +119,7 @@ EffectiveTldFetcher.prototype.loadEffectiveTlds_ = function(opt_index) {
     return Promise.resolve(this.eTlds_);
   }
   var p = this.fetcher_.fetch(
-    EffectiveTldFetcher.EFFECTIVE_TLD_LIST_URLS[index]);
+    EffectiveTldFetcher.effectiveTldListUrls_[index]);
   var self = this;
   return p.then(function(text) {
     var eTlds = self.getEffectiveTldsFromText_(/** @type {string} */ (text));
@@ -126,7 +129,7 @@ EffectiveTldFetcher.prototype.loadEffectiveTlds_ = function(opt_index) {
     return eTlds;
   }, function(rc) {
     if (rc == 404 &&
-        index + 1 < EffectiveTldFetcher.EFFECTIVE_TLD_LIST_URLS.length) {
+        index + 1 < EffectiveTldFetcher.effectiveTldListUrls_.length) {
       // Retry with the next URL in the list
       return self.loadEffectiveTlds_(index + 1);
     } else {

@@ -171,7 +171,10 @@ function isValidEnrollRequest(request, enrollChallengesName,
   var signChallenges = request[signChallengesName];
   // A missing sign challenge array is ok, in the case the user is not already
   // enrolled.
-  if (signChallenges && !isValidSignChallengeArray(signChallenges, !hasAppId))
+  // A challenge value need not necessarily be supplied with every challenge.
+  var challengeRequired = false;
+  if (signChallenges &&
+      !isValidSignChallengeArray(signChallenges, challengeRequired, !hasAppId))
     return false;
   if (opt_registeredKeysName) {
     var registeredKeys = request[opt_registeredKeysName];
@@ -292,14 +295,18 @@ function getSignRequestsFromEnrollRequest(request, signChallengesName,
   var signChallenges;
   if (opt_registeredKeysName &&
       request.hasOwnProperty(opt_registeredKeysName)) {
-    // Convert registered keys to sign challenges by adding a challenge value.
     signChallenges = request[opt_registeredKeysName];
-    for (var i = 0; i < signChallenges.length; i++) {
-      // The actual value doesn't matter, as long as it's a string.
-      signChallenges[i]['challenge'] = '';
-    }
   } else {
     signChallenges = request[signChallengesName];
+  }
+  if (signChallenges) {
+    for (var i = 0; i < signChallenges.length; i++) {
+      // Make sure each sign challenge has a challenge value.
+      // The actual value doesn't matter, as long as it's a string.
+      if (!signChallenges[i].hasOwnProperty('challenge')) {
+        signChallenges[i]['challenge'] = '';
+      }
+    }
   }
   return signChallenges;
 }
@@ -404,8 +411,12 @@ Enroller.prototype.approveOrigin_ = function() {
 Enroller.prototype.sendEnrollRequestToHelper_ = function() {
   var encodedEnrollChallenges =
       this.encodeEnrollChallenges_(this.enrollChallenges_, this.appId_);
+  // If the request didn't contain a sign challenge, provide one. The value
+  // doesn't matter.
+  var defaultSignChallenge = '';
   var encodedSignChallenges =
-      encodeSignChallenges(this.signChallenges_, this.appId_);
+      encodeSignChallenges(this.signChallenges_, defaultSignChallenge,
+          this.appId_);
   var request = {
     type: 'enroll_helper_request',
     enrollChallenges: encodedEnrollChallenges,

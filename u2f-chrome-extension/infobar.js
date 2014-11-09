@@ -30,9 +30,13 @@ function approve() {
 
 window.onload = function() {
   if (origin) {
-    var domOrigin = document.querySelector('#origin');
-    domOrigin.innerText = origin;
-    document.getElementById('deny').addEventListener('click', deny);
-    document.getElementById('approve').addEventListener('click', approve);
+    var msg = document.querySelector('#msg');
+    msg.innerText = chrome.i18n.getMessage('notificationMessage', [origin]);
+    var approveButton = document.querySelector('#approve');
+    approveButton.innerText = chrome.i18n.getMessage('approveButton');
+    approveButton.addEventListener('click', approve);
+    var denyButton = document.querySelector('#deny');
+    denyButton.innerText = chrome.i18n.getMessage('denyButton');
+    denyButton.addEventListener('click', deny);
   }
 }

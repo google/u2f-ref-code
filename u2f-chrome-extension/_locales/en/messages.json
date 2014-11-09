@@ -1,0 +1,26 @@
+{
+  "approveButton": {
+    "message": "Allow",
+    "description": "Approve button label"
+  },
+  "denyButton": {
+    "message": "Block",
+    "description": "Deny button label"
+  },
+  "notificationTitle": {
+    "message": "Security Key access requested",
+    "description":
+        "Title of notification asking for user permission to use security keys."
+  },
+  "notificationMessage": {
+    "message": "Let $origin$ identify you by your Security Keys?",
+    "description":
+        "Message requesting permission to use security keys. Expects origin parameter.",
+    "placeholders": {
+      "origin": {
+        "content": "$1",
+        "example": "google.com"
+      }
+    }
+  }
+}

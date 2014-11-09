@@ -159,6 +159,12 @@ function UTIL_clear(a) {
   }
 }
 
+// Type tags used for ASN.1 encoding of ECDSA signatures
+/** @const */
+var UTIL_ASN_INT = 0x02;
+/** @const */
+var UTIL_ASN_SEQUENCE = 0x30;
+
 /**
  * Parse SEQ(INT, INT) from ASN1 byte array.
  * @param {(Uint8Array|Array.<number>)} a input to parse from.
@@ -166,13 +172,13 @@ function UTIL_clear(a) {
  */
 function UTIL_Asn1SignatureToJson(a) {
   if (a.length < 6) return null;  // Too small to be valid
-  if (a[0] != 0x30) return null;  // Not SEQ
+  if (a[0] != UTIL_ASN_SEQUENCE) return null;
   var l = a[1] & 255;
   if (l & 0x80) return null;  // SEQ.size too large
   if (a.length != 2 + l) return null;  // SEQ size does not match input
 
   function parseInt(off) {
-    if (a[off] != 0x02) return null;  // Not INT
+    if (a[off] != UTIL_ASN_INT) return null;
     var l = a[off + 1] & 255;
     if (l & 0x80) return null;  // INT.size too large
     if (off + 2 + l > a.length) return null;  // Out of bounds
@@ -186,6 +192,41 @@ function UTIL_Asn1SignatureToJson(a) {
   if (!s) return null;
 
   return {'r': r, 's': s};
+}
+
+/**
+ * Encode a JSON signature {r,s} as an ASN1 SEQ(INT, INT). May modify sig
+ * @param {{'r': (!Array.<number>|undefined), 's': !Array.<number>}} sig
+ * @return {!Uint8Array}
+ */
+function UTIL_JsonSignatureToAsn1(sig) {
+  var rbytes = sig.r;
+  var sbytes = sig.s;
+
+  // ASN.1 integers are arbitrary length msb first and signed.
+  // sig.r and sig.s are 256 bits msb first but _unsigned_, so we must
+  // prepend a zero byte in case their high bit is set.
+  if (rbytes[0] & 0x80)
+    rbytes.unshift(0);
+  if (sbytes[0] & 0x80)
+    sbytes.unshift(0);
+
+  var len = 4 + rbytes.length + sbytes.length;
+  var buf = new Uint8Array(2 + len);
+  var i = 0;
+  buf[i++] = UTIL_ASN_SEQUENCE;
+  buf[i++] = len;
+
+  buf[i++] = UTIL_ASN_INT;
+  buf[i++] = rbytes.length;
+  buf.set(rbytes, i);
+  i += rbytes.length;
+
+  buf[i++] = UTIL_ASN_INT;
+  buf[i++] = sbytes.length;
+  buf.set(sbytes, i);
+
+  return buf;
 }
 
 // hr:min:sec.milli string

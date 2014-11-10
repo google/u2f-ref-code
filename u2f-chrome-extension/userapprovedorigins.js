@@ -18,8 +18,11 @@
  * @implements {ApprovedOrigins}
  */
 function UserApprovedOrigins() {
-  /** @private {!Object.<number, Array.<function(boolean)>>} */
-  this.pendingApprovals_ = {};
+  // Always use Chrome notifications for now, while chrome.infobars is non-
+  // operable on Mac.
+  // TODO: make it possible to switch the two easily, e.g. with a
+  // stored permission.
+  this.impl_ = new NotificationUserApprovedOrigins();
 }
 
 /**
@@ -31,35 +34,7 @@ function UserApprovedOrigins() {
  * @return {Promise.<boolean>} A promise for the result of the check.
  */
 UserApprovedOrigins.prototype.isApprovedOrigin = function(origin, opt_tabId) {
-  if (!chrome.infobars) {
-    // No infobar to show? Have to allow it.
-    return Promise.resolve(true);
-  }
-  if (window.navigator.platform.indexOf('Mac') == 0) {
-    // Infobars are essentially hosed on Mac. Allow the request and move on.
-    // TODO: remove when Mac's infobars are fixed.
-    return Promise.resolve(true);
-  }
-  var etldOriginChecker =
-      /** @type {EtldOriginChecker} */ (FACTORY_REGISTRY.getOriginChecker());
-  var etldFetcher = etldOriginChecker.getFetcher();
-  var self = this;
-  return new Promise(function(resolve, reject) {
-      if (!opt_tabId) {
-        resolve(false);
-        return;
-      }
-      var tabId = /** @type {number} */ (opt_tabId);
-      etldFetcher.getEffectiveTldPlusOne(origin).then(function(etldPlusOne) {
-          if (!self.pendingApprovals_.hasOwnProperty(tabId)) {
-            self.pendingApprovals_[tabId] = [];
-          }
-          self.pendingApprovals_[tabId].push(resolve);
-          var url = 'infobar.html?' + etldPlusOne + '&' + tabId;
-          var options = {'path': url, 'tabId': tabId};
-          chrome.infobars.show(options);
-      });
-  });
+  return this.impl_.isApprovedOrigin(origin, opt_tabId);
 };
 
 /**
@@ -67,13 +42,7 @@ UserApprovedOrigins.prototype.isApprovedOrigin = function(origin, opt_tabId) {
  * @param {number} tabId The tab id on which to approve the origin.
  */
 UserApprovedOrigins.prototype.approveOrigin = function(tabId) {
-  if (this.pendingApprovals_.hasOwnProperty(tabId)) {
-    var originPendingApprovals = this.pendingApprovals_[tabId];
-    for (var i = 0; i < originPendingApprovals.length; i++) {
-      originPendingApprovals[i](true);
-    }
-    delete this.pendingApprovals_[tabId];
-  }
+  return this.impl_.approveOrigin(tabId);
 };
 
 /**
@@ -81,11 +50,5 @@ UserApprovedOrigins.prototype.approveOrigin = function(tabId) {
  * @param {number} tabId The tab id on which to deny the origin.
  */
 UserApprovedOrigins.prototype.denyOrigin = function(tabId) {
-  if (this.pendingApprovals_.hasOwnProperty(tabId)) {
-    var originPendingApprovals = this.pendingApprovals_[tabId];
-    for (var i = 0; i < originPendingApprovals.length; i++) {
-      originPendingApprovals[i](false);
-    }
-    delete this.pendingApprovals_[tabId];
-  }
+  return this.impl_.denyOrigin(tabId);
 };

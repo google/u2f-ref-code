@@ -44,6 +44,35 @@ function createSenderFromMessageSender(messageSender) {
 }
 
 /**
+ * Checks whether the given tab could have sent a message from the given
+ * origin.
+ * @param {Tab} tab The tab to match
+ * @param {string} origin The origin to check.
+ * @return {Promise} A promise resolved with the tab id if it the tab could,
+ *     have sent the request, and rejected if it can't.
+ */
+function tabMatchesOrigin(tab, origin) {
+  return new Promise(function(resolve, reject) {
+    // If the tab's origin matches, trust that the request came from this tab.
+    if (getOriginFromUrl(tab.url) == origin) {
+      resolve(tab.id);
+      return;
+    }
+    // Look for an iframe in the current tab matching the origin.
+    chrome.tabs.executeScript(tab.id, { file: 'taborigincs.js' }, function() {
+        chrome.tabs.sendMessage(tab.id, { origin: origin },
+            function(response) {
+              if (response) {
+                resolve(tab.id);
+              } else {
+                reject(false);
+              }
+            });
+      });
+  });
+}
+
+/**
  * Attempts to ensure that the tabId of the sender is set, using chrome.tabs
  * when available.
  * @param {WebRequestSender} sender The request sender.
@@ -69,36 +98,36 @@ function getTabIdWhenPossible(sender) {
               return;
             }
             var tab = tabs[0];
-            // Safety check: only trust the tab id if its origin matches the
-            // sender's.
-            if (getOriginFromUrl(tab.url) == sender.origin) {
-              sender.tabId = tab.id;
+            tabMatchesOrigin(tab, sender.origin).then(function(tabId) {
+              sender.tabId = tabId;
               resolve(true);
-              return;
-            }
-            // Didn't match? Check if the debugger is open.
-            if (tab.url.indexOf('chrome-devtools://') != 0) {
-              reject(false);
-              return;
-            }
-            // Debugger active: find first tab with the sender's origin.
-            chrome.tabs.query({active: true}, function(tabs) {
-              if (!tabs.length) {
-                // Safety check.
+            }, function() {
+              // Didn't match? Check if the debugger is open.
+              if (tab.url.indexOf('chrome-devtools://') != 0) {
                 reject(false);
                 return;
               }
-              for (var i = 0; i < tabs.length; i++) {
-                tab = tabs[i];
-                if (getOriginFromUrl(tab.url) == sender.origin) {
-                  sender.tabId = tab.id;
-                  resolve(true);
+              // Debugger active: find first tab with the sender's origin.
+              chrome.tabs.query({active: true}, function(tabs) {
+                if (!tabs.length) {
+                  // Safety check.
+                  reject(false);
                   return;
                 }
-              }
-              // No match: reject.
-              reject(false);
-              return;
+                var numRejected = 0;
+                for (var i = 0; i < tabs.length; i++) {
+                  tab = tabs[i];
+                  tabMatchesOrigin(tab, sender.origin).then(function(tabId) {
+                    sender.tabId = tabId;
+                    resolve(true);
+                  }, function() {
+                    if (++numRejected >= tabs.length) {
+                      // None matches: reject.
+                      reject(false);
+                    }
+                  });
+                }
+              });
             });
           });
     });

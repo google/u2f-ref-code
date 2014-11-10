@@ -20,8 +20,7 @@ var ErrorCodes = {
   'BAD_REQUEST': 2,
   'CONFIGURATION_UNSUPPORTED': 3,
   'DEVICE_INELIGIBLE': 4,
-  'TIMEOUT': 5,
-  'DEFER_TO_CRYPTO_TOKEN': 100
+  'TIMEOUT': 5
 };
 
 /**

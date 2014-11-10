@@ -24,6 +24,8 @@ function UsbSignHandler(request) {
   this.notified_ = false;
   /** @private {boolean} */
   this.anyGnubbiesFound_ = false;
+  /** @private {!Array.<!Gnubby>} */
+  this.notEnrolledGnubbies_ = [];
 }
 
 /**
@@ -97,6 +99,10 @@ UsbSignHandler.prototype.signerFoundGnubby_ =
     var challenge = signResult['challenge'];
     var info = new Uint8Array(signResult['info']);
     this.notifySuccess_(gnubby, challenge, info);
+  } else if (signResult.code == DeviceStatusCodes.WRONG_DATA_STATUS) {
+    var gnubby = signResult['gnubby'];
+    this.notEnrolledGnubbies_.push(gnubby);
+    this.sendBogusEnroll_(gnubby);
   } else if (!moreExpected) {
     // If the signer doesn't expect more results, return the error directly to
     // the caller.
@@ -106,6 +112,59 @@ UsbSignHandler.prototype.signerFoundGnubby_ =
     // eligible gnubbies are found.
     /** @private {number} */
     this.signerError_ = signResult.code;
+  }
+};
+
+/** @const */
+UsbSignHandler.BOGUS_APP_ID_HASH = [
+    0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,
+    0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,
+    0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,
+    0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41
+];
+
+/** @const */
+UsbSignHandler.BOGUS_CHALLENGE_HASH = [
+    0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,
+    0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,
+    0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,
+    0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42
+];
+
+/**
+ * Sends a bogus enroll command to the not-enrolled gnubby, to force the user
+ * to tap the gnubby before revealing its state to the caller.
+ * @param {Gnubby} gnubby The gnubby to "enroll" on.
+ * @private
+ */
+UsbSignHandler.prototype.sendBogusEnroll_ = function(gnubby) {
+  gnubby.enroll(
+      UsbSignHandler.BOGUS_APP_ID_HASH,
+      UsbSignHandler.BOGUS_CHALLENGE_HASH,
+      this.enrollCallback_.bind(this, gnubby));
+};
+
+/**
+ * Called with the result of the (bogus, tap capturing) enroll command.
+ * @param {Gnubby} gnubby The gnubby "enrolled".
+ * @param {number} code The result of the enroll command.
+ * @param {ArrayBuffer=} infoArray Returned data.
+ * @private
+ */
+UsbSignHandler.prototype.enrollCallback_ = function(gnubby, code, infoArray) {
+  if (this.notified_)
+    return;
+  switch (code) {
+    case DeviceStatusCodes.WAIT_TOUCH_STATUS:
+      this.sendBogusEnroll_(gnubby);
+      return;
+
+    case DeviceStatusCodes.OK_STATUS:
+      // Got a successful enroll => user tapped gnubby.
+      // Send a WRONG_DATA_STATUS finally. (The gnubby is implicitly closed
+      // by notifyError_.)
+      this.notifyError_(DeviceStatusCodes.WRONG_DATA_STATUS);
+      return;
   }
 };
 
@@ -163,6 +222,10 @@ UsbSignHandler.prototype.notifyError_ = function(code) {
  * Closes the MultipleGnubbySigner, if any.
  */
 UsbSignHandler.prototype.close = function() {
+  while (this.notEnrolledGnubbies_.length != 0) {
+    var gnubby = this.notEnrolledGnubbies_.shift();
+    gnubby.closeWhenIdle();
+  }
   if (this.signer_) {
     this.signer_.close();
     this.signer_ = null;

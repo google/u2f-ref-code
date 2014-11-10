@@ -82,6 +82,15 @@ EtldOriginChecker.prototype.checkAppId_ =
   var appIdOriginString = /** @type {string} */ (appIdOrigin);
   var p = this.getFetcher().getEffectiveTldPlusOne(appIdOriginString);
   return p.then(function(appIdEtldPlusOne) {
-    return originEtldPlusOne == appIdEtldPlusOne;
+    if (originEtldPlusOne == appIdEtldPlusOne)
+      return true;
+    // As an exception, allow google.com to use gstatic.com appIds. These should
+    // be implemented using the redirect mechanism described in the FIDO AppID
+    // and Facet Specification, but Javascript doesn't allow us to implement it
+    // correctly: the client can't ensure the presence of the
+    // FIDO-AppID-Redirect-Authorized header prior to following the redirect.
+    if (originEtldPlusOne == 'google.com')
+      return appIdEtldPlusOne == 'gstatic.com';
+    return false;
   });
 };

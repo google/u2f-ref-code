@@ -493,7 +493,9 @@ Gnubby.prototype.sync = function(cb) {
 
   function returnValue(rc) {
     done = true;
-    cb(rc);
+    // Wait a bit to cater to devices being slow coming out of suspend.
+    // TODO: remove when usb fw gets fixed.
+    window.setTimeout(cb.bind(null, rc), 200);
     if (self.closingWhenIdle) self.idleClose_();
   }
 

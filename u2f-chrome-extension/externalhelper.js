@@ -47,14 +47,14 @@ ExternalHandler.prototype.run = function(cb) {
               UTIL_fmt('got a response from external helper after close'));
           return;
         }
-        console.log(UTIL_fmt('got a response from external helper'));
-        console.log(response);
         if (!response || !response.type) {
           // A missing or malformed response implies the helper's output
           // can't be trusted: report the default error.
           cb(self.makeDefaultErrorReply_(self.request_));
           return;
         }
+        console.log(UTIL_fmt('got a response from external helper'));
+        console.log(response);
         cb(response, self.helperConfig_.source);
       });
   return true;

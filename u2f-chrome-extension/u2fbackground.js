@@ -10,6 +10,9 @@
 
 'use strict';
 
+/** @const */
+var BROWSER_SUPPORTS_TLS_CHANNEL_ID = true;
+
 // Singleton tracking available devices.
 var gnubbies = new Gnubbies();
 // Only include HID support if it's available in this browser. Register it

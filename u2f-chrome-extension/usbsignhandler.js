@@ -124,7 +124,20 @@ UsbSignHandler.BOGUS_APP_ID_HASH = [
 ];
 
 /** @const */
-UsbSignHandler.BOGUS_CHALLENGE_HASH = [
+UsbSignHandler.BOGUS_CHALLENGE_V1 = [
+    0x04, 0xA2, 0x24, 0x7D, 0x5C, 0x0B, 0x76, 0xF1,
+    0xDC, 0xCD, 0x44, 0xAF, 0x91, 0x9A, 0xA2, 0x3F,
+    0x3F, 0xBA, 0x65, 0x9F, 0x06, 0x78, 0x82, 0xFB,
+    0x93, 0x4B, 0xBF, 0x86, 0x55, 0x95, 0x66, 0x46,
+    0x76, 0x90, 0xDC, 0xE1, 0xE8, 0x6C, 0x86, 0x86,
+    0xC3, 0x03, 0x4E, 0x65, 0x52, 0x4C, 0x32, 0x6F,
+    0xB6, 0x44, 0x0D, 0x50, 0xF9, 0x16, 0xC0, 0xA3,
+    0xDA, 0x31, 0x4B, 0xD3, 0x3F, 0x94, 0xA5, 0xF1,
+    0xD3
+];
+
+/** @const */
+UsbSignHandler.BOGUS_CHALLENGE_V2 = [
     0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,
     0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,
     0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,
@@ -138,10 +151,29 @@ UsbSignHandler.BOGUS_CHALLENGE_HASH = [
  * @private
  */
 UsbSignHandler.prototype.sendBogusEnroll_ = function(gnubby) {
-  gnubby.enroll(
-      UsbSignHandler.BOGUS_APP_ID_HASH,
-      UsbSignHandler.BOGUS_CHALLENGE_HASH,
-      this.enrollCallback_.bind(this, gnubby));
+  var self = this;
+  gnubby.version(function(rc, opt_data) {
+    if (rc) {
+      self.notifyError_(rc);
+      return;
+    }
+    var enrollChallenge;
+    var version = UTIL_BytesToString(new Uint8Array(opt_data || []));
+    switch (version) {
+      case Gnubby.U2F_V1:
+        enrollChallenge = UsbSignHandler.BOGUS_CHALLENGE_V1;
+        break;
+      case Gnubby.U2F_V2:
+        enrollChallenge = UsbSignHandler.BOGUS_CHALLENGE_V2;
+        break;
+      default:
+        self.notifyError_(DeviceStatusCodes.INVALID_DATA_STATUS);
+    }
+    gnubby.enroll(
+        /** @type {Array.<number>} */ (enrollChallenge),
+        UsbSignHandler.BOGUS_APP_ID_HASH,
+        self.enrollCallback_.bind(self, gnubby));
+  });
 };
 
 /**

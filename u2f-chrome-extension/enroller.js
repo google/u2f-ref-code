@@ -140,8 +140,9 @@ function validateEnrollRequest(sender, request,
     return null;
   }
 
-  var timer = createTimerForRequest(
-      FACTORY_REGISTRY.getCountdownFactory(), request);
+  var timeoutValueSeconds = getTimeoutValueFromRequest(request);
+  var timer = createAttenuatedTimer(
+      FACTORY_REGISTRY.getCountdownFactory(), timeoutValueSeconds);
   var logMsgUrl = request['logMsgUrl'];
   var enroller = new Enroller(timer, sender, errorCb, successCb, logMsgUrl);
   return enroller;

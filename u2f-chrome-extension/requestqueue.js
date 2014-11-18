@@ -22,6 +22,7 @@ QueuedRequestToken.prototype.complete = function() {};
 
 /**
  * @param {!RequestQueue} queue The queue for this request.
+ * @param {number} id An id for this request.
  * @param {function(QueuedRequestToken)} beginCb Called when work may begin on
  *     this request.
  * @param {RequestToken} opt_prev Previous request in the same queue.
@@ -29,9 +30,11 @@ QueuedRequestToken.prototype.complete = function() {};
  * @constructor
  * @implements {QueuedRequestToken}
  */
-function RequestToken(queue, beginCb, opt_prev, opt_next) {
+function RequestToken(queue, id, beginCb, opt_prev, opt_next) {
   /** @private {!RequestQueue} */
   this.queue_ = queue;
+  /** @private {number} */
+  this.id_ = id;
   /** @type {function(QueuedRequestToken)} */
   this.beginCb = beginCb;
   /** @type {RequestToken} */
@@ -66,6 +69,8 @@ function RequestQueue() {
   this.head_ = null;
   /** @private {RequestToken} */
   this.tail_ = null;
+  /** @private {number} */
+  this.id_ = 0;
 }
 
 /**
@@ -74,6 +79,7 @@ function RequestQueue() {
  * @private
  */
 RequestQueue.prototype.insertToken_ = function(token) {
+  console.log(UTIL_fmt('token ' + this.id_ + ' inserted'));
   if (this.head_ === null) {
     this.head_ = token;
     this.tail_ = token;
@@ -118,6 +124,7 @@ RequestQueue.prototype.removeToken_ = function(token) {
  * @param {RequestToken} token Queue token
  */
 RequestQueue.prototype.complete = function(token) {
+  console.log(UTIL_fmt('token ' + this.id_ + ' completed'));
   var next = token.next;
   this.removeToken_(token);
   if (next) {
@@ -139,7 +146,7 @@ RequestQueue.prototype.empty = function() {
  */
 RequestQueue.prototype.queueRequest = function(beginCb, timer) {
   var startNow = this.empty();
-  var token = new RequestToken(this, beginCb);
+  var token = new RequestToken(this, ++this.id_, beginCb);
   // Clone the timer to set a callback on it, which will ensure complete() is
   // eventually called, even if the caller never gets around to it.
   timer.clone(token.complete.bind(token));
@@ -173,7 +180,7 @@ function OriginKeyedRequestQueue() {
  */
 OriginKeyedRequestQueue.prototype.queueRequest =
     function(appId, origin, beginCb, timer) {
-  var key = appId + origin;
+  var key = appId + ' ' + origin;
   if (!this.requests_.hasOwnProperty(key)) {
     this.requests_[key] = new RequestQueue();
   }

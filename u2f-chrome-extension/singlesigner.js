@@ -347,12 +347,20 @@ SingleGnubbySigner.prototype.signCallback_ =
       break;
 
     case DeviceStatusCodes.TIMEOUT_STATUS:
-      // TODO: On a TIMEOUT_STATUS, sync first, then retry.
+      this.gnubby_.sync(this.synced_.bind(this));
+      break;
+
     case DeviceStatusCodes.BUSY_STATUS:
       this.doSign_(this.challengeIndex_);
       break;
 
     case DeviceStatusCodes.OK_STATUS:
+      // Lower bound on the minimum length, signature length can vary.
+      var MIN_SIGNATURE_LENGTH = 7;
+      if (!opt_info || opt_info.byteLength < MIN_SIGNATURE_LENGTH) {
+        console.error(UTIL_fmt('Got short response to sign request (' +
+            (opt_info ? opt_info.byteLength : 0) + ' bytes), WTF?'));
+      }
       if (this.forEnroll_) {
         this.goToError_(code);
       } else {
@@ -386,6 +394,20 @@ SingleGnubbySigner.prototype.signCallback_ =
         this.goToError_(code, true);
       }
   }
+};
+
+/**
+ * Called with the response of a sync command, called when a sign yields a
+ * timeout to reassert control over the gnubby.
+ * @param {number} code Error code
+ * @private
+ */
+SingleGnubbySigner.prototype.synced_ = function(code) {
+  if (code) {
+    this.goToError_(code, true);
+    return;
+  }
+  this.doSign_(this.challengeIndex_);
 };
 
 /**

@@ -43,10 +43,11 @@ NotificationUserApprovedOrigins.prototype.isApprovedOrigin =
   var etldFetcher = etldOriginChecker.getFetcher();
   var self = this;
   var p = etldFetcher.getEffectiveTldPlusOne(origin);
-  p.then(self.showNotification_.bind(self, ++self.notificationInstance_));
+  var p2 =
+      p.then(self.showNotification_.bind(self, ++self.notificationInstance_));
   // Closure can't infer that the first promise (getEffectiveTldPlusOne) chains
   // immediately to a second promise of the correct type, so help it.
-  return /** @type {Promise.<boolean>} */ (p);
+  return /** @type {Promise.<boolean>} */ (p2);
 };
 
 /**

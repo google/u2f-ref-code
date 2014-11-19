@@ -145,6 +145,10 @@ function addSignatureAndBrowserDataToResponseData(responseData, signatureData,
  */
 function validateAndEnqueueSignRequest(sender, request,
     signChallengesName, errorCb, successCb) {
+  function timeout() {
+    errorCb({errorCode: ErrorCodes.TIMEOUT});
+  }
+
   if (!isValidSignRequest(request, signChallengesName)) {
     errorCb({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
@@ -163,19 +167,31 @@ function validateAndEnqueueSignRequest(sender, request,
     errorCb({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
-  var timer = createTimerForRequest(
-      FACTORY_REGISTRY.getCountdownFactory(), request);
+  var timeoutValueSeconds = getTimeoutValueFromRequest(request);
+  // Attenuate watchdog timeout value less than the signer's timeout, so the
+  // watchdog only fires after the signer could reasonably have called back,
+  // not before.
+  timeoutValueSeconds = attenuateTimeoutInSeconds(timeoutValueSeconds,
+      MINIMUM_TIMEOUT_ATTENUATION_SECONDS / 2);
+  var watchdog = new WatchdogRequestHandler(timeoutValueSeconds, timeout);
+  var wrappedErrorCb = watchdog.wrapCallback(errorCb);
+  var wrappedSuccessCb = watchdog.wrapCallback(successCb);
+
+  var timer = createAttenuatedTimer(
+      FACTORY_REGISTRY.getCountdownFactory(), timeoutValueSeconds);
   var logMsgUrl = request['logMsgUrl'];
 
   // Queue sign requests from the same origin, to protect against simultaneous
   // sign-out on many tabs resulting in repeated sign-in requests.
   var queuedSignRequest = new QueuedSignRequest(signChallenges,
-      timer, sender, errorCb, successCb, request['challenge'],
+      timer, sender, wrappedErrorCb, wrappedSuccessCb, request['challenge'],
       appId, logMsgUrl);
   var requestToken = signRequestQueue.queueRequest(appId, sender.origin,
       queuedSignRequest.begin.bind(queuedSignRequest), timer);
   queuedSignRequest.setToken(requestToken);
-  return queuedSignRequest;
+
+  watchdog.setCloseable(queuedSignRequest);
+  return watchdog;
 }
 
 /**
@@ -218,7 +234,7 @@ function QueuedSignRequest(signChallenges, timer, sender, errorCb,
   /** @private {!Array.<SignChallenge>} */
   this.signChallenges_ = signChallenges;
   /** @private {Countdown} */
-  this.timer_ = timer;
+  this.timer_ = timer.clone(this.close.bind(this));
   /** @private {WebRequestSender} */
   this.sender_ = sender;
   /** @private {function(U2fError)} */
@@ -240,10 +256,17 @@ function QueuedSignRequest(signChallenges, timer, sender, errorCb,
 /** Closes this sign request. */
 QueuedSignRequest.prototype.close = function() {
   if (this.closed_) return;
+  var hadBegunSigning = false;
   if (this.begun_ && this.signer_) {
     this.signer_.close();
+    hadBegunSigning = true;
   }
   if (this.token_) {
+    if (hadBegunSigning) {
+      console.log(UTIL_fmt('closing in-progress request'));
+    } else {
+      console.log(UTIL_fmt('closing timed-out request before processing'));
+    }
     this.token_.complete();
   }
   this.closed_ = true;
@@ -262,6 +285,12 @@ QueuedSignRequest.prototype.setToken = function(token) {
  * @param {QueuedRequestToken} token Token for this sign request.
  */
 QueuedSignRequest.prototype.begin = function(token) {
+  if (this.timer_.expired()) {
+    console.log(UTIL_fmt('Queued request begun after timeout'));
+    this.close();
+    this.errorCb_({errorCode: ErrorCodes.TIMEOUT});
+    return;
+  }
   this.begun_ = true;
   this.setToken(token);
   this.signer_ = new Signer(this.timer_, this.sender_,
@@ -272,6 +301,8 @@ QueuedSignRequest.prototype.begin = function(token) {
     token.complete();
     this.errorCb_({errorCode: ErrorCodes.BAD_REQUEST});
   }
+  // Signer now has responsibility for maintaining timeout.
+  this.timer_.clearTimeout();
 };
 
 /**
@@ -309,7 +340,7 @@ QueuedSignRequest.prototype.signerSucceeded_ =
  */
 function Signer(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   /** @private {Countdown} */
-  this.timer_ = timer;
+  this.timer_ = timer.clone();
   /** @private {WebRequestSender} */
   this.sender_ = sender;
   /** @private {function(U2fError)} */
@@ -349,6 +380,10 @@ Signer.prototype.setChallenges = function(signChallenges, opt_defaultChallenge,
     opt_appId) {
   if (this.challengesSet_ || this.done_)
     return false;
+  if (this.timer_.expired()) {
+    this.notifyError_({errorCode: ErrorCodes.TIMEOUT});
+    return true;
+  }
   /** @private {Array.<SignChallenge>} */
   this.signChallenges_ = signChallenges;
   /** @private {string|undefined} */
@@ -485,6 +520,17 @@ Signer.prototype.getChallengeHash_ = function(keyHandle, challenge) {
 
 /** Closes this signer. */
 Signer.prototype.close = function() {
+  this.close_();
+};
+
+/**
+ * Closes this signer, and optionally notifies the caller of error.
+ * @param {boolean=} opt_notifying When true, this method is being called in the
+ *     process of notifying the caller of an existing status. When false,
+ *     the caller is notified with a default error value, ErrorCodes.TIMEOUT.
+ * @private
+ */
+Signer.prototype.close_ = function(opt_notifying) {
   if (this.appIdChecker_) {
     this.appIdChecker_.close();
   }
@@ -493,6 +539,9 @@ Signer.prototype.close = function() {
     this.handler_ = null;
   }
   this.timer_.clearTimeout();
+  if (!opt_notifying) {
+    this.notifyError_({errorCode: ErrorCodes.TIMEOUT});
+  }
 };
 
 /**
@@ -503,8 +552,8 @@ Signer.prototype.close = function() {
 Signer.prototype.notifyError_ = function(error) {
   if (this.done_)
     return;
-  this.close();
   this.done_ = true;
+  this.close_(true);
   this.errorCb_(error);
 };
 
@@ -518,8 +567,8 @@ Signer.prototype.notifyError_ = function(error) {
 Signer.prototype.notifySuccess_ = function(challenge, info, browserData) {
   if (this.done_)
     return;
-  this.close();
   this.done_ = true;
+  this.close_(true);
   this.successCb_(challenge, info, browserData);
 };
 

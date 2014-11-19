@@ -119,18 +119,20 @@ CountdownTimerFactory.prototype.createTimer =
  * guaranteed, in seconds.
  * @const
  */
-var MINIMUM_TIMEOUT_ATTENUATION_SECONDS = 0.5;
+var MINIMUM_TIMEOUT_ATTENUATION_SECONDS = 1;
 
 /**
  * @param {number} timeoutSeconds Timeout value in seconds.
+ * @param {number=} opt_attenuationSeconds Attenuation value in seconds.
  * @return {number} The timeout value, attenuated to ensure a response can be
  *     given before the timeout's expiration.
- * @private
  */
-function attenuateTimeoutInSeconds_(timeoutSeconds) {
-  if (timeoutSeconds < MINIMUM_TIMEOUT_ATTENUATION_SECONDS)
+function attenuateTimeoutInSeconds(timeoutSeconds, opt_attenuationSeconds) {
+  var attenuationSeconds =
+      opt_attenuationSeconds || MINIMUM_TIMEOUT_ATTENUATION_SECONDS;
+  if (timeoutSeconds < attenuationSeconds)
     return 0;
-  return timeoutSeconds - MINIMUM_TIMEOUT_ATTENUATION_SECONDS;
+  return timeoutSeconds - attenuationSeconds;
 }
 
 /**
@@ -140,15 +142,14 @@ function attenuateTimeoutInSeconds_(timeoutSeconds) {
 var DEFAULT_REQUEST_TIMEOUT_SECONDS = 30;
 
 /**
- * Creates a new countdown from the given request using the given timer factory,
- * attenuated to ensure a response is given prior to the countdown's expiration.
- * @param {CountdownFactory} timerFactory The factory to use.
+ * Gets the timeout value from the request, if any, substituting
+ * opt_defaultTimeoutSeconds or DEFAULT_REQUEST_TIMEOUT_SECONDS if the request
+ * does not contain a timeout value.
  * @param {Object} request The request containing the timeout.
  * @param {number=} opt_defaultTimeoutSeconds
- * @return {!Countdown} A countdown timer.
+ * @return {number} Timeout value, in seconds.
  */
-function createTimerForRequest(timerFactory, request,
-    opt_defaultTimeoutSeconds) {
+function getTimeoutValueFromRequest(request, opt_defaultTimeoutSeconds) {
   var timeoutValueSeconds;
   if (request.hasOwnProperty('timeoutSeconds')) {
     timeoutValueSeconds = request['timeoutSeconds'];
@@ -159,6 +160,21 @@ function createTimerForRequest(timerFactory, request,
   } else {
     timeoutValueSeconds = DEFAULT_REQUEST_TIMEOUT_SECONDS;
   }
-  timeoutValueSeconds = attenuateTimeoutInSeconds_(timeoutValueSeconds);
+  return timeoutValueSeconds;
+}
+
+/**
+ * Creates a new countdown for the given timeout value, attenuated to ensure a
+ * response is given prior to the countdown's expiration, using the given timer
+ * factory.
+ * @param {CountdownFactory} timerFactory The factory to use.
+ * @param {number} timeoutValueSeconds
+ * @param {number=} opt_attenuationSeconds Attenuation value in seconds.
+ * @return {!Countdown} A countdown timer.
+ */
+function createAttenuatedTimer(timerFactory, timeoutValueSeconds,
+    opt_attenuationSeconds) {
+  timeoutValueSeconds = attenuateTimeoutInSeconds(timeoutValueSeconds,
+      opt_attenuationSeconds);
   return timerFactory.createTimer(timeoutValueSeconds * 1000);
 }

@@ -398,12 +398,26 @@ bool getCertificate(const U2F_REGISTER_RESP& rsp,
 
   CHECK_GE(certLen, 4);
   CHECK_EQ(p[0], 0x30);
-  CHECK_EQ(p[1], 0x82);
 
-  size_t seqLen = p[2] * 256 + p[3];
-  CHECK_LE(seqLen, certLen - 4);
+  CHECK_GE(p[1], 0x81);
+  CHECK_LE(p[1], 0x82);
 
-  cert->assign(reinterpret_cast<const char*>(p), seqLen + 4);
+  size_t seqLen;
+  size_t headerLen;
+  if (p[1] == 0x81) {
+    seqLen = p[2];
+    headerLen = 3;
+  } else if (p[1] == 0x82) {
+    seqLen = p[2] * 256 + p[3];
+    headerLen = 4;
+  } else {
+    // FAIL
+    AbortOrNot();
+  }
+
+  CHECK_LE(seqLen, certLen - headerLen);
+
+  cert->assign(reinterpret_cast<const char*>(p), seqLen + headerLen);
   return true;
 }
 

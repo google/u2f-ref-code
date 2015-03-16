@@ -13,6 +13,9 @@
 /** @const */
 var BROWSER_SUPPORTS_TLS_CHANNEL_ID = true;
 
+/** @const */
+var HTTP_ORIGINS_ALLOWED = true;
+
 // Singleton tracking available devices.
 var gnubbies = new Gnubbies();
 // Only include HID support if it's available in this browser. Register it
@@ -93,34 +96,6 @@ function messageHandlerExternal(request, sender, sendResponse) {
   return true;
 }
 chrome.runtime.onMessageExternal.addListener(messageHandlerExternal);
-
-// Listen to individual messages sent from this extension via
-// chrome.runtime.sendMessage.
-function messageHandler(request, sender, sendResponse) {
-  if (request && request.type) {
-    switch (request.type) {
-      case 'originApproved':
-        var userApprovedOrigins =
-            /** @type {UserApprovedOrigins} */ (FACTORY_REGISTRY.
-                getApprovedOrigins());
-        // TODO: Remove timeout when race with infobar is solved
-        window.setTimeout(function() {
-          userApprovedOrigins.approveOrigin(request.tab);
-        }, 200);
-        break;
-      case 'originDenied':
-        var userApprovedOrigins =
-            /** @type {UserApprovedOrigins} */ (FACTORY_REGISTRY.
-                getApprovedOrigins());
-        // TODO: Remove timeout when race with infobar is solved
-        window.setTimeout(function() {
-          userApprovedOrigins.denyOrigin(request.tab);
-        }, 200);
-        break;
-    }
-  }
-}
-chrome.runtime.onMessage.addListener(messageHandler);
 
 // Listen to direct connection events, and wire up a message handler on the port
 chrome.runtime.onConnectExternal.addListener(function(port) {

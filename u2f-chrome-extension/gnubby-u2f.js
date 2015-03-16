@@ -37,8 +37,8 @@ Gnubby.U2F_V1 = 'U2F_V1';
 Gnubby.U2F_V2 = 'U2F_V2';
 
 /** Perform enrollment
- * @param {Array.<number>|ArrayBuffer|Uint8Array} challenge Enrollment challenge
- * @param {Array.<number>|ArrayBuffer|Uint8Array} appIdHash Hashed application
+ * @param {Array<number>|ArrayBuffer|Uint8Array} challenge Enrollment challenge
+ * @param {Array<number>|ArrayBuffer|Uint8Array} appIdHash Hashed application
  *     id
  * @param {function(...)} cb Result callback
  * @param {boolean=} opt_individualAttestation Request the individual
@@ -68,11 +68,11 @@ Gnubby.prototype.enroll = function(challenge, appIdHash, cb,
 };
 
 /** Request signature
- * @param {Array.<number>|ArrayBuffer|Uint8Array} challengeHash Hashed
+ * @param {Array<number>|ArrayBuffer|Uint8Array} challengeHash Hashed
  *     signature challenge
- * @param {Array.<number>|ArrayBuffer|Uint8Array} appIdHash Hashed application
+ * @param {Array<number>|ArrayBuffer|Uint8Array} appIdHash Hashed application
  *     id
- * @param {Array.<number>|ArrayBuffer|Uint8Array} keyHandle Key handle to use
+ * @param {Array<number>|ArrayBuffer|Uint8Array} keyHandle Key handle to use
  * @param {function(...)} cb Result callback
  * @param {boolean=} opt_nowink Request signature without winking
  *     (e.g. during enroll)

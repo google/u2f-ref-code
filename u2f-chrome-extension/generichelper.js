@@ -22,7 +22,7 @@ var RequestHandlerFactory;
  * @implements {RequestHelper}
  */
 function GenericRequestHelper() {
-  /** @private {Object.<string, RequestHandlerFactory>} */
+  /** @private {Object<string, RequestHandlerFactory>} */
   this.handlerFactories_ = {};
 }
 

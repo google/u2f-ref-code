@@ -41,8 +41,8 @@ EtldOriginChecker.prototype.getFetcher = function() {
 /**
  * Checks whether the origin is allowed to claim the app ids.
  * @param {string} origin The origin claiming the app id.
- * @param {!Array.<string>} appIds The app ids being claimed.
- * @return {Promise.<boolean>} A promise for the result of the check.
+ * @param {!Array<string>} appIds The app ids being claimed.
+ * @return {Promise<boolean>} A promise for the result of the check.
  */
 EtldOriginChecker.prototype.canClaimAppIds = function(origin, appIds) {
   // First make sure we know the origin's eTLD + 1, to know whether the origin
@@ -67,7 +67,7 @@ EtldOriginChecker.prototype.canClaimAppIds = function(origin, appIds) {
  * @param {string} origin The origin.
  * @param {string} originEtldPlusOne The origin's etld + 1.
  * @param {string} appId The appId to check
- * @return {Promise.<boolean>} A promise for the result of the check
+ * @return {Promise<boolean>} A promise for the result of the check
  * @private
  */
 EtldOriginChecker.prototype.checkAppId_ =

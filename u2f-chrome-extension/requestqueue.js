@@ -165,7 +165,7 @@ RequestQueue.prototype.queueRequest = function(beginCb, timer) {
  * @constructor
  */
 function OriginKeyedRequestQueue() {
-  /** @private {Object.<string, !RequestQueue>} */
+  /** @private {Object<string, !RequestQueue>} */
   this.requests_ = {};
 }
 

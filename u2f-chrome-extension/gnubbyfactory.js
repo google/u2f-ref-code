@@ -17,7 +17,7 @@ function GnubbyFactory() {}
 
 /**
  * Enumerates gnubbies.
- * @param {function(number, Array.<GnubbyDeviceId>)} cb Enumerate callback
+ * @param {function(number, Array<GnubbyDeviceId>)} cb Enumerate callback
  */
 GnubbyFactory.prototype.enumerate = function(cb) {
 };
@@ -30,9 +30,12 @@ var FactoryOpenCallback;
  * @param {GnubbyDeviceId} which The device to open.
  * @param {boolean} forEnroll Whether this gnubby is being opened for enrolling.
  * @param {FactoryOpenCallback} cb Called with result of opening the gnubby.
- * @param {string=} logMsgUrl the url to post log messages to
+ * @param {string=} opt_appIdHash The base64-encoded hash of the app id for
+ *     which the gnubby being opened.
+ * @param {string=} opt_logMsgUrl The url to post log messages to.
  */
-GnubbyFactory.prototype.openGnubby = function(which, forEnroll, cb, logMsgUrl) {
+GnubbyFactory.prototype.openGnubby =
+    function(which, forEnroll, cb, opt_appIdHash, opt_logMsgUrl) {
 };
 
 /**

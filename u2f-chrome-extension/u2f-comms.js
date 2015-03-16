@@ -4,39 +4,33 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-/**
- * @fileoverview A message broker running in an embedded iframe. It routes
- * messages between a 3rd party U2F consumer page and the U2F extension.
- */
-
 'use strict';
 
 var u2fcomms = {};
 
+
 /**
- * Relays messages between the api script in the containing page and the U2F
- * extension.
+ * A message broker running in an embedded iframe. It routes messages between a
+ * 3rd party U2F consumer page and the U2F extension.
  * @constructor
  */
 u2fcomms.Forwarder = function() {
   /**
-   * @type {Port}
-   * @private
+   * @private {Port}
    */
   this.extensionPort_ = null;
 
   /**
-   * @type {MessagePort}
-   * @private
+   * @private {MessagePort}
    */
   this.pagePort_ = null;
 
   /**
-   * @type {string?}
-   * @private
+   * @private {string?}
    */
   this.pageOrigin_ = null;
 };
+
 
 /**
  * Initializes the forwarder
@@ -48,7 +42,7 @@ u2fcomms.Forwarder.prototype.init = function() {
       self.pageOrigin_ = message.origin;
       self.pagePort_ = message.ports[0];
       self.pagePort_.addEventListener('message',
-        self.onPageMessage_.bind(self));
+          self.onPageMessage_.bind(self));
       self.pagePort_.start();
       self.connectToExtension_();
 
@@ -59,6 +53,7 @@ u2fcomms.Forwarder.prototype.init = function() {
     }
   }, false);
 };
+
 
 /**
  * Handles messages from the page, forwarding to the extension.
@@ -78,6 +73,7 @@ u2fcomms.Forwarder.prototype.onPageMessage_ = function(event) {
   this.extensionPort_.postMessage(message);
 };
 
+
 /**
  * Handles messages from the extension, forwarding to the page.
  * @param {*} message
@@ -87,8 +83,9 @@ u2fcomms.Forwarder.prototype.onExtensionMessage_ = function(message) {
   this.pagePort_.postMessage(message);
 };
 
+
 /**
- * Connect to the extension if need be.
+ * Connects to the extension if need be.
  * @private
  */
 u2fcomms.Forwarder.prototype.connectToExtension_ = function() {
@@ -97,12 +94,13 @@ u2fcomms.Forwarder.prototype.connectToExtension_ = function() {
   this.extensionPort_ = chrome.runtime.connect();
   if (this.extensionPort_) {
     this.extensionPort_.onMessage.addListener(
-      this.onExtensionMessage_.bind(this));
+        this.onExtensionMessage_.bind(this));
   }
 };
 
+
 /**
- * Initialize the forwarder
+ * Initializes the forwarder.
  */
 u2fcomms.initialize = function() {
   var fwdr = new u2fcomms.Forwarder();

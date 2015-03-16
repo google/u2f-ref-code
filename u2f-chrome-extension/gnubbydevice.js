@@ -120,31 +120,3 @@ GnubbyDevice.prototype.queueCommand = function(cid, cmd, data) {};
  * }}
  */
 var UsbDeviceSpec;
-
-/**
- * Gets the list of USB devices permitted by this app.
- * @param {function(!Array.<!UsbDeviceSpec>)} cb Called back with a list of USB
- *     device specifiers.
- */
-GnubbyDevice.getPermittedUsbDevices = function(cb) {
-  chrome.permissions.getAll(function(perms) {
-    if (!perms.hasOwnProperty('permissions')) {
-      cb([]);
-      return;
-    }
-    var devs = [];
-    var permissions = perms['permissions'];
-    for (var i = 0; i < permissions.length; i++) {
-      var permission = permissions[i];
-      if (typeof permission === 'object' &&
-          permission.hasOwnProperty('usbDevices')) {
-        for (var j = 0; j < permission['usbDevices'].length; j++) {
-          var dev = permission['usbDevices'][j];
-          devs.push(
-              {'vendorId': dev['vendorId'], 'productId': dev['productId']});
-        }
-      }
-    }
-    cb(devs);
-  });
-};

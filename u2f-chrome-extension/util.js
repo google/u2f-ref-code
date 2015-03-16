@@ -23,7 +23,7 @@ function UTIL_StringToBytes(s, bytes) {
 
 /**
  * Converts a byte array to a string.
- * @param {(Uint8Array|Array.<number>)} b input byte array.
+ * @param {(Uint8Array|Array<number>)} b input byte array.
  * @return {string} result.
  */
 function UTIL_BytesToString(b) {
@@ -32,7 +32,7 @@ function UTIL_BytesToString(b) {
 
 /**
  * Converts a byte array to a hex string.
- * @param {(Uint8Array|Array.<number>)} b input byte array.
+ * @param {(Uint8Array|Array<number>)} b input byte array.
  * @return {string} result.
  */
 function UTIL_BytesToHex(b) {
@@ -167,8 +167,8 @@ var UTIL_ASN_SEQUENCE = 0x30;
 
 /**
  * Parse SEQ(INT, INT) from ASN1 byte array.
- * @param {(Uint8Array|Array.<number>)} a input to parse from.
- * @return {{'r': !Array.<number>, 's': !Array.<number>}|null}
+ * @param {(Uint8Array|Array<number>)} a input to parse from.
+ * @return {{'r': !Array<number>, 's': !Array<number>}|null}
  */
 function UTIL_Asn1SignatureToJson(a) {
   if (a.length < 6) return null;  // Too small to be valid
@@ -196,7 +196,7 @@ function UTIL_Asn1SignatureToJson(a) {
 
 /**
  * Encode a JSON signature {r,s} as an ASN1 SEQ(INT, INT). May modify sig
- * @param {{'r': (!Array.<number>|undefined), 's': !Array.<number>}} sig
+ * @param {{'r': (!Array<number>|undefined), 's': !Array<number>}} sig
  * @return {!Uint8Array}
  */
 function UTIL_JsonSignatureToAsn1(sig) {

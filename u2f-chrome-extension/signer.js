@@ -45,6 +45,10 @@ function handleWebSignRequest(messageSender, request, sendResponse) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
+  if (sender.origin.indexOf('http://') == 0 && !HTTP_ORIGINS_ALLOWED) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
+  }
 
   queuedSignRequest =
       validateAndEnqueueSignRequest(
@@ -81,6 +85,10 @@ function handleU2fSignRequest(messageSender, request, sendResponse) {
 
   var sender = createSenderFromMessageSender(messageSender);
   if (!sender) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
+  }
+  if (sender.origin.indexOf('http://') == 0 && !HTTP_ORIGINS_ALLOWED) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
@@ -217,7 +225,7 @@ function isValidSignRequest(request, signChallengesName) {
 
 /**
  * Adapter class representing a queued sign request.
- * @param {!Array.<SignChallenge>} signChallenges The sign challenges.
+ * @param {!Array<SignChallenge>} signChallenges The sign challenges.
  * @param {Countdown} timer Timeout timer
  * @param {WebRequestSender} sender Message sender.
  * @param {function(U2fError)} errorCb Error callback
@@ -231,7 +239,7 @@ function isValidSignRequest(request, signChallengesName) {
  */
 function QueuedSignRequest(signChallenges, timer, sender, errorCb,
     successCb, opt_defaultChallenge, opt_appId, opt_logMsgUrl) {
-  /** @private {!Array.<SignChallenge>} */
+  /** @private {!Array<SignChallenge>} */
   this.signChallenges_ = signChallenges;
   /** @private {Countdown} */
   this.timer_ = timer.clone(this.close.bind(this));
@@ -355,9 +363,9 @@ function Signer(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   /** @private {boolean} */
   this.done_ = false;
 
-  /** @private {Object.<string, string>} */
+  /** @private {Object<string, string>} */
   this.browserData_ = {};
-  /** @private {Object.<string, SignChallenge>} */
+  /** @private {Object<string, SignChallenge>} */
   this.serverChallenges_ = {};
   // Allow http appIds for http origins. (Broken, but the caller deserves
   // what they get.)
@@ -370,7 +378,7 @@ function Signer(timer, sender, errorCb, successCb, opt_logMsgUrl) {
 
 /**
  * Sets the challenges to be signed.
- * @param {Array.<SignChallenge>} signChallenges The challenges to set.
+ * @param {Array<SignChallenge>} signChallenges The challenges to set.
  * @param {string=} opt_defaultChallenge A default sign challenge
  *     value, if a request does not provide one.
  * @param {string=} opt_appId The app id for the entire request.
@@ -384,7 +392,7 @@ Signer.prototype.setChallenges = function(signChallenges, opt_defaultChallenge,
     this.notifyError_({errorCode: ErrorCodes.TIMEOUT});
     return true;
   }
-  /** @private {Array.<SignChallenge>} */
+  /** @private {Array<SignChallenge>} */
   this.signChallenges_ = signChallenges;
   /** @private {string|undefined} */
   this.defaultChallenge_ = opt_defaultChallenge;
@@ -423,7 +431,7 @@ Signer.prototype.checkAppIds_ = function() {
  * Called with the result of checking the origin. When the origin is allowed
  * to claim the app ids, begins checking whether the app ids also list the
  * origin.
- * @param {!Array.<string>} appIds The app ids.
+ * @param {!Array<string>} appIds The app ids.
  * @param {boolean} result Whether the origin could claim the app ids.
  * @private
  */
@@ -439,7 +447,7 @@ Signer.prototype.originChecked_ = function(appIds, result) {
   /** @private {!AppIdChecker} */
   this.appIdChecker_ = new AppIdChecker(FACTORY_REGISTRY.getTextFetcher(),
       this.timer_.clone(), this.sender_.origin,
-      /** @type {!Array.<string>} */ (appIds), this.allowHttp_,
+      /** @type {!Array<string>} */ (appIds), this.allowHttp_,
       this.logMsgUrl_);
   this.appIdChecker_.doCheck().then(this.appIdChecked_.bind(this));
 };

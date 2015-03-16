@@ -22,7 +22,7 @@ function OriginChecker() {}
 /**
  * Checks whether the origin is allowed to claim the app ids.
  * @param {string} origin The origin claiming the app id.
- * @param {!Array.<string>} appIds The app ids being claimed.
- * @return {Promise.<boolean>} A promise for the result of the check.
+ * @param {!Array<string>} appIds The app ids being claimed.
+ * @return {Promise<boolean>} A promise for the result of the check.
  */
 OriginChecker.prototype.canClaimAppIds = function(origin, appIds) {};

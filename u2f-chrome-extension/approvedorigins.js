@@ -24,6 +24,6 @@ function ApprovedOrigins() {}
  * @param {string} origin The origin to approve.
  * @param {number=} opt_tabId A tab id to display approval prompt in, if
  *     necessary.
- * @return {Promise.<boolean>} A promise for the result of the check.
+ * @return {Promise<boolean>} A promise for the result of the check.
  */
 ApprovedOrigins.prototype.isApprovedOrigin = function(origin, opt_tabId) {};

@@ -101,7 +101,7 @@ HidGnubbyDevice.prototype.publishFrame_ = function(f) {
     } else {
       changes = true;
       console.log(UTIL_fmt(
-          '[' + client.cid.toString(16) + '] left?'));
+          '[' + Gnubby.hexCid(client.cid) + '] left?'));
     }
   }
   if (changes) this.clients = remaining;
@@ -279,7 +279,7 @@ HidGnubbyDevice.prototype.updateLock_ = function(cid, cmd, arg) {
       this.lockTID = window.setTimeout(
           function() {
             console.warn(UTIL_fmt(
-                'lock for CID ' + cid.toString(16) + ' expired!'));
+                'lock for CID ' + Gnubby.hexCid(cid) + ' expired!'));
             self.lockTID = null;
             self.lockCID = 0;
           },
@@ -407,31 +407,55 @@ HidGnubbyDevice.prototype.writePump_ = function() {
 };
 
 /**
+ * List of legacy HID devices that do not support the F1D0 usage page as
+ * mandated by the spec, but still need to be supported.
+ * TODO(juanlang): remove when these devices no longer need to be supported.
+ * @const
+ */
+HidGnubbyDevice.HID_VID_PIDS = [
+  {'vendorId': 4176, 'productId': 512}  // Google-specific Yubico HID
+];
+
+/**
  * @param {function(Array)} cb Enumeration callback
  */
 HidGnubbyDevice.enumerate = function(cb) {
-  var permittedDevs;
+  /**
+   * One pass using getDevices, and one for each of the hardcoded vid/pids.
+   * @const
+   */
+  var ENUMERATE_PASSES = 1 + HidGnubbyDevice.HID_VID_PIDS.length;
   var numEnumerated = 0;
   var allDevs = [];
 
   function enumerated(devs) {
-    allDevs = allDevs.concat(devs);
-    if (++numEnumerated == permittedDevs.length) {
+    // Don't double-add a device, it'll just confuse things.
+    for (var i = 0; i < devs.length; i++) {
+      var dev = devs[i];
+      // Unfortunately indexOf is not usable, since the two calls produce
+      // different objects. Compare their deviceIds instead.
+      var found = false;
+      for (var j = 0; j < allDevs.length; j++) {
+        if (allDevs[j].deviceId == dev.deviceId) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        allDevs.push(dev);
+      }
+    }
+    if (++numEnumerated == ENUMERATE_PASSES) {
       cb(allDevs);
     }
   }
 
-  try {
-    chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]}, cb);
-  } catch (e) {
-    console.log(e);
-    console.log(UTIL_fmt('falling back to vid/pid enumeration'));
-    GnubbyDevice.getPermittedUsbDevices(function(devs) {
-      permittedDevs = devs;
-      for (var i = 0; i < devs.length; i++) {
-        chrome.hid.getDevices(devs[i], enumerated);
-      }
-    });
+  // Pass 1: usagePage-based enumeration.
+  chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]}, enumerated);
+  // Pass 2: vid/pid-based enumeration, for legacy devices.
+  for (var i = 0; i < HidGnubbyDevice.HID_VID_PIDS.length; i++) {
+    var dev = HidGnubbyDevice.HID_VID_PIDS[i];
+    chrome.hid.getDevices({filters: [dev]}, enumerated);
   }
 };
 

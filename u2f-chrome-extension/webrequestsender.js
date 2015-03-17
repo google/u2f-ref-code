@@ -133,3 +133,35 @@ function getTabIdWhenPossible(sender) {
     });
   }
 }
+
+/**
+ * Checks whether the given tab is in the foreground, i.e. is the active tab
+ * of the focused window.
+ * @param {number} tabId The tab id to check.
+ * @return {Promise<boolean>} A promise for the result of the check.
+ */
+function tabInForeground(tabId) {
+  return new Promise(function(resolve, reject) {
+      if (!chrome.tabs || !chrome.tabs.get) {
+        reject();
+        return;
+      }
+      if (!chrome.windows || !chrome.windows.get) {
+        reject();
+        return;
+      }
+      chrome.tabs.get(tabId, function(tab) {
+            if (chrome.runtime.lastError) {
+              resolve(false);
+              return;
+            }
+            if (!tab.active) {
+              resolve(false);
+              return;
+            }
+            chrome.windows.get(tab.windowId, function(aWindow) {
+                  resolve(aWindow && aWindow.focused);
+                });
+          });
+  });
+}

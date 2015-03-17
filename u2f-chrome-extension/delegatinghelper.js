@@ -20,14 +20,14 @@ var DelegatedHandlerTracker;
 
 /**
  * @param {!HelperRequest} request Request to handle.
- * @param {!Array.<!RequestHelper>} helpers Helpers to delegate to.
+ * @param {!Array<!RequestHelper>} helpers Helpers to delegate to.
  * @constructor
  * @implements {RequestHandler}
  */
 function DelegatingRequestHandler(request, helpers) {
   /** @private {!HelperRequest} */
   this.request_ = request;
-  /** @private {!Array.<!DelegatedHandlerTracker>} */
+  /** @private {!Array<!DelegatedHandlerTracker>} */
   this.trackers_ = [];
   for (var i = 0; i < helpers.length; i++) {
     var tracker = {
@@ -128,9 +128,9 @@ DelegatingRequestHandler.prototype.helperComplete_ =
  * @implements {RequestHelper}
  */
 function DelegatingHelper() {
-  /** @private {!Array.<!RequestHelper>} */
+  /** @private {!Array<!RequestHelper>} */
   this.helpers_ = [];
-  /** @private {!Object.<string, string>} */
+  /** @private {!Object<string, string>} */
   this.externalHelperIds_ = {};
 }
 

@@ -21,7 +21,7 @@ function TextFetcher() {}
  * @param {string} url The URL to fetch.
  * @param {string?} opt_method The HTTP method to use (default GET)
  * @param {string?} opt_body The request body
- * @return {!Promise.<string>} A promise for the fetched text. In case of an
+ * @return {!Promise<string>} A promise for the fetched text. In case of an
  *     error, this promise is rejected with an HTTP status code.
  */
 TextFetcher.prototype.fetch = function(url, opt_method, opt_body) {};
@@ -37,7 +37,7 @@ function XhrTextFetcher() {
  * @param {string} url The URL to fetch.
  * @param {string?} opt_method The HTTP method to use (default GET)
  * @param {string?} opt_body The request body
- * @return {!Promise.<string>} A promise for the fetched text. In case of an
+ * @return {!Promise<string>} A promise for the fetched text. In case of an
  *     error, this promise is rejected with an HTTP status code.
  */
 XhrTextFetcher.prototype.fetch = function(url, opt_method, opt_body) {

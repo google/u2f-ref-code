@@ -43,22 +43,48 @@ function handleWebEnrollRequest(messageSender, request, sendResponse) {
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
   }
 
+  function timeout() {
+    sendErrorResponse({errorCode: ErrorCodes.TIMEOUT});
+  }
+
   var sender = createSenderFromMessageSender(messageSender);
   if (!sender) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
-
-  var enroller =
-      validateEnrollRequest(
-          sender, request, 'enrollChallenges', 'signData',
-          sendErrorResponse, sendSuccessResponse);
-  if (enroller) {
-    var registerRequests = request['enrollChallenges'];
-    var signRequests = getSignRequestsFromEnrollRequest(request, 'signData');
-    closeable = /** @type {Closeable} */ (enroller);
-    enroller.doEnroll(registerRequests, signRequests, request['appId']);
+  if (sender.origin.indexOf('http://') == 0 && !HTTP_ORIGINS_ALLOWED) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
   }
+
+  if (!isValidEnrollRequest(request, 'enrollChallenges', 'signData')) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
+  }
+
+  var timeoutValueSeconds = getTimeoutValueFromRequest(request);
+  // Attenuate watchdog timeout value less than the enroller's timeout, so the
+  // watchdog only fires after the enroller could reasonably have called back,
+  // not before.
+  var watchdogTimeoutValueSeconds = attenuateTimeoutInSeconds(
+      timeoutValueSeconds, MINIMUM_TIMEOUT_ATTENUATION_SECONDS / 2);
+  var watchdog = new WatchdogRequestHandler(watchdogTimeoutValueSeconds,
+      timeout);
+  var wrappedErrorCb = watchdog.wrapCallback(sendErrorResponse);
+  var wrappedSuccessCb = watchdog.wrapCallback(sendSuccessResponse);
+
+  var timer = createAttenuatedTimer(
+      FACTORY_REGISTRY.getCountdownFactory(), timeoutValueSeconds);
+  var logMsgUrl = request['logMsgUrl'];
+  var enroller = new Enroller(timer, sender, wrappedErrorCb, wrappedSuccessCb,
+      logMsgUrl);
+  watchdog.setCloseable(/** @type {!Closeable} */ (enroller));
+  closeable = watchdog;
+
+  var registerRequests = request['enrollChallenges'];
+  var signRequests = getSignRequestsFromEnrollRequest(request, 'signData');
+  enroller.doEnroll(registerRequests, signRequests, request['appId']);
+
   return closeable;
 }
 
@@ -95,57 +121,51 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
   }
 
+  function timeout() {
+    sendErrorResponse({errorCode: ErrorCodes.TIMEOUT});
+  }
+
   var sender = createSenderFromMessageSender(messageSender);
   if (!sender) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
-
-  var enroller =
-      validateEnrollRequest(
-          sender, request, 'registerRequests', 'signRequests',
-          sendErrorResponse, sendSuccessResponse, 'registeredKeys');
-  if (enroller) {
-    var registerRequests = request['registerRequests'];
-    var signRequests = getSignRequestsFromEnrollRequest(request,
-        'signRequests', 'registeredKeys');
-    closeable = /** @type {Closeable} */ (enroller);
-    enroller.doEnroll(registerRequests, signRequests, request['appId']);
+  if (sender.origin.indexOf('http://') == 0 && !HTTP_ORIGINS_ALLOWED) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
   }
-  return closeable;
-}
 
-/**
- * Validates an enroll request using the given parameters.
- * @param {WebRequestSender} sender The sender of the message.
- * @param {Object} request The web page's enroll request.
- * @param {string} enrollChallengesName The name of the enroll challenges value
- *     in the request.
- * @param {string} signChallengesName The name of the sign challenges value in
- *     the request.
- * @param {function(U2fError)} errorCb Error callback.
- * @param {function(string, string, (string|undefined))} successCb Success
- *     callback.
- * @param {string=} opt_registeredKeysName The name of the registered keys
- *     value in the request.
- * @return {Enroller} Enroller object representing the request, if the request
- *     is valid, or null if the request is invalid.
- */
-function validateEnrollRequest(sender, request,
-    enrollChallengesName, signChallengesName, errorCb, successCb,
-    opt_registeredKeysName) {
-  if (!isValidEnrollRequest(request, enrollChallengesName,
-      signChallengesName, opt_registeredKeysName)) {
-    errorCb({errorCode: ErrorCodes.BAD_REQUEST});
+  if (!isValidEnrollRequest(request, 'registerRequests', 'signRequests',
+      'registeredKeys')) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
 
   var timeoutValueSeconds = getTimeoutValueFromRequest(request);
+  // Attenuate watchdog timeout value less than the enroller's timeout, so the
+  // watchdog only fires after the enroller could reasonably have called back,
+  // not before.
+  var watchdogTimeoutValueSeconds = attenuateTimeoutInSeconds(
+      timeoutValueSeconds, MINIMUM_TIMEOUT_ATTENUATION_SECONDS / 2);
+  var watchdog = new WatchdogRequestHandler(watchdogTimeoutValueSeconds,
+      timeout);
+  var wrappedErrorCb = watchdog.wrapCallback(sendErrorResponse);
+  var wrappedSuccessCb = watchdog.wrapCallback(sendSuccessResponse);
+
   var timer = createAttenuatedTimer(
       FACTORY_REGISTRY.getCountdownFactory(), timeoutValueSeconds);
   var logMsgUrl = request['logMsgUrl'];
-  var enroller = new Enroller(timer, sender, errorCb, successCb, logMsgUrl);
-  return enroller;
+  var enroller = new Enroller(timer, sender, sendErrorResponse,
+      sendSuccessResponse, logMsgUrl);
+  watchdog.setCloseable(/** @type {!Closeable} */ (enroller));
+  closeable = watchdog;
+
+  var registerRequests = request['registerRequests'];
+  var signRequests = getSignRequestsFromEnrollRequest(request,
+      'signRequests', 'registeredKeys');
+  enroller.doEnroll(registerRequests, signRequests, request['appId']);
+
+  return closeable;
 }
 
 /**
@@ -197,7 +217,7 @@ function isValidEnrollRequest(request, enrollChallengesName,
 var EnrollChallenge;
 
 /**
- * @param {Array.<EnrollChallenge>} enrollChallenges The enroll challenges to
+ * @param {Array<EnrollChallenge>} enrollChallenges The enroll challenges to
  *     validate.
  * @param {boolean} appIdRequired Whether the appId property is required on
  *     each challenge.
@@ -235,7 +255,7 @@ function isValidEnrollChallengeArray(enrollChallenges, appIdRequired) {
 /**
  * Finds the enroll challenge of the given version in the enroll challlenge
  * array.
- * @param {Array.<EnrollChallenge>} enrollChallenges The enroll challenges to
+ * @param {Array<EnrollChallenge>} enrollChallenges The enroll challenges to
  *     search.
  * @param {string} version Version to search for.
  * @return {?EnrollChallenge} The enroll challenge with the given versions, or
@@ -289,7 +309,7 @@ function makeEnrollResponseData(enrollChallenge, u2fVersion, enrollDataName,
  *     the request.
  * @param {string=} opt_registeredKeysName The name of the registered keys
  *     value in the request.
- * @return {Array.<SignChallenge>}
+ * @return {Array<SignChallenge>}
  */
 function getSignRequestsFromEnrollRequest(request, signChallengesName,
     opt_registeredKeysName) {
@@ -338,11 +358,11 @@ function Enroller(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   /** @private {boolean} */
   this.done_ = false;
 
-  /** @private {Object.<string, string>} */
+  /** @private {Object<string, string>} */
   this.browserData_ = {};
-  /** @private {Array.<EnrollHelperChallenge>} */
+  /** @private {Array<EnrollHelperChallenge>} */
   this.encodedEnrollChallenges_ = [];
-  /** @private {Array.<SignHelperChallenge>} */
+  /** @private {Array<SignHelperChallenge>} */
   this.encodedSignChallenges_ = [];
   // Allow http appIds for http origins. (Broken, but the caller deserves
   // what they get.)
@@ -360,16 +380,16 @@ Enroller.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
 
 /**
  * Performs an enroll request with the given enroll and sign challenges.
- * @param {Array.<EnrollChallenge>} enrollChallenges A set of enroll challenges.
- * @param {Array.<SignChallenge>} signChallenges A set of sign challenges for
+ * @param {Array<EnrollChallenge>} enrollChallenges A set of enroll challenges.
+ * @param {Array<SignChallenge>} signChallenges A set of sign challenges for
  *     existing enrollments for this user and appId.
  * @param {string=} opt_appId The app id for the entire request.
  */
 Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
     opt_appId) {
-  /** @private {Array.<EnrollChallenge>} */
+  /** @private {Array<EnrollChallenge>} */
   this.enrollChallenges_ = enrollChallenges;
-  /** @private {Array.<SignChallenge>} */
+  /** @private {Array<SignChallenge>} */
   this.signChallenges_ = signChallenges;
   /** @private {(string|undefined)} */
   this.appId_ = opt_appId;
@@ -395,12 +415,27 @@ Enroller.prototype.approveOrigin_ = function() {
       .then(function(result) {
         if (self.done_) return;
         if (!result) {
-          // Origin not approved: fail the result.
-          self.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
+          // Origin not approved: rather than give an explicit indication to
+          // the web page, let a timeout occur.
+          if (self.timer_.expired()) {
+            self.notifyTimeout_();
+            return;
+          }
+          var newTimer = self.timer_.clone(self.notifyTimeout_.bind(self));
+          self.timer_.clearTimeout();
+          self.timer_ = newTimer;
           return;
         }
         self.sendEnrollRequestToHelper_();
       });
+};
+
+/**
+ * Notifies the caller of a timeout error.
+ * @private
+ */
+Enroller.prototype.notifyTimeout_ = function() {
+  this.notifyError_({errorCode: ErrorCodes.TIMEOUT});
 };
 
 /**
@@ -498,9 +533,9 @@ Enroller.encodeEnrollChallenge_ = function(enrollChallenge, opt_appId) {
 
 /**
  * Encodes the given enroll challenges using this enroller's state.
- * @param {Array.<EnrollChallenge>} enrollChallenges The enroll challenges.
+ * @param {Array<EnrollChallenge>} enrollChallenges The enroll challenges.
  * @param {string=} opt_appId The app id for the entire request.
- * @return {!Array.<EnrollHelperChallenge>} The encoded enroll challenges.
+ * @return {!Array<EnrollHelperChallenge>} The encoded enroll challenges.
  * @private
  */
 Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges,
@@ -543,7 +578,7 @@ Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges,
 /**
  * Checks the app ids associated with this enroll request, and calls a callback
  * with the result of the check.
- * @param {!Array.<string>} enrollAppIds The app ids in the enroll challenge
+ * @param {!Array<string>} enrollAppIds The app ids in the enroll challenge
  *     portion of the enroll request.
  * @param {function(boolean)} cb Called with the result of the check.
  * @private
@@ -560,7 +595,7 @@ Enroller.prototype.checkAppIds_ = function(enrollAppIds, cb) {
  * Called with the result of checking the origin. When the origin is allowed
  * to claim the app ids, begins checking whether the app ids also list the
  * origin.
- * @param {!Array.<string>} appIds The app ids.
+ * @param {!Array<string>} appIds The app ids.
  * @param {function(boolean)} cb Called with the result of the check.
  * @param {boolean} result Whether the origin could claim the app ids.
  * @private

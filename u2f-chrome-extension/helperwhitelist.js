@@ -16,12 +16,12 @@
 function RequestHelperWhitelist() {
   /**
    * Maps extension id -> mnemonic
-   * @private {Object.<string, string>}
+   * @private {Object<string, string>}
    */
   this.allowedExtensionIds_ = {};
   /**
    * Maps b64(sha256(extension id)) -> mnemonic
-   * @private {Object.<string, string>}
+   * @private {Object<string, string>}
    */
   this.allowedBlindedExtensionIds_ = {};
 }

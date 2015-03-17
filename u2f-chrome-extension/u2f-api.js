@@ -10,17 +10,20 @@
 
 'use strict';
 
-/** Namespace for the U2F api.
+
+/**
+ * Namespace for the U2F api.
  * @type {Object}
  */
 var u2f = u2f || {};
 
+
 /**
  * The U2F extension id
- * @type {string}
- * @const
+ * @const {string}
  */
 u2f.EXTENSION_ID = 'pfboblefjcgdjicmnffhdgionmgcdmne';
+
 
 /**
  * Message types for messsages to/from the extension
@@ -33,6 +36,7 @@ u2f.MessageTypes = {
   'U2F_REGISTER_RESPONSE': 'u2f_register_response',
   'U2F_SIGN_RESPONSE': 'u2f_sign_response'
 };
+
 
 /**
  * Response status codes
@@ -48,17 +52,19 @@ u2f.ErrorCodes = {
   'TIMEOUT': 5
 };
 
+
 /**
  * A message type for registration requests
  * @typedef {{
  *   type: u2f.MessageTypes,
- *   signRequests: Array.<u2f.SignRequest>,
- *   registerRequests: ?Array.<u2f.RegisterRequest>,
+ *   signRequests: Array<u2f.SignRequest>,
+ *   registerRequests: ?Array<u2f.RegisterRequest>,
  *   timeoutSeconds: ?number,
  *   requestId: ?number
  * }}
  */
 u2f.Request;
+
 
 /**
  * A message for registration responses
@@ -70,6 +76,7 @@ u2f.Request;
  */
 u2f.Response;
 
+
 /**
  * An error object for responses
  * @typedef {{
@@ -78,6 +85,7 @@ u2f.Response;
  * }}
  */
 u2f.Error;
+
 
 /**
  * Data object for a single sign request.
@@ -90,6 +98,7 @@ u2f.Error;
  */
 u2f.SignRequest;
 
+
 /**
  * Data object for a sign response.
  * @typedef {{
@@ -100,6 +109,7 @@ u2f.SignRequest;
  */
 u2f.SignResponse;
 
+
 /**
  * Data object for a registration request.
  * @typedef {{
@@ -109,6 +119,7 @@ u2f.SignResponse;
  * }}
  */
 u2f.RegisterRequest;
+
 
 /**
  * Data object for a registration response.
@@ -121,6 +132,7 @@ u2f.RegisterResponse;
 
 
 // Low level MessagePort API support
+
 
 /**
  * Sets up a MessagePort to the U2F extension using the
@@ -154,18 +166,21 @@ u2f.getMessagePort = function(callback) {
   }
 };
 
+
 /**
- * Connects directly to the extension via chrome.runtime.connect
+ * Connects directly to the extension via chrome.runtime.connect.
  * @param {function(u2f.WrappedChromeRuntimePort_)} callback
  * @private
  */
 u2f.getChromeRuntimePort_ = function(callback) {
   var port = chrome.runtime.connect(u2f.EXTENSION_ID,
-    {'includeTlsChannelId': true});
+      {'includeTlsChannelId': true});
   setTimeout(function() {
     callback(new u2f.WrappedChromeRuntimePort_(port));
   }, 0);
 };
+
+
 
 /**
  * A wrapper for chrome.runtime.Port that is compatible with MessagePort.
@@ -177,6 +192,7 @@ u2f.WrappedChromeRuntimePort_ = function(port) {
   this.port_ = port;
 };
 
+
 /**
  * Posts a message on the underlying channel.
  * @param {Object} message
@@ -184,6 +200,7 @@ u2f.WrappedChromeRuntimePort_ = function(port) {
 u2f.WrappedChromeRuntimePort_.prototype.postMessage = function(message) {
   this.port_.postMessage(message);
 };
+
 
 /**
  * Emulates the HTML 5 addEventListener interface. Works only for the
@@ -203,6 +220,7 @@ u2f.WrappedChromeRuntimePort_.prototype.addEventListener =
     console.error('WrappedChromeRuntimePort only supports onMessage');
   }
 };
+
 
 /**
  * Sets up an embedded trampoline iframe, sourced from the extension.
@@ -238,40 +256,42 @@ u2f.getIframePort_ = function(callback) {
 
 // High-level JS API
 
+
 /**
  * Default extension response timeout in seconds.
  * @const
  */
 u2f.EXTENSION_TIMEOUT_SEC = 30;
 
+
 /**
  * A singleton instance for a MessagePort to the extension.
- * @type {MessagePort|u2f.WrappedChromeRuntimePort_}
- * @private
+ * @private {MessagePort|u2f.WrappedChromeRuntimePort_}
  */
 u2f.port_ = null;
 
+
 /**
  * Callbacks waiting for a port
- * @type {Array.<function((MessagePort|u2f.WrappedChromeRuntimePort_))>}
- * @private
+ * @private {Array<function((MessagePort|u2f.WrappedChromeRuntimePort_))>}
  */
 u2f.waitingForPort_ = [];
 
+
 /**
  * A counter for requestIds.
- * @type {number}
- * @private
+ * @private {number}
  */
 u2f.reqCounter_ = 0;
 
+
 /**
  * A map from requestIds to client callbacks
- * @type {Object.<number,(function((u2f.Error|u2f.RegisterResponse))
+ * @private {Object<number,(function((u2f.Error|u2f.RegisterResponse))
  *                       |function((u2f.Error|u2f.SignResponse)))>}
- * @private
  */
 u2f.callbackMap_ = {};
+
 
 /**
  * Creates or retrieves the MessagePort singleton to use.
@@ -286,7 +306,7 @@ u2f.getPortSingleton_ = function(callback) {
       u2f.getMessagePort(function(port) {
         u2f.port_ = port;
         u2f.port_.addEventListener('message',
-          /** @type {function(Event)} */ (u2f.responseHandler_));
+            /** @type {function(Event)} */ (u2f.responseHandler_));
 
         // Careful, here be async callbacks. Maybe.
         while (u2f.waitingForPort_.length)
@@ -296,6 +316,7 @@ u2f.getPortSingleton_ = function(callback) {
     u2f.waitingForPort_.push(callback);
   }
 };
+
 
 /**
  * Handles response messages from the extension.
@@ -314,9 +335,10 @@ u2f.responseHandler_ = function(message) {
   cb(response['responseData']);
 };
 
+
 /**
  * Dispatches an array of sign requests to available U2F tokens.
- * @param {Array.<u2f.SignRequest>} signRequests
+ * @param {Array<u2f.SignRequest>} signRequests
  * @param {function((u2f.Error|u2f.SignResponse))} callback
  * @param {number=} opt_timeoutSeconds
  */
@@ -328,18 +350,19 @@ u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
       type: u2f.MessageTypes.U2F_SIGN_REQUEST,
       signRequests: signRequests,
       timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
-        opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
       requestId: reqId
     };
     port.postMessage(req);
   });
 };
 
+
 /**
  * Dispatches register requests to available U2F tokens. An array of sign
  * requests identifies already registered tokens.
- * @param {Array.<u2f.RegisterRequest>} registerRequests
- * @param {Array.<u2f.SignRequest>} signRequests
+ * @param {Array<u2f.RegisterRequest>} registerRequests
+ * @param {Array<u2f.SignRequest>} signRequests
  * @param {function((u2f.Error|u2f.RegisterResponse))} callback
  * @param {number=} opt_timeoutSeconds
  */
@@ -353,7 +376,7 @@ u2f.register = function(registerRequests, signRequests,
       signRequests: signRequests,
       registerRequests: registerRequests,
       timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
-        opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
       requestId: reqId
     };
     port.postMessage(req);

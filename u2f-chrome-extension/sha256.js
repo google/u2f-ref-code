@@ -53,7 +53,7 @@ SHA256.prototype.reset = function() {
 };
 
 /** Hash the next block of 64 bytes
- * @param {Array.<number>} buf A 64 byte buffer
+ * @param {Array<number>} buf A 64 byte buffer
  */
 SHA256.prototype._compress = function(buf) {
   var W = this._W;
@@ -115,7 +115,7 @@ SHA256.prototype._compress = function(buf) {
 };
 
 /** Update the hash with additional data
- * @param {Array.<number>|Uint8Array} bytes The data
+ * @param {Array<number>|Uint8Array} bytes The data
  * @param {number=} opt_length How many bytes to hash, if not all */
 SHA256.prototype.update = function(bytes, opt_length) {
   if (!opt_length) opt_length = bytes.length;
@@ -131,7 +131,7 @@ SHA256.prototype.update = function(bytes, opt_length) {
 };
 
 /** Update the hash with a specified range from a data buffer
- * @param {Array.<number>} bytes The data buffer
+ * @param {Array<number>} bytes The data buffer
  * @param {number} start Starting index of the range in bytes
  * @param {number} end End index, will not be included in range
  */
@@ -150,7 +150,7 @@ SHA256.prototype.updateRange = function(bytes, start, end) {
  * Optionally update the hash with additional arguments, and return the
  * resulting hash value.
  * @param {...*} var_args Data buffers to hash
- * @return {Array.<number>} the SHA256 hash value.
+ * @return {Array<number>} the SHA256 hash value.
  */
 SHA256.prototype.digest = function(var_args) {
   for (var i = 0; i < arguments.length; ++i)

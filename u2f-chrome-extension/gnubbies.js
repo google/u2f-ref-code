@@ -32,20 +32,20 @@ var GnubbyNamespaceImpl;
  * @constructor
  */
 function Gnubbies() {
-  /** @private {Object.<string, Array>} */
+  /** @private {Object<string, Array>} */
   this.devs_ = {};
   this.pendingEnumerate = [];  // clients awaiting an enumerate
   /**
    * The distinct namespaces registered in this Gnubbies instance, in order of
    * registration.
-   * @private {Array.<string>}
+   * @private {Array<string>}
    */
   this.namespaces_ = [];
-  /** @private {Object.<string, GnubbyNamespaceImpl>} */
+  /** @private {Object<string, GnubbyNamespaceImpl>} */
   this.impl_ = {};
-  /** @private {Object.<string, Object.<number, !GnubbyDevice>>} */
+  /** @private {Object<string, Object<number, !GnubbyDevice>>} */
   this.openDevs_ = {};
-  /** @private {Object.<string, Object.<number, *>>} */
+  /** @private {Object<string, Object<number, *>>} */
   this.pendingOpens_ = {};  // clients awaiting an open
 }
 
@@ -99,7 +99,7 @@ Gnubbies.prototype.closeAll = function() {
 };
 
 /**
- * @param {function(number, Array.<GnubbyDeviceId>)} cb Called back with the
+ * @param {function(number, Array<GnubbyDeviceId>)} cb Called back with the
  *     result of enumerating.
  */
 Gnubbies.prototype.enumerate = function(cb) {
@@ -128,7 +128,7 @@ Gnubbies.prototype.enumerate = function(cb) {
 
   /**
    * @param {string} namespace The namespace that was enumerated.
-   * @param {Array.<GnubbyDeviceId>} existingDeviceIds Previously enumerated
+   * @param {Array<GnubbyDeviceId>} existingDeviceIds Previously enumerated
    *     device IDs (from other namespaces), if any.
    * @param {Array} devs The devices in the namespace.
    */

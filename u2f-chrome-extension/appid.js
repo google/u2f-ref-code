@@ -12,13 +12,35 @@
 /**
  * Parses the text as JSON and returns it as an array of strings.
  * @param {string} text Input JSON
- * @return {!Array.<string>} Array of origins
+ * @return {!Array<string>} Array of origins
  */
 function getOriginsFromJson(text) {
   try {
-    var urls = JSON.parse(text);
+    var urls, i;
+    var appIdData = JSON.parse(text);
+    if (Array.isArray(appIdData)) {
+      // Older format where it is a simple list of facets
+      urls = appIdData;
+    } else {
+      var trustedFacets = appIdData['trustedFacets'];
+      if (trustedFacets) {
+        var versionBlock;
+        for (i = 0; versionBlock = trustedFacets[i]; i++) {
+          if (versionBlock['version'] &&
+              versionBlock['version']['major'] == 1 &&
+              versionBlock['version']['minor'] == 0) {
+            urls = versionBlock['ids'];
+            break;
+          }
+        }
+      }
+      if (typeof urls == 'undefined') {
+        throw Error('Could not find trustedFacets for version 1.0');
+      }
+    }
     var origins = {};
-    for (var i = 0, url; url = urls[i]; i++) {
+    var url;
+    for (i = 0; url = urls[i]; i++) {
       var origin = getOriginFromUrl(url);
       if (origin) {
         origins[origin] = origin;
@@ -26,15 +48,15 @@ function getOriginsFromJson(text) {
     }
     return Object.keys(origins);
   } catch (e) {
-    console.log(UTIL_fmt('could not parse ' + text));
+    console.error(UTIL_fmt('could not parse ' + text));
     return [];
   }
 }
 
 /**
  * Retrieves a set of distinct app ids from the sign challenges.
- * @param {Array.<SignChallenge>=} signChallenges Input sign challenges.
- * @return {Array.<string>} array of distinct app ids.
+ * @param {Array<SignChallenge>=} signChallenges Input sign challenges.
+ * @return {Array<string>} array of distinct app ids.
  */
 function getDistinctAppIds(signChallenges) {
   if (!signChallenges) {
@@ -55,7 +77,7 @@ function getDistinctAppIds(signChallenges) {
  * @param {!TextFetcher} fetcher A URL fetcher.
  * @param {!Countdown} timer A timer by which to resolve all provided app ids.
  * @param {string} origin The origin to check.
- * @param {!Array.<string>} appIds The app ids to check.
+ * @param {!Array<string>} appIds The app ids to check.
  * @param {boolean} allowHttp Whether to allow http:// URLs.
  * @param {string=} opt_logMsgUrl A log message URL.
  * @constructor
@@ -74,7 +96,7 @@ function AppIdChecker(fetcher, timer, origin, appIds, allowHttp, opt_logMsgUrl)
       appIdsMap[appIds[i]] = appIds[i];
     }
   }
-  /** @private {Array.<string>} */
+  /** @private {Array<string>} */
   this.distinctAppIds_ = Object.keys(appIdsMap);
   /** @private {boolean} */
   this.allowHttp_ = allowHttp;
@@ -91,7 +113,7 @@ function AppIdChecker(fetcher, timer, origin, appIds, allowHttp, opt_logMsgUrl)
 
 /**
  * Checks whether all the app ids provided can be asserted by the given origin.
- * @return {Promise.<boolean>} A promise for the result of the check
+ * @return {Promise<boolean>} A promise for the result of the check
  */
 AppIdChecker.prototype.doCheck = function() {
   if (!this.distinctAppIds_.length)
@@ -117,7 +139,7 @@ AppIdChecker.prototype.doCheck = function() {
 /**
  * Checks if a single appId can be asserted by the given origin.
  * @param {string} appId The appId to check
- * @return {Promise.<boolean>} A promise for the result of the check
+ * @return {Promise<boolean>} A promise for the result of the check
  * @private
  */
 AppIdChecker.prototype.checkAppId_ = function(appId) {
@@ -159,7 +181,7 @@ AppIdChecker.prototype.allAppIdsEqualOrigin_ = function() {
 /**
  * Fetches the allowed origins for an appId.
  * @param {string} appId Application id
- * @return {Promise.<!Array.<string>>} A promise for a list of allowed origins
+ * @return {Promise<!Array<string>>} A promise for a list of allowed origins
  *     for appId
  * @private
  */

@@ -18,7 +18,7 @@ function UsbEnrollHandler(request) {
   /** @private {!EnrollHelperRequest} */
   this.request_ = request;
 
-  /** @private {Array.<Gnubby>} */
+  /** @private {Array<Gnubby>} */
   this.waitingForTouchGnubbies_ = [];
 
   /** @private {boolean} */
@@ -100,14 +100,17 @@ UsbEnrollHandler.prototype.signerFoundGnubby_ =
     // caller, as the gnubby is already enrolled. Map ok to WRONG_DATA, so the
     // caller knows what to do.
     this.notifyError_(DeviceStatusCodes.WRONG_DATA_STATUS);
-  } else if (signResult.code == DeviceStatusCodes.WRONG_DATA_STATUS ||
-      signResult.code == DeviceStatusCodes.WRONG_LENGTH_STATUS) {
+  } else if (SingleGnubbySigner.signErrorIndicatesInvalidKeyHandle(
+      signResult.code)) {
     var gnubby = signResult['gnubby'];
     // A valid helper request contains at least one enroll challenge, so use
     // the app id hash from the first challenge.
     var appIdHash = this.request_.enrollChallenges[0].appIdHash;
     DEVICE_FACTORY_REGISTRY.getGnubbyFactory().notEnrolledPrerequisiteCheck(
         gnubby, appIdHash, this.gnubbyPrerequisitesChecked_.bind(this));
+  } else {
+    // Unexpected error in signing? Send this immediately to the caller.
+    this.notifyError_(signResult.code);
   }
 };
 

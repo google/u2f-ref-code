@@ -17,26 +17,16 @@
  * @constructor
  */
 function EffectiveTldFetcher(fetcher, opt_cache) {
-  /** @private {!TextFetcher} */
-  this.fetcher_ = fetcher;
-  /** @private {boolean} */
-  this.cacheEtlds_ = opt_cache || false;
-  /** @private {(!Array.<string>)|undefined} */
-  this.eTlds_ = undefined;
-  if (!EffectiveTldFetcher.effectiveTldListUrls_.length) {
-    // Lazily initialize static etld URL list to avoid initialization order
-    // snafus.
-    EffectiveTldFetcher.effectiveTldListUrls_.push(
-        'chrome-extension://' + chrome.runtime.id + '/effective_tld_names.dat');
-  }
+  /** @private {(!Array<string>)|undefined} */
+  this.eTlds_ = ETLD_NAMES_LIST;
 }
 
-/** @private {!Array.<string>} */
+/** @private {!Array<string>} */
 EffectiveTldFetcher.effectiveTldListUrls_ = [];
 
 /**
  * A fixed list of known TLDs.
- * @private {!Array.<string>}
+ * @private {!Array<string>}
  */
 EffectiveTldFetcher.fixed_tld_list_ = [];
 
@@ -44,7 +34,7 @@ EffectiveTldFetcher.fixed_tld_list_ = [];
  * Sets a fixed list of known TLDs. This list is not canonical: if an origin
  * is not found to be in this list, a canonical list is fetched from
  * EffectiveTldFetcher.effectiveTldListUrls_.
- * @param {!Array.<string>} tlds The list of known TLDs.
+ * @param {!Array<string>} tlds The list of known TLDs.
  */
 EffectiveTldFetcher.setFixedTldList = function(tlds) {
   EffectiveTldFetcher.fixed_tld_list_ = tlds;
@@ -52,7 +42,7 @@ EffectiveTldFetcher.setFixedTldList = function(tlds) {
 
 /**
  * @param {string} origin The origin.
- * @return {Promise.<?string>} A promise for the eTLD+1 of origin, or null if it
+ * @return {Promise<?string>} A promise for the eTLD+1 of origin, or null if it
  *     doesn't have one (e.g. the origin is invalid.)
  */
 EffectiveTldFetcher.prototype.getEffectiveTldPlusOne = function(origin) {
@@ -61,16 +51,12 @@ EffectiveTldFetcher.prototype.getEffectiveTldPlusOne = function(origin) {
   if (etld) {
     return Promise.resolve(/** @type {?string} */(etld));
   }
-  var p = this.loadEffectiveTlds_();
-  var self = this;
-  return p.then(function(eTlds) {
-    return self.getEffectiveTldPlusOne_(origin, eTlds);
-  });
+  return Promise.resolve(this.getEffectiveTldPlusOne_(origin, this.eTlds_));
 };
 
 /**
  * @param {string} origin The origin.
- * @param {!Array.<string>} eTlds The list of extended TLDs.
+ * @param {!Array<string>} eTlds The list of extended TLDs.
  * @return {?string} The eTLD + 1 of the origin, or null if it doesn't have one
  *     (e.g. is invalid.)
  * @private
@@ -104,68 +90,5 @@ EffectiveTldFetcher.prototype.getEffectiveTldPlusOne_ =
       return prev;
     }
   }
-};
-
-/**
- * Retrieves the list of extended TLDs.
- * @param {number=} opt_index Which url from effectiveTldListUrls_
- *     to fetch, default 0.
- * @return {Promise.<!Array.<string>>} A promise for an array of eTLDs.
- * @private
- */
-EffectiveTldFetcher.prototype.loadEffectiveTlds_ = function(opt_index) {
-  var index = opt_index === undefined ? 0 : opt_index;
-  if (this.eTlds_) {
-    return Promise.resolve(this.eTlds_);
-  }
-  var p = this.fetcher_.fetch(
-    EffectiveTldFetcher.effectiveTldListUrls_[index]);
-  var self = this;
-  return p.then(function(text) {
-    var eTlds = self.getEffectiveTldsFromText_(/** @type {string} */ (text));
-    if (self.cacheEtlds_) {
-      self.eTlds_ = eTlds;
-    }
-    return eTlds;
-  }, function(rc) {
-    if (rc == 404 &&
-        index + 1 < EffectiveTldFetcher.effectiveTldListUrls_.length) {
-      // Retry with the next URL in the list
-      return self.loadEffectiveTlds_(index + 1);
-    } else {
-      return [];
-    }
-  });
-};
-
-/**
- * Parses the text input as a sequence of newline-delimited extended TLDs.
- * @param {string} text The text to parse.
- * @return {!Array.<string>} The list of extended TLDs.
- * @private
- */
-EffectiveTldFetcher.prototype.getEffectiveTldsFromText_ = function(text) {
-  var origins = [];
-  var lines = text.split('\n');
-  for (var i = 0; i < lines.length; i++) {
-    var line = lines[i];
-    if (!line) {
-      continue;
-    }
-    if (line.substring(0, 2) == '//') {
-      continue;
-    }
-    // For now, ignore non-alpha first characters, e.g. *.mz or !teledata.mz,
-    // because interpreting them correctly is more difficult: wildcard matching
-    // rules imply precedence within the origins list. See the rule definition
-    // at https://publicsuffix.org/list/
-    // TODO: This test also doesn't match non-alpha starting
-    // characters. Implement for these cases too.
-    if (!/^[a-zA-Z]/.test(line)) {
-      continue;
-    }
-    origins.push(line);
-  }
-  return origins;
 };
 

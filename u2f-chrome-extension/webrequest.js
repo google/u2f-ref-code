@@ -51,7 +51,7 @@ function isValidRegisteredKey(registeredKey, appIdRequired) {
 
 /**
  * Returns whether the array of registered keys appears to be valid.
- * @param {Array.<Object>} registeredKeys The array of registered keys.
+ * @param {Array<Object>} registeredKeys The array of registered keys.
  * @param {boolean} appIdRequired Whether the appId property is required on
  *     each challenge.
  * @return {boolean} Whether the array appears valid.
@@ -64,7 +64,7 @@ function isValidRegisteredKeyArray(registeredKeys, appIdRequired) {
 
 /**
  * Returns whether the array of SignChallenges appears to be valid.
- * @param {Array.<SignChallenge>} signChallenges The array of sign challenges.
+ * @param {Array<SignChallenge>} signChallenges The array of sign challenges.
  * @param {boolean} challengeValueRequired Whether each challenge object
  *     requires a challenge value.
  * @param {boolean} appIdRequired Whether the appId property is required on
@@ -260,7 +260,6 @@ function mapErrorCodeToGnubbyCodeType(errorCode, forSign) {
 
     case ErrorCodes.TIMEOUT:
       return GnubbyCodeTypes.WAIT_TOUCH;
-
   }
   return GnubbyCodeTypes.UNKNOWN_ERROR;
 }
@@ -279,7 +278,6 @@ function mapDeviceStatusCodeToU2fError(code) {
     case DeviceStatusCodes.TIMEOUT_STATUS:
     case DeviceStatusCodes.WAIT_TOUCH_STATUS:
       return {errorCode: ErrorCodes.TIMEOUT};
-
 
     default:
       var reportedError = {
@@ -318,7 +316,7 @@ function sendResponseOnce(sentResponse, closeable, response, sendResponse) {
 
 /**
  * @param {!string} string Input string
- * @return {Array.<number>} SHA256 hash value of string.
+ * @return {Array<number>} SHA256 hash value of string.
  */
 function sha256HashOfString(string) {
   var s = new SHA256();
@@ -411,7 +409,7 @@ function makeSignBrowserData(serverChallenge, origin, opt_tlsChannelId) {
 
 /**
  * Encodes the sign data as an array of sign helper challenges.
- * @param {Array.<SignChallenge>} signChallenges The sign challenges to encode.
+ * @param {Array<SignChallenge>} signChallenges The sign challenges to encode.
  * @param {string|undefined} opt_defaultChallenge A default sign challenge
  *     value, if a request does not provide one.
  * @param {string=} opt_defaultAppId The app id to use for each challenge, if
@@ -420,7 +418,7 @@ function makeSignBrowserData(serverChallenge, origin, opt_tlsChannelId) {
  *     A function that produces, from a key handle and a raw challenge, a hash
  *     of the raw challenge. If none is provided, a default hash function is
  *     used.
- * @return {!Array.<SignHelperChallenge>} The sign challenges, encoded.
+ * @return {!Array<SignHelperChallenge>} The sign challenges, encoded.
  */
 function encodeSignChallenges(signChallenges, opt_defaultChallenge,
     opt_defaultAppId, opt_challengeHashFunction) {
@@ -460,7 +458,7 @@ function encodeSignChallenges(signChallenges, opt_defaultChallenge,
 
 /**
  * Makes a sign helper request from an array of challenges.
- * @param {Array.<SignHelperChallenge>} challenges The sign challenges.
+ * @param {Array<SignHelperChallenge>} challenges The sign challenges.
  * @param {number=} opt_timeoutSeconds Timeout value.
  * @param {string=} opt_logMsgUrl URL to log to.
  * @return {SignHelperRequest} The sign helper request.

@@ -409,7 +409,7 @@ HidGnubbyDevice.prototype.writePump_ = function() {
 /**
  * List of legacy HID devices that do not support the F1D0 usage page as
  * mandated by the spec, but still need to be supported.
- * TODO(juanlang): remove when these devices no longer need to be supported.
+ * TODO: remove when these devices no longer need to be supported.
  * @const
  */
 HidGnubbyDevice.HID_VID_PIDS = [

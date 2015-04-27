@@ -3,11 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry excluding="com/google/u2f/tools/httpserver/**" kind="src" path="u2f-ref"/>
 	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
-		<attributes>
-			<attribute name="owner.project.facets" value="java"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/soy-latest.jar" sourcepath="/Users/balfanz/Downloads/guava-17.0-sources.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/aopalliance.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/guice-3.0.jar"/>
@@ -19,5 +14,10 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/u2f-ref-code"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/commons-codec-1.9.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/bcprov-jdk15on-150.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 7 [1.7.0_76]">
+		<attributes>
+			<attribute name="owner.project.facets" value="java"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonElement;
@@ -309,7 +310,8 @@ public class U2FServerReferenceImpl implements U2FServer {
   private void verifyOrigin(String origin) throws U2FException {
     if (!allowedOrigins.contains(canonicalizeOrigin(origin))) {
       throw new U2FException(origin +
-          " is not a recognized home origin for this backend");
+          " is not a recognized home origin for this backend" +
+    		  Joiner.on(", ").join(allowedOrigins));
     }
   }
 

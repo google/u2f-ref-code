@@ -299,7 +299,6 @@ public class U2FServerReferenceImpl implements U2FServer {
     byte[] challengeFromBrowserData = 
         Base64.decodeBase64(browserData.get(CHALLENGE_PARAM).getAsString());
 
-
     if (!Arrays.equals(challengeFromBrowserData, sessionData.getChallenge())) {
       throw new U2FException("wrong challenge signed in browserdata");
     }

@@ -21,7 +21,6 @@ import com.google.inject.Singleton;
 import com.google.template.soy.data.SoyMapData;
 import com.google.template.soy.tofu.SoyTofu;
 import com.google.template.soy.tofu.SoyTofu.Renderer;
-import com.google.u2f.gaedemo.storage.SecretKeys;
 
 @SuppressWarnings("serial")
 @Singleton
@@ -57,17 +56,6 @@ public class AdminServlet extends HttpServlet {
       throws ServletException, IOException {
    
     String command = req.getParameter("command");
-    
-    if ("generateKeys".equalsIgnoreCase(command)) {
-      generateKeys(req, resp);
-    } else {
-      resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "unknown command");      
-    }
-    
-  }
-
-  private void generateKeys(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    SecretKeys.generate();
-    doGet(req, resp);
+    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "unknown command: " + command);      
   }
 }

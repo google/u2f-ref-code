@@ -47,6 +47,8 @@ available for sale.
 
 ## Getting started
 
+### U2F-Ref-Code
+
 u2f-ref-code is a self contained java project that includes a basic web server
 and includes packages for all crypto, utilities, etc.  It does *not* need to run
 in a container or application server like Tomcat.  To run the demo server, run
@@ -59,3 +61,26 @@ in ``com.google.u2f.tools.httpserver.UtfHttpServer.java`` and runs on port
 8080. Run this class as a regular Java application (right click, select *Run
 As* and *Java Application*). Note that you need to have the U2F extension
 installed in Chrome in order for the demo app to talk to your U2F token.
+
+### U2F-GAE-Demo
+
+The u2f-gae-demo project is a sample application built on the Google Appengine web platform which
+demonstrates a possible UX for user interaction with U2F in a web page.
+
+As above, after importing the project into Eclipse you might have to adjust JDK versions,
+AppEngine SDK version, etc. Once everything compiles, you can run the Appengine server locally and point 
+Google Chrome at http://localhost:8888/. The built-in support for U2F in Google Chrome only works on HTTPS sites.
+To test the app on (the non-https origin) http://localhost:8888, you need to do the following:
+
+* Quit Google Chrome.
+* Re-start Google Chrome with the `--show-component-extension-options` command-line flag.
+* Navigate to chrome://extensions and find the CryptoTokenExtension.
+* Click on "background page". This will open a Developer Tools window, including a Console.
+* In the console, type:
+	
+	`HTTP_ORIGINS_ALLOWED = true;`
+	
+* Then, point your browser at http://localhost:8888/
+* Having a U2F token ready, click on "Register U2F Authenticator" and follow the instructions.
+
+You can deploy this Appengine app to your own domain by changing the application name in `u2f-gae-demo/war/WEB-INF/appengine-web.xml`.

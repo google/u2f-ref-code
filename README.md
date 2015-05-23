@@ -77,9 +77,8 @@ To test the app on (the non-https origin) http://localhost:8888, you need to do 
 * Navigate to chrome://extensions and find the CryptoTokenExtension.
 * Click on "background page". This will open a Developer Tools window, including a Console.
 * In the console, type:
-	
+
 	`HTTP_ORIGINS_ALLOWED = true;`
-	
 * Then, point your browser at http://localhost:8888/
 * Having a U2F token ready, click on "Register U2F Authenticator" and follow the instructions.
 

@@ -1,0 +1,26 @@
+{
+  "approveButton": {
+    "message": "允许",
+    "description": "按钮标签：同意"
+  },
+  "denyButton": {
+    "message": "拒绝",
+    "description": "按钮标签：拒绝"
+  },
+  "notificationTitle": {
+    "message": "请求访问安全密钥",
+    "description":
+        "标题：请求用户授权使用安全密钥。"
+  },
+  "notificationMessage": {
+    "message": "同意让 $origin$ 鉴定您的安全密钥吗？",
+    "description":
+        "消息：请求允许使用安全密钥。需求参数origin。",
+    "placeholders": {
+      "origin": {
+        "content": "$1",
+        "example": "google.com"
+      }
+    }
+  }
+}

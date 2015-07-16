@@ -204,6 +204,12 @@ function onError(code, enrolling) {
 }
 
 if (navigator.userAgent.indexOf("iPhone") > -1) {
+  function executeRequest (request) {
+    var str = JSON.stringify(request);
+    var url = "u2f://auth?" + encodeURI(str);
+    location.replace(url);
+  }
+
   u2f.callbackMap_ = {};
   u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
     var reqId = ++u2f.reqCounter_;
@@ -215,9 +221,7 @@ if (navigator.userAgent.indexOf("iPhone") > -1) {
           opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
       requestId: reqId
     };
-    var str = JSON.stringify(req);
-    var url = "u2f://auth?" + encodeURI(str);
-    location.replace(url);
+    executeRequest(req);    
   };
 
   u2f.register = function(registerRequests, signRequests,
@@ -232,8 +236,6 @@ if (navigator.userAgent.indexOf("iPhone") > -1) {
           opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
       requestId: reqId
     };
-    var str = JSON.stringify(req);
-    var url = "u2f://auth?" + encodeURI(str);
-    location.replace(url);
+    executeRequest(req);
   };
 }

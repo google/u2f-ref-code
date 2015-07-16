@@ -202,3 +202,38 @@ function onError(code, enrolling) {
     break;
   }
 }
+
+if (navigator.userAgent.indexOf("iPhone") > -1) {
+  u2f.callbackMap_ = {};
+  u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
+    var reqId = ++u2f.reqCounter_;
+    u2f.callbackMap_[reqId] = callback;
+    var req = {
+      type: u2f.MessageTypes.U2F_SIGN_REQUEST,
+      signRequests: signRequests,
+      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+      requestId: reqId
+    };
+    var str = JSON.stringify(req);
+    var url = "u2f://auth?" + encodeURI(str);
+    location.replace(url);
+  };
+
+  u2f.register = function(registerRequests, signRequests,
+    callback, opt_timeoutSeconds) {
+    var reqId = ++u2f.reqCounter_;
+    u2f.callbackMap_[reqId] = callback;
+    var req = {
+      type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
+      signRequests: signRequests,
+      registerRequests: registerRequests,
+      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+      requestId: reqId
+    };
+    var str = JSON.stringify(req);
+    var url = "u2f://auth?" + encodeURI(str);
+    location.replace(url);
+  };
+}

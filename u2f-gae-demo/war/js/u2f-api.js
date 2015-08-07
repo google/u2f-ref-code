@@ -1,4 +1,4 @@
-// Copyright 2014 Google Inc. All rights reserved.
+// Copyright 2014-2015 Google Inc. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -52,8 +52,8 @@ u2f.ErrorCodes = {
  * A message type for registration requests
  * @typedef {{
  *   type: u2f.MessageTypes,
- *   signRequests: Array.<u2f.SignRequest>,
- *   registerRequests: ?Array.<u2f.RegisterRequest>,
+ *   signRequests: Array<u2f.SignRequest>,
+ *   registerRequests: ?Array<u2f.RegisterRequest>,
  *   timeoutSeconds: ?number,
  *   requestId: ?number
  * }}
@@ -147,11 +147,23 @@ u2f.getMessagePort = function(callback) {
         u2f.getIframePort_(callback);
       }
     });
+  } else if (u2f.isAndroidChrome_()) {
+    u2f.getAuthenticatorPort_(callback);
   } else {
     // chrome.runtime was not available at all, which is normal
     // when this origin doesn't have access to any extensions.
     u2f.getIframePort_(callback);
   }
+};
+
+/**
+ * Detect chrome running on android based on the browser's useragent.
+ * @private
+ */
+u2f.isAndroidChrome_ = function() {
+  var userAgent = navigator.userAgent;
+  return userAgent.indexOf('Chrome') != -1 &&
+      userAgent.indexOf('Android') != -1;
 };
 
 /**
@@ -168,6 +180,15 @@ u2f.getChromeRuntimePort_ = function(callback) {
 };
 
 /**
+ * Return a 'port' abstraction to the Authenticator app.
+ * @param {function(u2f.WrappedAuthenticatorPort_)} callback
+ * @private
+ */
+u2f.getAuthenticatorPort_ = function(callback) {
+  callback(new u2f.WrappedAuthenticatorPort_());
+};
+
+/**
  * A wrapper for chrome.runtime.Port that is compatible with MessagePort.
  * @param {Port} port
  * @constructor
@@ -175,6 +196,42 @@ u2f.getChromeRuntimePort_ = function(callback) {
  */
 u2f.WrappedChromeRuntimePort_ = function(port) {
   this.port_ = port;
+};
+
+/**
+ * Format a return a sign request.
+ * @param {Array<u2f.SignRequest>} signRequests
+ * @param {number} timeoutSeconds
+ * @param {number} reqId
+ * @return {Object}
+ */
+u2f.WrappedChromeRuntimePort_.prototype.formatSignRequest_ =
+    function(signRequests, timeoutSeconds, reqId) {
+  return {
+      type: u2f.MessageTypes.U2F_SIGN_REQUEST,
+      signRequests: signRequests,
+      timeoutSeconds: timeoutSeconds,
+      requestId: reqId
+    };
+};
+
+/**
+ * Format a return a register request.
+ * @param {Array<u2f.SignRequest>} signRequests
+ * @param {Array<u2f.RegisterRequest>} signRequests
+ * @param {number} timeoutSeconds
+ * @param {number} reqId
+ * @return {Object}
+ */
+u2f.WrappedChromeRuntimePort_.prototype.formatRegisterRequest_ =
+    function(signRequests, registerRequests, timeoutSeconds, reqId) {
+  return {
+      type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
+      signRequests: signRequests,
+      registerRequests: registerRequests,
+      timeoutSeconds: timeoutSeconds,
+      requestId: reqId
+    };
 };
 
 /**
@@ -203,6 +260,246 @@ u2f.WrappedChromeRuntimePort_.prototype.addEventListener =
     console.error('WrappedChromeRuntimePort only supports onMessage');
   }
 };
+
+/**
+ * Wrap the Authenticator app with a MessagePort interface.
+ * @constructor
+ * @private
+ */
+u2f.WrappedAuthenticatorPort_ = function() {
+  this.requestId_ = -1;
+  this.requestObject_ = null;
+}
+
+/**
+ * Launch the Authenticator intent.
+ * @param {Object} message
+ */
+u2f.WrappedAuthenticatorPort_.prototype.postMessage = function(message) {
+  var intentLocation = /** @type {string} */ (message);
+  document.location = intentLocation;
+};
+
+/**
+ * Emulates the HTML 5 addEventListener interface.
+ * @param {string} eventName
+ * @param {function({data: Object})} handler
+ */
+u2f.WrappedAuthenticatorPort_.prototype.addEventListener =
+    function(eventName, handler) {
+  var name = eventName.toLowerCase();
+  if (name == 'message') {
+    var self = this;
+    /* Register a callback to that executes when
+     * chrome injects the response. */
+    window.addEventListener(
+        'message', self.onRequestUpdate_.bind(self, handler), false);
+  } else {
+    console.error('WrappedAuthenticatorPort only supports message');
+  }
+};
+
+/**
+ * Callback invoked  when a response is received from the Authenticator.
+ * @param function({data: Object}) callback
+ * @param {Object} message message Object
+ */
+u2f.WrappedAuthenticatorPort_.prototype.onRequestUpdate_ =
+    function(callback, message) {
+  var messageObject = JSON.parse(message.data);
+  var intentUrl = messageObject['intentURL'];
+
+  var errorCode = messageObject['errorCode'];
+  var responseObject = null;
+  if (messageObject.hasOwnProperty('data')) {
+    responseObject = /** @type {Object} */ (
+       JSON.parse(messageObject['data']));
+    responseObject['requestId'] = this.requestId_;
+  }
+
+  /* Sign responses from the authenticator do not conform to U2F,
+   * convert to U2F here. */
+  responseObject = this.doResponseFixups_(responseObject);
+  callback({'data': responseObject});
+};
+
+/**
+ * Fixup the response provided by the Authenticator to conform with
+ * the U2F spec.
+ * @param {Object} responseData
+ * @return {Object} the U2F compliant response object
+ */
+u2f.WrappedAuthenticatorPort_.prototype.doResponseFixups_ =
+    function(responseObject) {
+  if (responseObject.hasOwnProperty('responseData')) {
+    return responseObject;
+  } else if (this.requestObject_['type'] != u2f.MessageTypes.U2F_SIGN_REQUEST) {
+    // Only sign responses require fixups.  If this is not a response
+    // to a sign request, then an internal error has occurred.
+    return {
+      'type': u2f.MessageTypes.U2F_REGISTER_RESPONSE,
+      'responseData': {
+        'errorCode': u2f.ErrorCodes.OTHER_ERROR,
+        'errorMessage': 'Internal error: invalid response from Authenticator'
+      }
+    };
+  }
+
+ /* Non-conformant sign response, do fixups. */
+ var encodedChallengeObject = responseObject['challenge'];
+ var challengeObject = JSON.parse(atob(encodedChallengeObject));
+ var serverChallenge = challengeObject['challenge'];
+ var challengesList = this.requestObject_['signData'];
+ var requestChallengeObject = null;
+ for (var i = 0; i < challengesList.length; i++) {
+   var challengeObject = challengesList[i];
+   if (challengeObject['keyHandle'] == responseObject['keyHandle']) {
+     requestChallengeObject = challengeObject;
+     break;
+   }
+ }
+  if (requestChallengeObject == null) {
+    return null;
+  }
+  var responseData = {
+    'keyHandle': responseObject['keyHandle'],
+    'signatureData': responseObject['signature'],
+    'clientData': encodedChallengeObject
+  };
+  return {
+    'type': u2f.MessageTypes.U2F_SIGN_RESPONSE,
+    'responseData': responseData,
+    'errorCode': responseObject['resultCode'],
+    'requestId': responseObject['requestId']
+  }
+};
+
+/**
+ * Base URL for intents to Authenticator.
+ * @const
+ * @private
+ */
+u2f.WrappedAuthenticatorPort_.INTENT_URL_BASE_ =
+    'intent:#Intent;action=com.google.android.apps.authenticator.AUTHENTICATE';
+
+/**
+ * Format a return a sign request.
+ * @param {Array<u2f.SignRequest>} signRequests
+ * @param {number} timeoutSeconds (ignored for now)
+ * @param {number} reqId
+ * @return {string}
+ */
+u2f.WrappedAuthenticatorPort_.prototype.formatSignRequest_ =
+    function(signRequests, timeoutSeconds, reqId) {
+  if (!signRequests || signRequests.length == 0) {
+    return null;
+  }
+  /* TODO(fixme): stash away requestId, as the authenticator app does
+   * not return it for sign responses. */
+  this.requestId_ = reqId;
+  /* TODO(fixme): stash away the signRequests, to deal with the legacy
+   * response format returned by the Authenticator app. */
+  this.requestObject_ = {
+    'type': u2f.MessageTypes.U2F_SIGN_REQUEST,
+    'signData': signRequests,
+    'requestId': reqId,
+    'timeout': timeoutSeconds
+  };
+
+  var appId = signRequests[0]['appId'];
+  var intentUrl =
+      u2f.WrappedAuthenticatorPort_.INTENT_URL_BASE_ +
+      ';S.appId=' + encodeURIComponent(appId) +
+      ';S.eventId=' + reqId +
+      ';S.challenges=' +
+      encodeURIComponent(
+          JSON.stringify(this.getBrowserDataList_(signRequests))) + ';end';
+  return intentUrl;
+};
+
+/**
+ * Get the browser data objects from the challenge list
+ * @param {Array} challenges list of challenges
+ * @return {Array} list of browser data objects
+ * @private
+ */
+u2f.WrappedAuthenticatorPort_
+    .prototype.getBrowserDataList_ = function(challenges) {
+  return challenges
+      .map(function(challenge) {
+        var browserData = {
+          'typ': 'navigator.id.getAssertion',
+          'challenge': challenge['challenge']
+        };
+        var challengeObject = {
+          'challenge' : browserData,
+          'keyHandle' : challenge['keyHandle']
+        };
+        return challengeObject;
+      });
+};
+
+/**
+ * Format a return a register request.
+ * @param {Array<u2f.SignRequest>} signRequests
+ * @param {Array<u2f.RegisterRequest>} enrollChallenges
+ * @param {number} timeoutSeconds (ignored for now)
+ * @param {number} reqId
+ * @return {Object}
+ */
+u2f.WrappedAuthenticatorPort_.prototype.formatRegisterRequest_ =
+    function(signRequests, enrollChallenges, timeoutSeconds, reqId) {
+  if (!enrollChallenges || enrollChallenges.length == 0) {
+    return null;
+  }
+  // Assume the appId is the same for all enroll challenges.
+  var appId = enrollChallenges[0]['appId'];
+  var registerRequests = [];
+  for (var i = 0; i < enrollChallenges.length; i++) {
+    var registerRequest = {
+      'challenge': enrollChallenges[i]['challenge'],
+      'version': enrollChallenges[i]['version']
+    };
+    if (enrollChallenges[i]['appId'] != appId) {
+      // Only include the appId when it differs from the first appId.
+      registerRequest['appId'] = enrollChallenges[i]['appId'];
+    }
+    registerRequests.push(registerRequest);
+  }
+  var registeredKeys = [];
+  if (signRequests) {
+    for (i = 0; i < signRequests.length; i++) {
+      var key = {
+        'keyHandle': signRequests[i]['keyHandle'],
+        'version': signRequests[i]['version']
+      };
+      // Only include the appId when it differs from the appId that's
+      // being registered now.
+      if (signRequests[i]['appId'] != appId) {
+        key['appId'] = signRequests[i]['appId'];
+      }
+      registeredKeys.push(key);
+    }
+  }
+  var request = {
+    'type': u2f.MessageTypes.U2F_REGISTER_REQUEST,
+    'appId': appId,
+    'registerRequests': registerRequests,
+    'registeredKeys': registeredKeys,
+    'requestId': reqId,
+    'timeoutSeconds': timeoutSeconds
+  };
+  var intentUrl =
+      u2f.WrappedAuthenticatorPort_.INTENT_URL_BASE_ +
+      ';S.request=' + encodeURIComponent(JSON.stringify(request)) +
+      ';end';
+  /* TODO(fixme): stash away requestId, this is is not necessary for
+   * register requests, but here to keep parity with sign.
+   */
+  this.requestId_ = reqId;
+  return intentUrl;
+};
+
 
 /**
  * Sets up an embedded trampoline iframe, sourced from the extension.
@@ -253,7 +550,7 @@ u2f.port_ = null;
 
 /**
  * Callbacks waiting for a port
- * @type {Array.<function((MessagePort|u2f.WrappedChromeRuntimePort_))>}
+ * @type {Array<function((MessagePort|u2f.WrappedChromeRuntimePort_))>}
  * @private
  */
 u2f.waitingForPort_ = [];
@@ -316,7 +613,7 @@ u2f.responseHandler_ = function(message) {
 
 /**
  * Dispatches an array of sign requests to available U2F tokens.
- * @param {Array.<u2f.SignRequest>} signRequests
+ * @param {Array<u2f.SignRequest>} signRequests
  * @param {function((u2f.Error|u2f.SignResponse))} callback
  * @param {number=} opt_timeoutSeconds
  */
@@ -324,13 +621,9 @@ u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
   u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
-    var req = {
-      type: u2f.MessageTypes.U2F_SIGN_REQUEST,
-      signRequests: signRequests,
-      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
-        opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
-      requestId: reqId
-    };
+    var timeoutSeconds = (typeof opt_timeoutSeconds !== 'undefined' ?
+        opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC);
+    var req = port.formatSignRequest_(signRequests, timeoutSeconds, reqId);
     port.postMessage(req);
   });
 };
@@ -338,8 +631,8 @@ u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
 /**
  * Dispatches register requests to available U2F tokens. An array of sign
  * requests identifies already registered tokens.
- * @param {Array.<u2f.RegisterRequest>} registerRequests
- * @param {Array.<u2f.SignRequest>} signRequests
+ * @param {Array<u2f.RegisterRequest>} registerRequests
+ * @param {Array<u2f.SignRequest>} signRequests
  * @param {function((u2f.Error|u2f.RegisterResponse))} callback
  * @param {number=} opt_timeoutSeconds
  */
@@ -348,14 +641,10 @@ u2f.register = function(registerRequests, signRequests,
   u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
-    var req = {
-      type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
-      signRequests: signRequests,
-      registerRequests: registerRequests,
-      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
-        opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
-      requestId: reqId
-    };
+    var timeoutSeconds = (typeof opt_timeoutSeconds !== 'undefined' ?
+        opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC);
+    var req = port.formatRegisterRequest_(
+        signRequests, registerRequests, timeoutSeconds, reqId);
     port.postMessage(req);
   });
 };

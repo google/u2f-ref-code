@@ -75,10 +75,15 @@ function hideMessage() {
 
 function highlightTokenCardOnPage(token) {
   console.log(token);
-  var cardContent = $("#" + token.public_key).find(".cardContent");
-  
-  cardContent.addClass("highlight");
-  window.setTimeout(function() { cardContent.removeClass("highlight", 2000); }, 500 );
+
+  var cardChildren = document.getElementById(token.public_key).children;
+  for (i = 0; i < cardChildren.length; i++) {
+    if (cardChildren[i].className == "cardContent") {
+      cardChildren[i].className += " highlight";
+      window.setTimeout(function() { cardChildren[i].className = "cardContent"; }, 500);
+      break;
+    }
+  }
 }
 
 
@@ -201,4 +206,41 @@ function onError(code, enrolling) {
     showError('unknown error code=' + code);
     break;
   }
+}
+
+if (navigator.userAgent.indexOf("iPhone") > -1) {
+  function executeRequest (request) {
+    var str = JSON.stringify(request);
+    var url = "u2f://auth?" + encodeURI(str);
+    location.replace(url);
+  }
+
+  u2f.callbackMap_ = {};
+  u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
+    var reqId = ++u2f.reqCounter_;
+    u2f.callbackMap_[reqId] = callback;
+    var req = {
+      type: u2f.MessageTypes.U2F_SIGN_REQUEST,
+      signRequests: signRequests,
+      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+      requestId: reqId
+    };
+    executeRequest(req);    
+  };
+
+  u2f.register = function(registerRequests, signRequests,
+    callback, opt_timeoutSeconds) {
+    var reqId = ++u2f.reqCounter_;
+    u2f.callbackMap_[reqId] = callback;
+    var req = {
+      type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
+      signRequests: signRequests,
+      registerRequests: registerRequests,
+      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+      requestId: reqId
+    };
+    executeRequest(req);
+  };
 }

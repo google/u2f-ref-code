@@ -73,6 +73,7 @@ public class AppModule extends AbstractModule {
             // this implementation will only accept signatures from the following origins:
             "http://localhost:8888",
             "https://u2fdemo.appspot.com",
-            "https://crxjs-dot-u2fdemo.appspot.com"));
+            "https://crxjs-dot-u2fdemo.appspot.com",
+            "https://noext-dot-u2fdemo.appspot.com"));
   }
 }

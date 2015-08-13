@@ -75,10 +75,15 @@ function hideMessage() {
 
 function highlightTokenCardOnPage(token) {
   console.log(token);
-  var cardContent = $("#" + token.public_key).find(".cardContent");
-  
-  cardContent.addClass("highlight");
-  window.setTimeout(function() { cardContent.removeClass("highlight", 2000); }, 500 );
+
+  var cardChildren = document.getElementById(token.public_key).children;
+  for (i = 0; i < cardChildren.length; i++) {
+    if (cardChildren[i].className == "cardContent") {
+      cardChildren[i].className += " highlight";
+      window.setTimeout(function() { cardChildren[i].className = "cardContent"; }, 500);
+      break;
+    }
+  }
 }
 
 

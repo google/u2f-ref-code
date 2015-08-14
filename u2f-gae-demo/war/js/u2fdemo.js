@@ -75,10 +75,24 @@ function hideMessage() {
 
 function highlightTokenCardOnPage(token) {
   console.log(token);
-  var cardContent = $("#" + token.public_key).find(".cardContent");
-  
-  cardContent.addClass("highlight");
-  window.setTimeout(function() { cardContent.removeClass("highlight", 2000); }, 500 );
+
+  var cardChildren = document.getElementById(token.public_key).children;
+  var cardChildrenOldClassNames = [];
+  for (i = 0; i < cardChildren.length; i++) {
+    cardChildrenOldClassNames.push(cardChildren[i].className);
+    if (cardChildren[i].className.indexOf("cardContent") > -1) {
+      cardChildren[i].className += " highlight";
+    }
+  }
+
+  window.setTimeout(
+    function() {
+      for (i = 0; i < cardChildren.length; i++) {
+        cardChildren[i].className = cardChildrenOldClassNames[i];
+      }
+    },
+    500
+  );
 }
 
 

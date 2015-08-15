@@ -78,7 +78,7 @@ function highlightTokenCardOnPage(token) {
 
   var cardChildren = document.getElementById(token.public_key).children;
   for (i = 0; i < cardChildren.length; i++) {
-    if (cardChildren[i].className.indexOf("cardContent") > -1) {
+    if ($(cardChildren[i]).hasClass("cardContent")) {
       $(cardChildren[i]).addClass("highlight");
     }
   }

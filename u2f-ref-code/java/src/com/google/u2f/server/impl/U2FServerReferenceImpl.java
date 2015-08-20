@@ -6,17 +6,25 @@
 
 package com.google.u2f.server.impl;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.BitSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DEROctetString;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -35,6 +43,7 @@ import com.google.u2f.server.DataStore;
 import com.google.u2f.server.U2FServer;
 import com.google.u2f.server.data.EnrollSessionData;
 import com.google.u2f.server.data.SecurityKeyData;
+import com.google.u2f.server.data.SecurityKeyData.Transports;
 import com.google.u2f.server.data.SignSessionData;
 import com.google.u2f.server.messages.RegistrationRequest;
 import com.google.u2f.server.messages.RegistrationResponse;
@@ -43,6 +52,12 @@ import com.google.u2f.server.messages.SignResponse;
 
 public class U2FServerReferenceImpl implements U2FServer {
   
+  // Object Identifier for the attestation certificate transport extension fidoU2FTransports
+  private static final String TRANSPORT_EXTENSION_OID = "1.3.6.1.4.1.45724.2.1.1";
+  // The number of bits in a byte. It is used to know at which index in a BitSet to look for
+  // specific transport values
+  private static final int BITS_IN_A_BYTE = 8;
+
   private static final String TYPE_PARAM = "typ";
   private static final String CHALLENGE_PARAM = "challenge";
   private static final String ORIGIN_PARAM = "origin";
@@ -96,7 +111,8 @@ public class U2FServerReferenceImpl implements U2FServer {
     String sessionId = registrationResponse.getSessionId();
     String browserDataBase64 = registrationResponse.getBd();
     String rawRegistrationDataBase64 = registrationResponse.getRegistrationData();
-
+    Log.info(">> rawRegistrationDataBase64: " + rawRegistrationDataBase64);
+    
     EnrollSessionData sessionData = dataStore.getEnrollSessionData(sessionId);
 
     if (sessionData == null) {
@@ -115,15 +131,23 @@ public class U2FServerReferenceImpl implements U2FServer {
     Log.info("  rawRegistrationData: " + Hex.encodeHexString(rawRegistrationData));
 
     RegisterResponse registerResponse = RawMessageCodec.decodeRegisterResponse(rawRegistrationData);
+
     byte[] userPublicKey = registerResponse.getUserPublicKey();
     byte[] keyHandle = registerResponse.getKeyHandle();
     X509Certificate attestationCertificate = registerResponse.getAttestationCertificate();
     byte[] signature = registerResponse.getSignature();
+    List<Transports> transports = null;
+    try {
+      transports = parseTransportsExtension(attestationCertificate);
+    } catch (CertificateParsingException e1) {
+      Log.warning("Could not parse transports extension " + e1.getMessage());
+    }
 
     Log.info("-- Parsed rawRegistrationResponse --");
     Log.info("  userPublicKey: " + Hex.encodeHexString(userPublicKey));
     Log.info("  keyHandle: " + Hex.encodeHexString(keyHandle));
     Log.info("  attestationCertificate: " + attestationCertificate.toString());
+    Log.info("  transports: " + transports);
     try {
       Log.info("  attestationCertificate bytes: "
           + Hex.encodeHexString(attestationCertificate.getEncoded()));
@@ -152,7 +176,7 @@ public class U2FServerReferenceImpl implements U2FServer {
     // The first time we create the SecurityKeyData, we set the counter value to 0.
     // We don't actually know what the counter value of the real device is - but it will
     // be something bigger (or equal) to 0, so subsequent signatures will check out ok.
-    SecurityKeyData securityKeyData = new SecurityKeyData(currentTimeInMillis,
+    SecurityKeyData securityKeyData = new SecurityKeyData(currentTimeInMillis, transports,
         keyHandle, userPublicKey, attestationCertificate, /* initial counter value */ 0);
     dataStore.addSecurityKeyData(sessionData.getAccountName(), securityKeyData);
 
@@ -267,6 +291,99 @@ public class U2FServerReferenceImpl implements U2FServer {
     return securityKeyData;
   }
 
+  /**
+   * Parses a transport extension from an attestation certificate and returns
+   * a List of HardwareFeatures supported by the security key. The specification of
+   * the HardwareFeatures in the certificate should match their internal definition in
+   * device_auth.proto
+   *
+   * <p>The expected transport extension value is a BIT STRING containing the enabled
+   * transports:
+   *
+   *  <p>FIDOU2FTransports ::= BIT STRING {
+   *       bluetoothRadio(0), -- Bluetooth Classic
+   *       bluetoothLowEnergyRadio(1),
+   *       uSB(2),
+   *       nFC(3)
+   *     }
+   *
+   *   <p>Note that the BIT STRING must be wrapped in an OCTET STRING.
+   *   An extension that encodes BT, BLE, and NFC then looks as follows:
+   *
+   *   <p>SEQUENCE (2 elem)
+   *      OBJECT IDENTIFIER 1.3.6.1.4.1.45724.2.1.1
+   *      OCTET STRING (1 elem)
+   *        BIT STRING (4 bits) 1101
+   *
+   * @param cert the certificate to parse for extension
+   * @return the supported transports as a List of HardwareFeatures or null if no extension
+   * was found
+   */
+  public static List<Transports> parseTransportsExtension(X509Certificate cert)
+      throws CertificateParsingException{
+    byte[] extValue = cert.getExtensionValue(TRANSPORT_EXTENSION_OID);
+    LinkedList<Transports> transportsList = new LinkedList<Transports>();
+    if (extValue == null) {
+      // No transports extension found.
+      return null;
+    }
+
+    ASN1InputStream ais = new ASN1InputStream(extValue);
+    ASN1Object asn1Object;
+    // Read out the OctetString
+    try {
+      asn1Object = ais.readObject();
+      ais.close();
+    } catch (IOException e) {
+      throw new CertificateParsingException("Not able to read object in transports extenion", e);
+    }
+
+    if (asn1Object == null || !(asn1Object instanceof DEROctetString)) {
+      throw new CertificateParsingException("No Octet String found in transports extension");
+    }
+    DEROctetString octet = (DEROctetString) asn1Object;
+
+    // Read out the BitString
+    ais = new  ASN1InputStream(octet.getOctets());
+    try {
+      asn1Object = ais.readObject();
+      ais.close();
+    } catch (IOException e) {
+      throw new CertificateParsingException("Not able to read object in transports extension", e);
+    }
+    if (asn1Object == null || !(asn1Object instanceof DERBitString)) {
+      throw new CertificateParsingException("No BitString found in transports extension");
+    }
+    DERBitString bitString = (DERBitString) asn1Object;
+
+    byte [] values = bitString.getBytes();
+    int nrBytesUsed = values.length;
+    // Check if more than one byte was used to store the transport values
+    // If so, we need to reverse the byte order before feeding them to a BitSet object
+    // This is because when reading from a byte array, a BitSet starts reading from the end
+    if (nrBytesUsed > 1) {
+      values = reverseOrderOfBytes(values);
+    }
+    BitSet bitSet = BitSet.valueOf(values);
+
+    // Parse the actual transport values
+    int nrBitsUsed = nrBytesUsed * BITS_IN_A_BYTE;
+    // We might have more defined transports than used by the extension
+    for (int i = 0; i < Transports.values().length && i < nrBitsUsed; i++) {
+      if (bitSet.get(nrBitsUsed - i - 1)) {
+        transportsList.add(Transports.values()[i]);
+      }
+    }
+    return transportsList;
+  }
+
+  private static byte [] reverseOrderOfBytes (byte[] input) {
+    byte [] output = new byte[input.length];
+    for (int i = 0; i < input.length; i++) {
+       output[i] = input[input.length - i - 1];
+    }
+    return output;
+  }
   private void verifyBrowserData(JsonElement browserDataAsElement, 
       String messageType, EnrollSessionData sessionData) throws U2FException {
     

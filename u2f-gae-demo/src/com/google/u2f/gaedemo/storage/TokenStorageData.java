@@ -50,7 +50,7 @@ public class TokenStorageData {
   public void updateCounter(int newCounterValue) {
     counter = newCounterValue;
   }
-  
+
   public SecurityKeyData getSecurityKeyData() {
     X509Certificate x509cert = parseCertificate(attestationCert);
     return new SecurityKeyData(enrollmentTime, transports, keyHandle, 

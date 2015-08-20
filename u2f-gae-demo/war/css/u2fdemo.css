@@ -101,7 +101,7 @@ h1 {
 
 .card {
 	width: 500px;
-	height: 278px;
+	height: 290px;
   margin: 20px 40px 20px 0;
 	box-shadow: 0px 0.5px 4px #aaaaaa;;
 	background: #fff;
@@ -190,10 +190,10 @@ h1 {
 	font-size: 120%;
 }
 
-.enrollmentTime {
-	font-size: 80%;
+.enrollmentTime, .transports {
+  font-size: 80%;
   margin-top: 5px;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 .keyHandle, .publicKey {

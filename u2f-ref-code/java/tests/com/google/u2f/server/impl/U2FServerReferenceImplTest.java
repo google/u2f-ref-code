@@ -185,9 +185,9 @@ public class U2FServerReferenceImplTest extends TestVectors {
         BROWSER_DATA_2_BASE64, SESSION_ID);
 
     u2fServer.processRegistrationResponse(registrationResponse, 0L);
-// todo add trasnprot
     verify(mockDataStore).addSecurityKeyData(eq(ACCOUNT_NAME),
-        eq(new SecurityKeyData(0L, null, KEY_HANDLE_2, USER_PUBLIC_KEY_2, TRUSTED_CERTIFICATE_2, 0)));
+        eq(new SecurityKeyData(0L, null /* transports */, KEY_HANDLE_2, USER_PUBLIC_KEY_2,
+            TRUSTED_CERTIFICATE_2, 0)));
   }
 
   @Test

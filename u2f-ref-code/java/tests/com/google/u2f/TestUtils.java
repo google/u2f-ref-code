@@ -18,10 +18,10 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Base64;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -45,7 +45,7 @@ public class TestUtils {
   }
 
   public static byte[] parseBase64(String base64Encoded) {
-      return Base64.getDecoder().decode(base64Encoded);
+      return Base64.decodeBase64(base64Encoded);
   }
 
   public static X509Certificate parseCertificate(byte[] encodedDerCertificate) {

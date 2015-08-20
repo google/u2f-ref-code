@@ -107,6 +107,13 @@ public class SecurityKeyData {
         && Objects.equal(this.attestationCert, that.attestationCert);
   }
 
+  /**
+   * Compares the two Lists of Transports and says if they are equal.
+   *
+   * @param transports1 first List of Transports
+   * @param transports2 second List of Transports
+   * @return true if both lists are null or if both lists contain the same transport values
+   */
   public static boolean containSameTransports(List<Transports> transports1,
       List<Transports> transports2) {
     if (transports1 == null && transports2 == null) {

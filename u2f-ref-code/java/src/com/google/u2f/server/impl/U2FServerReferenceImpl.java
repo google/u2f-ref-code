@@ -111,8 +111,8 @@ public class U2FServerReferenceImpl implements U2FServer {
     String sessionId = registrationResponse.getSessionId();
     String browserDataBase64 = registrationResponse.getBd();
     String rawRegistrationDataBase64 = registrationResponse.getRegistrationData();
+
     Log.info(">> rawRegistrationDataBase64: " + rawRegistrationDataBase64);
-    
     EnrollSessionData sessionData = dataStore.getEnrollSessionData(sessionId);
 
     if (sessionData == null) {
@@ -122,7 +122,6 @@ public class U2FServerReferenceImpl implements U2FServer {
     String appId = sessionData.getAppId();
     String browserData = new String(Base64.decodeBase64(browserDataBase64));
     byte[] rawRegistrationData = Base64.decodeBase64(rawRegistrationDataBase64);
-
     Log.info("-- Input --");
     Log.info("  sessionId: " + sessionId);
     Log.info("  challenge: " + Hex.encodeHexString(sessionData.getChallenge()));

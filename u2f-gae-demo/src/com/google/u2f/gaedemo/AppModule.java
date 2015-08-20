@@ -72,7 +72,7 @@ public class AppModule extends AbstractModule {
         ImmutableSet.of(
             // this implementation will only accept signatures from the following origins:
             "http://localhost:8888",
-            "https://u2fdemo.appspot.com",
-            "https://crxjs-dot-u2fdemo.appspot.com"));
+            "https://iuliau2ftransportsext.appspot.com",
+            "https://crxjs-dot-iuliau2ftransportsext.appspot.com"));
   }
 }

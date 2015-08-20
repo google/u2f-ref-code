@@ -24,7 +24,6 @@ import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SecurityKeyData.Transports;
 public class TokenStorageData {
 
-
   private long enrollmentTime;
   private List<Transports> transports;
   private byte[] keyHandle;
@@ -44,11 +43,10 @@ public class TokenStorageData {
     } catch (CertificateEncodingException e) {
       throw new RuntimeException();
     }
-
     this.transports = tokenData.getTransports();
     this.counter = tokenData.getCounter();
   }
-  
+
   public void updateCounter(int newCounterValue) {
     counter = newCounterValue;
   }
@@ -71,7 +69,7 @@ public class TokenStorageData {
   }
 
   /**
-   * Transforms the list of Transports in a JsonArray of Strings.
+   * Transforms the List of Transports in a JsonArray of Strings.
    * 
    * @return a JsonArray object containing transport values as strings
    */
@@ -114,8 +112,6 @@ public class TokenStorageData {
         && Arrays.equals(this.publicKey, that.publicKey)
         && Arrays.equals(this.attestationCert, that.attestationCert);
   }
-
-
 
   private static X509Certificate parseCertificate(byte[] encodedDerCertificate) {
     try {

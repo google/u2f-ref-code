@@ -33,6 +33,11 @@ function tokenToDom(token) {
   card.querySelector('.card').setAttribute("id", token.public_key);
   card.querySelector('.issuer').textContent = token.issuer;
   card.querySelector('.enrollmentTimeValue').textContent = timeString;
+  if (token.transports == null || token.transports === undefined) {
+	card.querySelector('.transportsValue').textContent = "None specified";
+  } else {
+    card.querySelector('.transportsValue').textContent = token.transports;
+  }
   card.querySelector('.keyHandle').textContent = token.key_handle;
   card.querySelector('.publicKey').textContent = token.public_key;
 
@@ -115,8 +120,9 @@ function sendBeginEnrollRequest() {
       console.log(beginEnrollResponse);
       showMessage("please touch the token");
       u2f.register(
-        [beginEnrollResponse.enroll_data],
-        beginEnrollResponse.sign_data,
+        beginEnrollResponse.appId,
+        [beginEnrollResponse.registerRequests],
+        beginEnrollResponse.registeredKeys,
         function (response) {
           if (response.errorCode) {
             onError(response.errorCode, true);
@@ -130,16 +136,17 @@ function sendBeginEnrollRequest() {
 
 function sendBeginSignRequest() {
   $.post('/BeginSign', {}, null, 'json')
-   .done(function(signData) {
-      console.log(signData);
+   .done(function(signResponse) {
+      console.log(signResponse);
+      var registeredKeys = signResponse.registeredKeys;
       showMessage("please touch the token");
       // Store sessionIds
       var sessionIds = {};
-      for (var i = 0; i < signData.length; i++) {
-        sessionIds[signData[i].keyHandle] = signData[i].sessionId;
-        delete signData[i]['sessionId'];
+      for (var i = 0; i < registeredKeys.length; i++) {
+        sessionIds[registeredKeys[i].keyHandle] = registeredKeys[i].sessionId;
+        delete registeredKeys[i]['sessionId'];
       }
-      u2f.sign(signData, function (response) {
+      u2f.sign(signResponse.appId, signResponse.challenge, registeredKeys, function (response) {
           if (response.errorCode) {
             onError(response.errorCode, false);
           } else {

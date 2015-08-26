@@ -27,10 +27,11 @@ import com.google.u2f.key.messages.RegisterRequest;
 import com.google.u2f.key.messages.RegisterResponse;
 import com.google.u2f.server.U2FServer;
 import com.google.u2f.server.data.SecurityKeyData;
+import com.google.u2f.server.messages.RegisteredKey;
 import com.google.u2f.server.messages.RegistrationRequest;
 import com.google.u2f.server.messages.RegistrationResponse;
-import com.google.u2f.server.messages.SignRequest;
 import com.google.u2f.server.messages.SignResponse;
+import com.google.u2f.server.messages.U2fSignRequest;
 
 public class U2FClientReferenceImplTest extends TestVectors {
 
@@ -70,18 +71,19 @@ public class U2FClientReferenceImplTest extends TestVectors {
   @Test
   public void testAuthenticate() throws Exception {
     when(mockU2fServer.getSignRequest(ACCOUNT_NAME, ORIGIN)).thenReturn(
-        ImmutableList.of(new SignRequest(U2FConsts.U2F_V2, SERVER_CHALLENGE_SIGN_BASE64, APP_ID_SIGN,
-            KEY_HANDLE_BASE64, SESSION_ID)));
+        new U2fSignRequest(SERVER_CHALLENGE_SIGN_BASE64,  
+        ImmutableList.of(new RegisteredKey(U2FConsts.U2F_V2, KEY_HANDLE_BASE64, null /* transports */ , APP_ID_SIGN,
+            SESSION_ID))));
     doNothing().when(mockOriginVerifier).validateOrigin(APP_ID_SIGN, ORIGIN);
     when(
         mockU2fKey.authenticate(new AuthenticateRequest(UserPresenceVerifier.USER_PRESENT_FLAG,
-            BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE))).thenReturn(
+            BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE)))
+        .thenReturn(
                 new AuthenticateResponse(UserPresenceVerifier.USER_PRESENT_FLAG, COUNTER_VALUE,
                     SIGNATURE_AUTHENTICATE));
     when(mockU2fServer.processSignResponse(
-        new SignResponse(BROWSER_DATA_SIGN_BASE64, SIGN_RESPONSE_DATA_BASE64,
-            SERVER_CHALLENGE_SIGN_BASE64, SESSION_ID, APP_ID_SIGN)))
-        .thenReturn(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0));;
+        new SignResponse(KEY_HANDLE_BASE64, SIGN_RESPONSE_DATA_BASE64, BROWSER_DATA_SIGN_BASE64, SESSION_ID)))
+        .thenReturn(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0));
 
     u2fClient.authenticate(ORIGIN, ACCOUNT_NAME);
   }

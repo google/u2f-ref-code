@@ -227,14 +227,13 @@ u2f.WrappedChromeRuntimePort_.prototype.formatSignRequest_ =
  */
 u2f.WrappedChromeRuntimePort_.prototype.formatRegisterRequest_ =
     function(signRequests, registerRequests, timeoutSeconds, reqId) {
-    var req = {
+    return {
       type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
       signRequests: signRequests,
       registerRequests: registerRequests,
       timeoutSeconds: timeoutSeconds,
       requestId: reqId
     };
-    return req;
 };
 
 /**
@@ -364,7 +363,7 @@ u2f.WrappedAuthenticatorPort_.prototype.doResponseFixups_ =
 	}
   }
   var responseData = {
-	'errorCode': responseObject['resultCode'],
+    'errorCode': responseObject['resultCode'],
     'keyHandle': responseObject['keyHandle'],
     'signatureData': responseObject['signature'],
     'clientData': encodedChallengeObject

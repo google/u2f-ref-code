@@ -185,7 +185,9 @@ u2f.getChromeRuntimePort_ = function(callback) {
  * @private
  */
 u2f.getAuthenticatorPort_ = function(callback) {
-  callback(new u2f.WrappedAuthenticatorPort_());
+  setTimeout(function() {
+    callback(new u2f.WrappedAuthenticatorPort_());
+  }, 0);
 };
 
 /**
@@ -208,11 +210,11 @@ u2f.WrappedChromeRuntimePort_ = function(port) {
 u2f.WrappedChromeRuntimePort_.prototype.formatSignRequest_ =
     function(signRequests, timeoutSeconds, reqId) {
   return {
-      type: u2f.MessageTypes.U2F_SIGN_REQUEST,
-      signRequests: signRequests,
-      timeoutSeconds: timeoutSeconds,
-      requestId: reqId
-    };
+    type: u2f.MessageTypes.U2F_SIGN_REQUEST,
+    signRequests: signRequests,
+    timeoutSeconds: timeoutSeconds,
+    requestId: reqId
+  };
 };
 
 /**
@@ -226,12 +228,12 @@ u2f.WrappedChromeRuntimePort_.prototype.formatSignRequest_ =
 u2f.WrappedChromeRuntimePort_.prototype.formatRegisterRequest_ =
     function(signRequests, registerRequests, timeoutSeconds, reqId) {
   return {
-      type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
-      signRequests: signRequests,
-      registerRequests: registerRequests,
-      timeoutSeconds: timeoutSeconds,
-      requestId: reqId
-    };
+    type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
+    signRequests: signRequests,
+    registerRequests: registerRequests,
+    timeoutSeconds: timeoutSeconds,
+    requestId: reqId
+  };
 };
 
 /**
@@ -345,23 +347,23 @@ u2f.WrappedAuthenticatorPort_.prototype.doResponseFixups_ =
     };
   }
 
- /* Non-conformant sign response, do fixups. */
- var encodedChallengeObject = responseObject['challenge'];
- var challengeObject = JSON.parse(atob(encodedChallengeObject));
- var serverChallenge = challengeObject['challenge'];
- var challengesList = this.requestObject_['signData'];
- var requestChallengeObject = null;
- for (var i = 0; i < challengesList.length; i++) {
-   var challengeObject = challengesList[i];
-   if (challengeObject['keyHandle'] == responseObject['keyHandle']) {
-     requestChallengeObject = challengeObject;
-     break;
-   }
- }
-  if (requestChallengeObject == null) {
-    return null;
+  /* Non-conformant sign response, do fixups. */
+  var encodedChallengeObject = responseObject['challenge'];
+  if (typeof encodedChallengeObject !== 'undefined') {
+    var challengeObject = JSON.parse(atob(encodedChallengeObject));
+    var serverChallenge = challengeObject['challenge'];
+    var challengesList = this.requestObject_['signData'];
+    var requestChallengeObject = null;
+    for (var i = 0; i < challengesList.length; i++) {
+	  var challengeObject = challengesList[i];
+	  if (challengeObject['keyHandle'] == responseObject['keyHandle']) {
+	    requestChallengeObject = challengeObject;
+	    break;
+	  }
+	}
   }
   var responseData = {
+    'errorCode': responseObject['resultCode'],
     'keyHandle': responseObject['keyHandle'],
     'signatureData': responseObject['signature'],
     'clientData': encodedChallengeObject
@@ -369,7 +371,6 @@ u2f.WrappedAuthenticatorPort_.prototype.doResponseFixups_ =
   return {
     'type': u2f.MessageTypes.U2F_SIGN_RESPONSE,
     'responseData': responseData,
-    'errorCode': responseObject['resultCode'],
     'requestId': responseObject['requestId']
   }
 };

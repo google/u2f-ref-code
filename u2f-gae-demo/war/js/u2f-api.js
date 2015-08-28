@@ -227,13 +227,13 @@ u2f.WrappedChromeRuntimePort_.prototype.formatSignRequest_ =
  */
 u2f.WrappedChromeRuntimePort_.prototype.formatRegisterRequest_ =
     function(signRequests, registerRequests, timeoutSeconds, reqId) {
-    return {
-      type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
-      signRequests: signRequests,
-      registerRequests: registerRequests,
-      timeoutSeconds: timeoutSeconds,
-      requestId: reqId
-    };
+  return {
+    type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
+    signRequests: signRequests,
+    registerRequests: registerRequests,
+    timeoutSeconds: timeoutSeconds,
+    requestId: reqId
+  };
 };
 
 /**

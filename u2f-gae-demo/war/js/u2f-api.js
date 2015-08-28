@@ -210,11 +210,11 @@ u2f.WrappedChromeRuntimePort_ = function(port) {
 u2f.WrappedChromeRuntimePort_.prototype.formatSignRequest_ =
     function(signRequests, timeoutSeconds, reqId) {
   return {
-      type: u2f.MessageTypes.U2F_SIGN_REQUEST,
-      signRequests: signRequests,
-      timeoutSeconds: timeoutSeconds,
-      requestId: reqId
-    };
+    type: u2f.MessageTypes.U2F_SIGN_REQUEST,
+    signRequests: signRequests,
+    timeoutSeconds: timeoutSeconds,
+    requestId: reqId
+  };
 };
 
 /**

@@ -34,7 +34,9 @@ u2f.MessageTypes = {
   'U2F_REGISTER_REQUEST': 'u2f_register_request',
   'U2F_SIGN_REQUEST': 'u2f_sign_request',
   'U2F_REGISTER_RESPONSE': 'u2f_register_response',
-  'U2F_SIGN_RESPONSE': 'u2f_sign_response'
+  'U2F_SIGN_RESPONSE': 'u2f_sign_response',
+  'U2F_GET_API_VERSION_REQUEST': 'u2f_get_api_version_request',
+  'U2F_GET_API_VERSION_RESPONSE': 'u2f_get_api_version_response'
 };
 
 
@@ -368,13 +370,35 @@ u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
  */
 u2f.register = function(registerRequests, signRequests,
     callback, opt_timeoutSeconds) {
-  u2f.getPortSingleton_(function(port) {
+	u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
     var req = {
       type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
       signRequests: signRequests,
       registerRequests: registerRequests,
+      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+      requestId: reqId
+    };
+    port.postMessage(req);
+  });
+};
+
+/**
+ * Dispatches register requests to available U2F tokens. An array of sign
+ * requests identifies already registered tokens.
+ * @param {Array<u2f.RegisterRequest>} registerRequests
+ * @param {Array<u2f.SignRequest>} signRequests
+ * @param {function((u2f.Error|u2f.RegisterResponse))} callback
+ * @param {number=} opt_timeoutSeconds
+ */
+u2f.getApiVersion = function(callback, opt_timeoutSeconds) {
+	u2f.getPortSingleton_(function(port) {
+    var reqId = ++u2f.reqCounter_;
+    u2f.callbackMap_[reqId] = callback;
+    var req = {
+      type: u2f.MessageTypes.U2F_GET_API_VERSION_REQUEST,
       timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
           opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
       requestId: reqId

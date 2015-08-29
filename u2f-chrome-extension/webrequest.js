@@ -10,6 +10,13 @@
  */
 
 /**
+ * FIDO U2F Javascript API Version
+ * @const
+ * @number
+ */
+var JS_API_VERSION = 1.0;
+
+/**
  * Gets the scheme + origin from a web url.
  * @param {string} url Input url
  * @return {?string} Scheme and origin part if url parses
@@ -122,6 +129,13 @@ function handleWebPageRequest(request, sender, sendResponse) {
     case MessageTypes.U2F_SIGN_REQUEST:
       return handleU2fSignRequest(sender, request, sendResponse);
 
+    case MessageTypes.U2F_GET_API_VERSION_REQUEST:
+    	console.log("got request for version");
+      sendResponse(
+    	  makeU2fGetApiVersionResponse(request, JS_API_VERSION,
+    	      MessageTypes.U2F_GET_API_VERSION_RESPONSE));
+    	return null;
+
     default:
       sendResponse(
           makeU2fErrorResponse(request, ErrorCodes.BAD_REQUEST, undefined,
@@ -199,6 +213,22 @@ function makeU2fErrorResponse(request, code, opt_detail, opt_defaultType) {
     error['errorMessage'] = opt_detail;
   }
   reply['responseData'] = error;
+  return reply;
+}
+
+/**
+ * Makes a response to a U2F request with an error code.
+ * @param {Object} request The request to make a response to.
+ * @param {ErrorCodes} code The error code to return.
+ * @param {string=} opt_detail An error detail string.
+ * @param {string=} opt_defaultType The default response type, if none is
+ *     present in the request.
+ * @return {Object} The U2F error.
+ */
+function makeU2fGetApiVersionResponse(request, version, opt_defaultType) {
+  var reply = makeResponseForRequest(request, '_response', opt_defaultType);
+  console.log("returning api version", version);
+  reply['responseData'] = version;
   return reply;
 }
 

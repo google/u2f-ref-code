@@ -8,6 +8,19 @@
 // UI Functions                                                              //
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * FIDO U2F Javascript API Version
+ */
+var JS_API_VERSION;
+
+function getApiVersion() {
+	u2f.getApiVersion(
+		function (response) {
+			JS_API_VERSION = response;
+			console.log("Extension JS API Version: ", JS_API_VERSION);
+		});
+}
+
 function addTokenInfoToPage(token) {
     console.log(token);
     document

@@ -132,7 +132,6 @@ u2f.RegisterRequest;
  */
 u2f.RegisterResponse;
 
-
 // Low level MessagePort API support
 
 
@@ -370,7 +369,7 @@ u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
  */
 u2f.register = function(registerRequests, signRequests,
     callback, opt_timeoutSeconds) {
-	u2f.getPortSingleton_(function(port) {
+    u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
     var req = {
@@ -386,11 +385,9 @@ u2f.register = function(registerRequests, signRequests,
 };
 
 /**
- * Dispatches register requests to available U2F tokens. An array of sign
- * requests identifies already registered tokens.
- * @param {Array<u2f.RegisterRequest>} registerRequests
- * @param {Array<u2f.SignRequest>} signRequests
- * @param {function((u2f.Error|u2f.RegisterResponse))} callback
+ * Dispatches a message to the extension to find out the supported
+ * JS API version.
+ * @param {function((u2f.Error|number))} callback
  * @param {number=} opt_timeoutSeconds
  */
 u2f.getApiVersion = function(callback, opt_timeoutSeconds) {

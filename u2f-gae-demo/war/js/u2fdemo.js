@@ -10,15 +10,16 @@
 
 /**
  * FIDO U2F Javascript API Version
+ * @number
  */
 var JS_API_VERSION;
 
 function getApiVersion() {
-	u2f.getApiVersion(
-		function (response) {
-			JS_API_VERSION = response;
-			console.log("Extension JS API Version: ", JS_API_VERSION);
-		});
+    u2f.getApiVersion(
+        function (response) {
+	    JS_API_VERSION = response;
+	    console.log("Extension JS API Version: ", JS_API_VERSION);
+        });
 }
 
 function addTokenInfoToPage(token) {

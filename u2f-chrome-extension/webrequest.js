@@ -130,7 +130,6 @@ function handleWebPageRequest(request, sender, sendResponse) {
       return handleU2fSignRequest(sender, request, sendResponse);
 
     case MessageTypes.U2F_GET_API_VERSION_REQUEST:
-    	console.log("got request for version");
       sendResponse(
     	  makeU2fGetApiVersionResponse(request, JS_API_VERSION,
     	      MessageTypes.U2F_GET_API_VERSION_RESPONSE));

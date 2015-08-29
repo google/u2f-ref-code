@@ -218,11 +218,10 @@ function makeU2fErrorResponse(request, code, opt_detail, opt_defaultType) {
 /**
  * Makes a response to a U2F request with an error code.
  * @param {Object} request The request to make a response to.
- * @param {ErrorCodes} code The error code to return.
- * @param {string=} opt_detail An error detail string.
+ * @param {number=} version The JS API version to return.
  * @param {string=} opt_defaultType The default response type, if none is
  *     present in the request.
- * @return {Object} The U2F error.
+ * @return {Object} The GetJsApiVersionResponse.
  */
 function makeU2fGetApiVersionResponse(request, version, opt_defaultType) {
   var reply = makeResponseForRequest(request, '_response', opt_defaultType);

@@ -353,7 +353,7 @@ u2f.responseHandler_ = function(message) {
  */
 u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
   u2f.getPortSingleton_(function(port) {
-    var reqId = ++u2f.reqCounter_;
+  var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
     var req = {
       type: u2f.MessageTypes.U2F_SIGN_REQUEST,

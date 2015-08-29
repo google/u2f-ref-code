@@ -133,7 +133,7 @@ function handleWebPageRequest(request, sender, sendResponse) {
       sendResponse(
     	  makeU2fGetApiVersionResponse(request, JS_API_VERSION,
     	      MessageTypes.U2F_GET_API_VERSION_RESPONSE));
-    	return null;
+      return null;
 
     default:
       sendResponse(

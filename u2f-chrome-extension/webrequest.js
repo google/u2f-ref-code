@@ -226,8 +226,8 @@ function makeU2fErrorResponse(request, code, opt_detail, opt_defaultType) {
  */
 function makeU2fGetApiVersionResponse(request, version, opt_defaultType) {
   var reply = makeResponseForRequest(request, '_response', opt_defaultType);
-  console.log("returning api version", version);
-  reply['responseData'] = version;
+  var data = {'js_api_version': version};
+  reply['responseData'] = data;
   return reply;
 }
 

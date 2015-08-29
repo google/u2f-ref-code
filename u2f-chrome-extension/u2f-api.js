@@ -132,6 +132,14 @@ u2f.RegisterRequest;
  */
 u2f.RegisterResponse;
 
+/**
+ * Data object for a get API register response.
+ * @typedef {{
+ *   version: number
+ * }}
+ */
+u2f.GetJsApiVersionResponse;
+
 // Low level MessagePort API support
 
 
@@ -384,10 +392,11 @@ u2f.register = function(registerRequests, signRequests,
   });
 };
 
+
 /**
  * Dispatches a message to the extension to find out the supported
  * JS API version.
- * @param {function((u2f.Error|number))} callback
+ * @param {function((u2f.Error|u2f.GetJsApiVersionResponse))} callback
  * @param {number=} opt_timeoutSeconds
  */
 u2f.getApiVersion = function(callback, opt_timeoutSeconds) {

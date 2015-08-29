@@ -112,7 +112,6 @@ public class U2FServerReferenceImpl implements U2FServer {
     String browserDataBase64 = registrationResponse.getBd();
     String rawRegistrationDataBase64 = registrationResponse.getRegistrationData();
 
-    Log.info(">> rawRegistrationDataBase64: " + rawRegistrationDataBase64);
     EnrollSessionData sessionData = dataStore.getEnrollSessionData(sessionId);
 
     if (sessionData == null) {

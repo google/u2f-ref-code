@@ -35,7 +35,7 @@ public class SecurityKeyData {
       byte[] publicKey, 
       X509Certificate attestationCert,
       int counter) {
-    this(enrollmentTime, null, keyHandle, publicKey, attestationCert, counter);
+    this(enrollmentTime, null /* transports */, keyHandle, publicKey, attestationCert, counter);
   }
 
   public SecurityKeyData(

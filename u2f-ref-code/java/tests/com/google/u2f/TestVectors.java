@@ -162,6 +162,7 @@ public class TestVectors {
       + "93412ef0fef518141d698cda2a45fe2bc767");
   protected static final String REGISTRATION_RESPONSE_DATA_MULTIPLE_TRANSPORTS_BASE64 =
       Base64.encodeBase64URLSafeString(REGISTRATION_RESPONSE_DATA_MULTIPLE_TRANSPORTS);
+ 
   protected static final byte[] REGISTRATION_RESPONSE_DATA_MALFORMED_TRANSPORTS = parseHex(
       "0504b174bc49c7ca254b70d2e5c207cee9cf174820ebd77ea3c65508c26da51b657c1cc6b"
       + "952f8621697936482da0a6d3d3826a59095daf6cd7c03e2e60385d2f6d9402a552dfdb7"
@@ -183,6 +184,7 @@ public class TestVectors {
       + "212bec8a7a77f7974");
   protected static final String REGISTRATION_RESPONSE_DATA_MALFORMED_TRANSPORTS_BASE64 =
       Base64.encodeBase64URLSafeString(REGISTRATION_RESPONSE_DATA_MALFORMED_TRANSPORTS);
+
   protected static final byte[] KEY_HANDLE = parseHex(
       "2a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3925a"
           + "6019551bab61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d70c25");
@@ -248,6 +250,7 @@ public class TestVectors {
   protected static final String APP_ID_2 = APP_ID_ENROLL;
   protected static final String CHALLENGE_2_BASE64 = SERVER_CHALLENGE_ENROLL_BASE64;
   protected static final String BROWSER_DATA_2_BASE64 = BROWSER_DATA_ENROLL_BASE64;
+
   protected static final String TRUSTED_CERTIFICATE_2_HEX =
       "308201443081eaa0030201020209019189ffffffff5183300a06082a8648ce3d"
           + "040302301b3119301706035504031310476e756262792048534d204341203030"
@@ -262,6 +265,7 @@ public class TestVectors {
           + "1264fc1673b6598f";
   protected static final X509Certificate TRUSTED_CERTIFICATE_2 =
       parseCertificate(TRUSTED_CERTIFICATE_2_HEX);
+
   // Has Bluetooth Radio transport
   private static final String TRUSTED_CERTIFICATE_ONE_TRANSPORT_BASE64 =
       "MIIBmjCCAUCgAwIBAgIJASJCAAJVliZXMAoGCCqGSM49BAMCMEUxCzAJBgNVBAYT"
@@ -275,6 +279,7 @@ public class TestVectors {
           + "daBx5kUAA3YVDH+u8bilfLS9QXKcKNm5vsdE67RJ";
   protected static final X509Certificate TRUSTED_CERTIFICATE_ONE_TRANSPORT =
       parseCertificateBase64(TRUSTED_CERTIFICATE_ONE_TRANSPORT_BASE64);
+
   // Has Bluetooth Radio, Bluetooth Low Energy, and NFC transports
   private static final String TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS_BASE64 =
       "MIIBmTCCAUCgAwIBAgIJASJCAAJVliZXMAoGCCqGSM49BAMCMEUxCzAJBgNVBAYT"
@@ -288,6 +293,7 @@ public class TestVectors {
           + "yWxFfRpgeg0WsLVHu7Ll4oZUkBEuS5RgezrcrRg=";
   protected static final X509Certificate TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS =
       parseCertificateBase64(TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS_BASE64);
+
   private static final String TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION_BASE64 =
       "MIIBmDCCAT6gAwIBAgIJASJCAAJVliZXMAoGCCqGSM49BAMCMEUxCzAJBgNVBAYT" 
           + "AkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRn" 

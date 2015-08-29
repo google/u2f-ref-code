@@ -135,7 +135,7 @@ u2f.RegisterResponse;
 /**
  * Data object for a get API register response.
  * @typedef {{
- *   version: number
+ *   js_api_version: number
  * }}
  */
 u2f.GetJsApiVersionResponse;

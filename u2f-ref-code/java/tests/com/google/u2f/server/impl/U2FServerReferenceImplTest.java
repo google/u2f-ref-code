@@ -163,7 +163,6 @@ public class U2FServerReferenceImplTest extends TestVectors {
     RegistrationResponse registrationResponse = new RegistrationResponse(
         REGISTRATION_RESPONSE_DATA_MALFORMED_TRANSPORTS_BASE64,
         BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
-
     u2fServer.processRegistrationResponse(registrationResponse, 0L);
 
     verify(mockDataStore).addSecurityKeyData(eq(ACCOUNT_NAME),

@@ -7,6 +7,7 @@
 package com.google.u2f.key.messages;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class AuthenticateRequest extends U2FRequest {
   public static final byte CHECK_ONLY = 0x07;
@@ -59,13 +60,7 @@ public class AuthenticateRequest extends U2FRequest {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + Arrays.hashCode(applicationSha256);
-    result = prime * result + Arrays.hashCode(challengeSha256);
-    result = prime * result + control;
-    result = prime * result + Arrays.hashCode(keyHandle);
-    return result;
+    return Objects.hash(control, challengeSha256, applicationSha256, keyHandle);
   }
 
   @Override
@@ -77,14 +72,9 @@ public class AuthenticateRequest extends U2FRequest {
     if (getClass() != obj.getClass())
       return false;
     AuthenticateRequest other = (AuthenticateRequest) obj;
-    if (!Arrays.equals(applicationSha256, other.applicationSha256))
-      return false;
-    if (!Arrays.equals(challengeSha256, other.challengeSha256))
-      return false;
-    if (control != other.control)
-      return false;
-    if (!Arrays.equals(keyHandle, other.keyHandle))
-      return false;
-    return true;
-  }
+    return Objects.equals(control, other.control)
+        && Arrays.equals(challengeSha256, other.challengeSha256)
+        && Arrays.equals(applicationSha256, other.applicationSha256)
+        && Arrays.equals(keyHandle, other.keyHandle);
+    }
 }

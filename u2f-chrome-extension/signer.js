@@ -95,7 +95,7 @@ function handleU2fSignRequest(messageSender, request, sendResponse) {
 
   queuedSignRequest =
       validateAndEnqueueSignRequest(
-          sender, request, 'signRequests', sendErrorResponse,
+          sender, request, 'registeredKeys', sendErrorResponse,
           sendSuccessResponse);
   return queuedSignRequest;
 }
@@ -213,14 +213,14 @@ function isValidSignRequest(request, signChallengesName) {
   if (!request.hasOwnProperty(signChallengesName))
     return false;
   var signChallenges = request[signChallengesName];
-  var hasDefaultChallenge = request.hasOwnProperty('challenge');
   var hasAppId = request.hasOwnProperty('appId');
   // If the sign challenge array is empty, the global appId is required.
   if (!hasAppId && (!signChallenges || !signChallenges.length)) {
     return false;
   }
-  return isValidSignChallengeArray(signChallenges, hasDefaultChallenge,
-      !hasAppId);
+
+  return isValidSignChallengeArray(signChallenges, false /* challengeRequired */, !hasAppId);
+
 }
 
 /**

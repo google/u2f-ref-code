@@ -8,25 +8,45 @@ package com.google.u2f.server.data;
 
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 
 import com.google.common.base.Objects;
 
 public class SecurityKeyData {
+  public enum Transports {
+    BLUETOOTH_RADIO,
+    BLUETOOTH_LOW_ENERGY,
+    USB,
+    NFC
+  }
+
   private final long enrollmentTime;
+  private final List<Transports> transports;
   private final byte[] keyHandle;
   private final byte[] publicKey;
   private final X509Certificate attestationCert;
   private int counter;
 
   public SecurityKeyData(
+      long enrollmentTime, 
+      byte[] keyHandle, 
+      byte[] publicKey, 
+      X509Certificate attestationCert,
+      int counter) {
+    this(enrollmentTime, null, keyHandle, publicKey, attestationCert, counter);
+  }
+
+  public SecurityKeyData(
 		  long enrollmentTime, 
+		  List<Transports> transports,
 		  byte[] keyHandle, 
 		  byte[] publicKey, 
 		  X509Certificate attestationCert,
 		  int counter) {
     this.enrollmentTime = enrollmentTime;
+    this.transports = transports;
     this.keyHandle = keyHandle;
     this.publicKey = publicKey;
     this.attestationCert = attestationCert;
@@ -39,7 +59,11 @@ public class SecurityKeyData {
   public long getEnrollmentTime() {
     return enrollmentTime;
   }
-  
+
+  public List<Transports> getTransports() {
+    return transports;
+  }
+
   public byte[] getKeyHandle() {
     return keyHandle;
   }
@@ -64,6 +88,7 @@ public class SecurityKeyData {
   public int hashCode() {
     return Objects.hashCode(
         enrollmentTime,
+        transports,
         keyHandle, 
         publicKey, 
         attestationCert);
@@ -77,10 +102,28 @@ public class SecurityKeyData {
     SecurityKeyData that = (SecurityKeyData) obj;
     return Arrays.equals(this.keyHandle, that.keyHandle) 
         && (this.enrollmentTime == that.enrollmentTime)
+        && containSameTransports(this.transports, that.transports)
         && Arrays.equals(this.publicKey, that.publicKey)
         && Objects.equal(this.attestationCert, that.attestationCert);
   }
-  
+
+  /**
+   * Compares the two Lists of Transports and says if they are equal.
+   *
+   * @param transports1 first List of Transports
+   * @param transports2 second List of Transports
+   * @return true if both lists are null or if both lists contain the same transport values
+   */
+  public static boolean containSameTransports(List<Transports> transports1,
+      List<Transports> transports2) {
+    if (transports1 == null && transports2 == null) {
+      return true;
+    } else if (transports1 == null || transports2 == null) {
+      return false;
+    }
+    return transports1.containsAll(transports2) && transports2.containsAll(transports1);
+  }
+
   @Override
   public String toString() {
     return new StringBuilder()
@@ -95,6 +138,9 @@ public class SecurityKeyData {
       .append("\n")
       .append("attestation certificate:\n")
       .append(attestationCert.toString())
+      .append("transports: ")
+      .append(transports)
+      .append("\n")
       .toString();
   }
 }

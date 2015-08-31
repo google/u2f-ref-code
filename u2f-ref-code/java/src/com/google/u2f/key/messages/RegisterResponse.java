@@ -8,6 +8,7 @@ package com.google.u2f.key.messages;
 
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class RegisterResponse extends U2FResponse {
   private final byte[] userPublicKey;
@@ -55,13 +56,7 @@ public class RegisterResponse extends U2FResponse {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + attestationCertificate.hashCode();
-    result = prime * result + Arrays.hashCode(keyHandle);
-    result = prime * result + Arrays.hashCode(signature);
-    result = prime * result + Arrays.hashCode(userPublicKey);
-    return result;
+    return Objects.hash(userPublicKey, keyHandle, attestationCertificate, signature);
   }
 
   @Override
@@ -73,14 +68,9 @@ public class RegisterResponse extends U2FResponse {
     if (getClass() != obj.getClass())
       return false;
     RegisterResponse other = (RegisterResponse) obj;
-    if (!attestationCertificate.equals(other.attestationCertificate))
-      return false;
-    if (!Arrays.equals(keyHandle, other.keyHandle))
-      return false;
-    if (!Arrays.equals(signature, other.signature))
-      return false;
-    if (!Arrays.equals(userPublicKey, other.userPublicKey))
-      return false;
-    return true;
+    return Arrays.equals(userPublicKey, other.userPublicKey)
+        && Arrays.equals(keyHandle, other.keyHandle)
+        && Arrays.equals(signature, other.signature)
+        && Objects.equals(attestationCertificate, other.attestationCertificate);
   }
 }

@@ -90,7 +90,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
 
   @Test
   public void testProcessRegistrationResponse_noTransports() throws U2FException {
-	when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn(
+    when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn(
         new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL));
     u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
         mockDataStore, cryto, TRUSTED_DOMAINS);
@@ -106,11 +106,11 @@ public class U2FServerReferenceImplTest extends TestVectors {
 
   @Test
   public void testProcessRegistrationResponse_oneTransport() throws U2FException {
-  when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn(
+    when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn(
         new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL));
-  HashSet<X509Certificate> trustedCertificates = new HashSet<X509Certificate>();
-  trustedCertificates.add(TRUSTED_CERTIFICATE_ONE_TRANSPORT);
-  when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates);
+    HashSet<X509Certificate> trustedCertificates = new HashSet<X509Certificate>();
+    trustedCertificates.add(TRUSTED_CERTIFICATE_ONE_TRANSPORT);
+    when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates);
     u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
         mockDataStore, cryto, TRUSTED_DOMAINS);
 
@@ -128,11 +128,11 @@ public class U2FServerReferenceImplTest extends TestVectors {
 
   @Test
   public void testProcessRegistrationResponse_multipleTransports() throws U2FException {
-  when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn(
+    when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn(
         new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL));
-  HashSet<X509Certificate> trustedCertificates = new HashSet<X509Certificate>();
-  trustedCertificates.add(TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS);
-  when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates);
+    HashSet<X509Certificate> trustedCertificates = new HashSet<X509Certificate>();
+    trustedCertificates.add(TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS);
+    when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates);
     u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
         mockDataStore, cryto, TRUSTED_DOMAINS);
 
@@ -152,11 +152,11 @@ public class U2FServerReferenceImplTest extends TestVectors {
 
   @Test
   public void testProcessRegistrationResponse_malformedTransports() throws U2FException {
-  when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn(
+    when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn(
         new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL));
-  HashSet<X509Certificate> trustedCertificates = new HashSet<X509Certificate>();
-  trustedCertificates.add(TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION);
-  when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates);
+    HashSet<X509Certificate> trustedCertificates = new HashSet<X509Certificate>();
+    trustedCertificates.add(TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION);
+    when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates);
     u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
         mockDataStore, cryto, TRUSTED_DOMAINS);
 
@@ -172,8 +172,8 @@ public class U2FServerReferenceImplTest extends TestVectors {
 
   @Test
   public void testProcessRegistrationResponse2() throws U2FException {
-	when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn(
-	     new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL));
+    when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn(
+        new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL));
     HashSet<X509Certificate> trustedCertificates = new HashSet<X509Certificate>();
     trustedCertificates.add(VENDOR_CERTIFICATE);
     trustedCertificates.add(TRUSTED_CERTIFICATE_2);
@@ -204,8 +204,8 @@ public class U2FServerReferenceImplTest extends TestVectors {
 
   @Test
   public void testProcessSignResponse() throws U2FException {
-	when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
-	    new SignSessionData(ACCOUNT_NAME, APP_ID_SIGN, SERVER_CHALLENGE_SIGN, USER_PUBLIC_KEY_SIGN_HEX));
+    when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
+        new SignSessionData(ACCOUNT_NAME, APP_ID_SIGN, SERVER_CHALLENGE_SIGN, USER_PUBLIC_KEY_SIGN_HEX));
     u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
         mockDataStore, cryto, TRUSTED_DOMAINS);
     SignResponse signResponse = new SignResponse(BROWSER_DATA_SIGN_BASE64,
@@ -235,8 +235,8 @@ public class U2FServerReferenceImplTest extends TestVectors {
   // TODO: put test back in once we have signature sample on a correct browserdata json
   // (currently, this test uses an enrollment browserdata during a signature)
   public void testProcessSignResponse2() throws U2FException {
-	when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
-	    new SignSessionData(ACCOUNT_NAME, APP_ID_2, SERVER_CHALLENGE_SIGN, USER_PUBLIC_KEY_2));
+    when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
+        new SignSessionData(ACCOUNT_NAME, APP_ID_2, SERVER_CHALLENGE_SIGN, USER_PUBLIC_KEY_2));
     when(mockDataStore.getSecurityKeyData(ACCOUNT_NAME)).thenReturn(
         ImmutableList.of(new SecurityKeyData(0l, KEY_HANDLE_2, USER_PUBLIC_KEY_2, VENDOR_CERTIFICATE, 0)));
     u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,

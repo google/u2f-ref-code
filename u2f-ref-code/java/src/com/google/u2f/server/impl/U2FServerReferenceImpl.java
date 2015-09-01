@@ -55,6 +55,10 @@ public class U2FServerReferenceImpl implements U2FServer {
   // Object Identifier for the attestation certificate transport extension fidoU2FTransports
   private static final String TRANSPORT_EXTENSION_OID = "1.3.6.1.4.1.45724.2.1.1";
 
+  // The number of bits in a byte. It is used to know at which index in a BitSet to look for
+  // specific transport values
+  private static final int BITS_IN_A_BYTE = 8;
+
   private static final String TYPE_PARAM = "typ";
   private static final String CHALLENGE_PARAM = "challenge";
   private static final String ORIGIN_PARAM = "origin";
@@ -355,8 +359,8 @@ public class U2FServerReferenceImpl implements U2FServer {
     BitSet bitSet = BitSet.valueOf(values);
 
     // We might have more defined transports than used by the extension
-    for (int i = 0; i < 8; i++) {
-      if (bitSet.get(8 - i - 1)) {
+    for (int i = 0; i < BITS_IN_A_BYTE; i++) {
+      if (bitSet.get(BITS_IN_A_BYTE - i - 1)) {
         transportsList.add(Transports.values()[i]);
       }
     }

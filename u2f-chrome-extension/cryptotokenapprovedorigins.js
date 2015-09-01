@@ -1,9 +1,14 @@
+// Copyright 2014 Google Inc. All rights reserved
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 /**
  * @fileoverview Provides an implementation of approved origins that relies
  * on the chrome.cryptotokenPrivate.requestPermission API.
  * (and only) allows google.com to use security keys.
  *
- * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 

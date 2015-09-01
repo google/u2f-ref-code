@@ -1,3 +1,9 @@
+// Copyright 2014 Google Inc. All rights reserved
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 /**
  * @fileoverview Implements a low-level gnubby driver based on chrome.hid.
  */
@@ -175,7 +181,7 @@ HidGnubbyDevice.prototype.readLoop_ = function() {
   // Instead we will see the device drop and re-appear on the bus.
   // Current libusb on some platforms gets unhappy when transfer are pending
   // when that happens.
-  // TODO(mschilder): revisit once Chrome stabilizes its behavior.
+  // TODO: revisit once Chrome stabilizes its behavior.
   if (this.updating) {
     console.log(UTIL_fmt('device updating. Ending readLoop()'));
     return;
@@ -403,7 +409,7 @@ HidGnubbyDevice.prototype.writePump_ = function() {
 /**
  * List of legacy HID devices that do not support the F1D0 usage page as
  * mandated by the spec, but still need to be supported.
- * TODO(juanlang): remove when these devices no longer need to be supported.
+ * TODO: remove when these devices no longer need to be supported.
  * @const
  */
 HidGnubbyDevice.HID_VID_PIDS = [

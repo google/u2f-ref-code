@@ -1,5 +1,10 @@
+// Copyright 2014 Google Inc. All rights reserved
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 // WebSafeBase64Escape and Unescape.
-// GOOGLE-INTERNAL mschilder@google.com
 function B64_encode(bytes, opt_length) {
   if (!opt_length) opt_length = bytes.length;
   var b64out =

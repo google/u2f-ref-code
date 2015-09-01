@@ -13,13 +13,16 @@
  * Constructs a new timer.  The timer has a very limited resolution, and does
  * not attempt to be millisecond accurate. Its intended use is as a
  * low-precision timer that pauses while debugging.
+ * @param {!SystemTimer} sysTimer The system timer implementation.
  * @param {number=} timeoutMillis how long, in milliseconds, the countdown
  *     lasts.
  * @param {Function=} cb called back when the countdown expires.
  * @constructor
  * @implements {Countdown}
  */
-function CountdownTimer(timeoutMillis, cb) {
+function CountdownTimer(sysTimer, timeoutMillis, cb) {
+  /** @private {!SystemTimer} */
+  this.sysTimer_ = sysTimer;
   this.remainingMillis = 0;
   this.setTimeout(timeoutMillis || 0, cb);
 }
@@ -43,12 +46,13 @@ CountdownTimer.prototype.setTimeout = function(timeoutMillis, cb) {
   this.cb = cb;
   if (this.remainingMillis > CountdownTimer.TIMER_INTERVAL_MILLIS) {
     this.timeoutId =
-        window.setInterval(this.timerTick.bind(this),
+        this.sysTimer_.setInterval(this.timerTick.bind(this),
             CountdownTimer.TIMER_INTERVAL_MILLIS);
   } else {
     // Set a one-shot timer for the last interval.
     this.timeoutId =
-        window.setTimeout(this.timerTick.bind(this), this.remainingMillis);
+        this.sysTimer_.setTimeout(
+            this.timerTick.bind(this), this.remainingMillis);
   }
   return true;
 };
@@ -56,7 +60,7 @@ CountdownTimer.prototype.setTimeout = function(timeoutMillis, cb) {
 /** Clears this timer's timeout. Timers that are cleared become expired. */
 CountdownTimer.prototype.clearTimeout = function() {
   if (this.timeoutId) {
-    window.clearTimeout(this.timeoutId);
+    this.sysTimer_.clearTimeout(this.timeoutId);
     this.timeoutId = undefined;
   }
   this.remainingMillis = 0;
@@ -80,14 +84,14 @@ CountdownTimer.prototype.expired = function() {
  * @return {!Countdown} new clone.
  */
 CountdownTimer.prototype.clone = function(cb) {
-  return new CountdownTimer(this.remainingMillis, cb);
+  return new CountdownTimer(this.sysTimer_, this.remainingMillis, cb);
 };
 
 /** Timer callback. */
 CountdownTimer.prototype.timerTick = function() {
   this.remainingMillis -= CountdownTimer.TIMER_INTERVAL_MILLIS;
   if (this.expired()) {
-    window.clearTimeout(this.timeoutId);
+    this.sysTimer_.clearTimeout(this.timeoutId);
     this.timeoutId = undefined;
     if (this.cb) {
       this.cb();
@@ -97,10 +101,13 @@ CountdownTimer.prototype.timerTick = function() {
 
 /**
  * A factory for creating CountdownTimers.
+ * @param {!SystemTimer} sysTimer The system timer implementation.
  * @constructor
  * @implements {CountdownFactory}
  */
-function CountdownTimerFactory() {
+function CountdownTimerFactory(sysTimer) {
+  /** @private {!SystemTimer} */
+  this.sysTimer_ = sysTimer;
 }
 
 /**
@@ -111,7 +118,7 @@ function CountdownTimerFactory() {
  */
 CountdownTimerFactory.prototype.createTimer =
     function(timeoutMillis, opt_cb) {
-  return new CountdownTimer(timeoutMillis, opt_cb);
+  return new CountdownTimer(this.sysTimer_, timeoutMillis, opt_cb);
 };
 
 /**

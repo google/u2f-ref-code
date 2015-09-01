@@ -428,16 +428,20 @@ HidGnubbyDevice.enumerate = function(cb) {
   var numEnumerated = 0;
   var allDevs = [];
 
-  function enumerated(devs) {
-    // Don't double-add a device, it'll just confuse things.
+  function enumerated(f1d0Enumerated, devs) {
+    // Don't double-add a device; it'll just confuse things.
+    // We assume the various calls to getDevices() return from the same
+    // deviceId pool.
     for (var i = 0; i < devs.length; i++) {
       var dev = devs[i];
+      dev.f1d0Only = f1d0Enumerated;
       // Unfortunately indexOf is not usable, since the two calls produce
       // different objects. Compare their deviceIds instead.
       var found = false;
       for (var j = 0; j < allDevs.length; j++) {
         if (allDevs[j].deviceId == dev.deviceId) {
           found = true;
+          allDevs[j].f1d0Only &= f1d0Enumerated;
           break;
         }
       }
@@ -451,11 +455,12 @@ HidGnubbyDevice.enumerate = function(cb) {
   }
 
   // Pass 1: usagePage-based enumeration.
-  chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]}, enumerated);
+  chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]},
+      enumerated.bind(null, true));
   // Pass 2: vid/pid-based enumeration, for legacy devices.
   for (var i = 0; i < HidGnubbyDevice.HID_VID_PIDS.length; i++) {
     var dev = HidGnubbyDevice.HID_VID_PIDS[i];
-    chrome.hid.getDevices({filters: [dev]}, enumerated);
+    chrome.hid.getDevices({filters: [dev]}, enumerated.bind(null, false));
   }
 };
 

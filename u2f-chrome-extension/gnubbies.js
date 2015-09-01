@@ -203,6 +203,13 @@ Gnubbies.prototype.enumerate = function(cb) {
 Gnubbies.INACTIVITY_TIMEOUT_MARGIN_MILLIS = 30000;
 
 /**
+ * Private instance of timers based on window's timer functions.
+ * @const
+ * @private
+ */
+Gnubbies.SYS_TIMER_ = new WindowTimer();
+
+/**
  * @param {number|undefined} opt_timeoutMillis Timeout in milliseconds
  */
 Gnubbies.prototype.resetInactivityTimer = function(opt_timeoutMillis) {
@@ -211,7 +218,8 @@ Gnubbies.prototype.resetInactivityTimer = function(opt_timeoutMillis) {
       Gnubbies.INACTIVITY_TIMEOUT_MARGIN_MILLIS;
   if (!this.inactivityTimer) {
     this.inactivityTimer =
-        new CountdownTimer(millis, this.inactivityTimeout_.bind(this));
+        new CountdownTimer(
+            Gnubbies.SYS_TIMER_, millis, this.inactivityTimeout_.bind(this));
   } else if (millis > this.inactivityTimer.millisecondsUntilExpired()) {
     this.inactivityTimer.clearTimeout();
     this.inactivityTimer.setTimeout(millis, this.inactivityTimeout_.bind(this));
@@ -339,6 +347,8 @@ Gnubbies.prototype.removeClient = function(whichDev, who) {
   for (var namespace in this.openDevs_) {
     for (var devId in this.openDevs_[namespace]) {
       var deviceId = Number(devId);
+      if (isNaN(deviceId))
+        deviceId = devId;
       var dev = this.openDevs_[namespace][deviceId];
       if (dev.hasClient(who)) {
         if (whichDev && dev != whichDev) {

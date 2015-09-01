@@ -1,12 +1,7 @@
-// Copyright 2014 Google Inc. All rights reserved
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-
 /**
  * @fileoverview Implements a helper that interacts with external (not in this
  * browser/app) helpers.
+ * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 
@@ -74,7 +69,8 @@ ExternalHandler.prototype.close = function() {
  * @private
  */
 ExternalHandler.prototype.makeDefaultErrorReply_ = function(request) {
-  return makeHelperErrorResponse(request, this.helperConfig_.defaultError);
+  return makeHelperErrorResponse(request,
+      /** @type {DeviceStatusCodes} */ (this.helperConfig_.defaultError));
 };
 
 /**

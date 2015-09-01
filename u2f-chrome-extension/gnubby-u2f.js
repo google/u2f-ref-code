@@ -1,15 +1,12 @@
-// Copyright 2014 Google Inc. All rights reserved
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-
 /**
  * @fileoverview Gnubby methods related to U2F support.
  */
 'use strict';
 
 // Commands and flags of the Gnubby applet
+// BEGIN GOOGLE-INTERNAL
+// //depot/google3/security/tools/gnubby/applet/gnubby/src/pkgGnubby/Gnubby.java
+// END GOOGLE-INTERNAL
 /** Enroll */
 Gnubby.U2F_ENROLL = 0x01;
 /** Request signature */

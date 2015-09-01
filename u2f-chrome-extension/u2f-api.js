@@ -1,9 +1,3 @@
-// Copyright 2014 Google Inc. All rights reserved
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-
 /**
  * @fileoverview The U2F api.
  */
@@ -132,6 +126,7 @@ u2f.RegisterRequest;
  */
 u2f.RegisterResponse;
 
+
 /**
  * Data object for a get API register response.
  * @typedef {{
@@ -139,6 +134,7 @@ u2f.RegisterResponse;
  * }}
  */
 u2f.GetJsApiVersionResponse;
+
 
 // Low level MessagePort API support
 
@@ -377,7 +373,7 @@ u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
  */
 u2f.register = function(registerRequests, signRequests,
     callback, opt_timeoutSeconds) {
-    u2f.getPortSingleton_(function(port) {
+  u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
     var req = {
@@ -392,7 +388,6 @@ u2f.register = function(registerRequests, signRequests,
   });
 };
 
-
 /**
  * Dispatches a message to the extension to find out the supported
  * JS API version.
@@ -400,7 +395,7 @@ u2f.register = function(registerRequests, signRequests,
  * @param {number=} opt_timeoutSeconds
  */
 u2f.getApiVersion = function(callback, opt_timeoutSeconds) {
-	u2f.getPortSingleton_(function(port) {
+ u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
     var req = {

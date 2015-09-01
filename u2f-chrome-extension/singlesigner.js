@@ -1,14 +1,9 @@
-// Copyright 2014 Google Inc. All rights reserved
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-
 /**
  * @fileoverview A single gnubby signer wraps the process of opening a gnubby,
  * signing each challenge in an array of challenges until a success condition
  * is satisfied, and finally yielding the gnubby upon success.
  *
+ * @author juanlang@google.com (Juan Lang)
  */
 
 'use strict';
@@ -247,7 +242,7 @@ SingleGnubbySigner.prototype.openCallback_ = function(rc, gnubby) {
       }
       break;
     default:
-      // TODO: This won't be confused with success, but should it be
+      // TODO(juanlang): This won't be confused with success, but should it be
       // part of the same namespace as the other error codes, which are
       // always in DeviceStatusCodes.*?
       this.goToError_(rc, true);

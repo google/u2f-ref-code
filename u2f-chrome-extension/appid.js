@@ -1,9 +1,3 @@
-// Copyright 2014 Google Inc. All rights reserved
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-
 /**
  * @fileoverview Implements a check whether an app id lists an origin.
  */
@@ -73,19 +67,61 @@ function getDistinctAppIds(signChallenges) {
 }
 
 /**
- * Provides an object to track checking a list of appIds.
- * @param {!TextFetcher} fetcher A URL fetcher.
+ * An object that checks one or more appIds' contents against an origin.
+ * @interface
+ */
+function AppIdChecker() {}
+
+/**
+ * Checks whether the given origin is allowed by all of the given appIds.
  * @param {!Countdown} timer A timer by which to resolve all provided app ids.
  * @param {string} origin The origin to check.
  * @param {!Array<string>} appIds The app ids to check.
  * @param {boolean} allowHttp Whether to allow http:// URLs.
  * @param {string=} opt_logMsgUrl A log message URL.
- * @constructor
+ * @return {Promise<boolean>} A promise for the result of the check
  */
-function AppIdChecker(fetcher, timer, origin, appIds, allowHttp, opt_logMsgUrl)
-    {
+AppIdChecker.prototype.checkAppIds =
+    function(timer, origin, appIds, allowHttp, opt_logMsgUrl) {};
+
+/**
+ * An interface to create an AppIdChecker.
+ * @interface
+ */
+function AppIdCheckerFactory() {}
+
+/**
+ * @return {!AppIdChecker} A new AppIdChecker.
+ */
+AppIdCheckerFactory.prototype.create = function() {};
+
+/**
+ * Provides an object to track checking a list of appIds.
+ * @param {!TextFetcher} fetcher A URL fetcher.
+ * @constructor
+ * @implements AppIdChecker
+ */
+function XhrAppIdChecker(fetcher) {
   /** @private {!TextFetcher} */
   this.fetcher_ = fetcher;
+}
+
+/**
+ * Checks whether all the app ids provided can be asserted by the given origin.
+ * @param {!Countdown} timer A timer by which to resolve all provided app ids.
+ * @param {string} origin The origin to check.
+ * @param {!Array<string>} appIds The app ids to check.
+ * @param {boolean} allowHttp Whether to allow http:// URLs.
+ * @param {string=} opt_logMsgUrl A log message URL.
+ * @return {Promise<boolean>} A promise for the result of the check
+ */
+XhrAppIdChecker.prototype.checkAppIds =
+    function(timer, origin, appIds, allowHttp, opt_logMsgUrl) {
+  if (this.timer_) {
+    // Can't use the same object to check appIds more than once.
+    return Promise.resolve(false);
+  }
+
   /** @private {!Countdown} */
   this.timer_ = timer;
   /** @private {string} */
@@ -102,20 +138,6 @@ function AppIdChecker(fetcher, timer, origin, appIds, allowHttp, opt_logMsgUrl)
   this.allowHttp_ = allowHttp;
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
-
-  /** @private {boolean} */
-  this.closed_ = false;
-  /** @private {boolean} */
-  this.anyInvalidAppIds_ = false;
-  /** @private {number} */
-  this.fetchedAppIds_ = 0;
-}
-
-/**
- * Checks whether all the app ids provided can be asserted by the given origin.
- * @return {Promise<boolean>} A promise for the result of the check
- */
-AppIdChecker.prototype.doCheck = function() {
   if (!this.distinctAppIds_.length)
     return Promise.resolve(false);
 
@@ -128,8 +150,6 @@ AppIdChecker.prototype.doCheck = function() {
     var appIdChecks = self.distinctAppIds_.map(self.checkAppId_.bind(self));
     return Promise.all(appIdChecks).then(function(results) {
       return results.every(function(result) {
-        if (!result)
-          self.anyInvalidAppIds_ = true;
         return result;
       });
     });
@@ -142,7 +162,7 @@ AppIdChecker.prototype.doCheck = function() {
  * @return {Promise<boolean>} A promise for the result of the check
  * @private
  */
-AppIdChecker.prototype.checkAppId_ = function(appId) {
+XhrAppIdChecker.prototype.checkAppId_ = function(appId) {
   if (appId == this.origin_) {
     // Trivially allowed
     return Promise.resolve(true);
@@ -160,18 +180,11 @@ AppIdChecker.prototype.checkAppId_ = function(appId) {
 };
 
 /**
- * Closes this checker. No callback will be called after this checker is closed.
- */
-AppIdChecker.prototype.close = function() {
-  this.closed_ = true;
-};
-
-/**
  * @return {boolean} Whether all the app ids being checked are equal to the
  * calling origin.
  * @private
  */
-AppIdChecker.prototype.allAppIdsEqualOrigin_ = function() {
+XhrAppIdChecker.prototype.allAppIdsEqualOrigin_ = function() {
   var self = this;
   return this.distinctAppIds_.every(function(appId) {
     return appId == self.origin_;
@@ -185,7 +198,7 @@ AppIdChecker.prototype.allAppIdsEqualOrigin_ = function() {
  *     for appId
  * @private
  */
-AppIdChecker.prototype.fetchAllowedOriginsForAppId_ = function(appId) {
+XhrAppIdChecker.prototype.fetchAllowedOriginsForAppId_ = function(appId) {
   if (!appId) {
     return Promise.resolve([]);
   }
@@ -211,4 +224,22 @@ AppIdChecker.prototype.fetchAllowedOriginsForAppId_ = function(appId) {
     }
     return [];
   });
+};
+
+/**
+ * A factory to create an XhrAppIdChecker.
+ * @implements AppIdCheckerFactory
+ * @param {!TextFetcher} fetcher
+ * @constructor
+ */
+function XhrAppIdCheckerFactory(fetcher) {
+  /** @private {!TextFetcher} */
+  this.fetcher_ = fetcher;
+}
+
+/**
+ * @return {!AppIdChecker} A new AppIdChecker.
+ */
+XhrAppIdCheckerFactory.prototype.create = function() {
+  return new XhrAppIdChecker(this.fetcher_);
 };

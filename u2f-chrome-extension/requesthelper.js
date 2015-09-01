@@ -1,13 +1,8 @@
-// Copyright 2014 Google Inc. All rights reserved
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-
 /**
  * @fileoverview Provides a "bottom half" helper to assist with raw requests.
  * This fills the same role as the Authenticator-Specific Module component of
  * U2F documents, although the API is different.
+ * @author juanlang@google.com (Juan Lang)
  */
 'use strict';
 

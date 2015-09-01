@@ -1,9 +1,3 @@
-// Copyright 2014 Google Inc. All rights reserved
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-
 /**
  * @fileoverview Implements a low-level gnubby driver based on chrome.hid.
  */
@@ -181,7 +175,7 @@ HidGnubbyDevice.prototype.readLoop_ = function() {
   // Instead we will see the device drop and re-appear on the bus.
   // Current libusb on some platforms gets unhappy when transfer are pending
   // when that happens.
-  // TODO: revisit once Chrome stabilizes its behavior.
+  // TODO(mschilder): revisit once Chrome stabilizes its behavior.
   if (this.updating) {
     console.log(UTIL_fmt('device updating. Ending readLoop()'));
     return;
@@ -409,7 +403,7 @@ HidGnubbyDevice.prototype.writePump_ = function() {
 /**
  * List of legacy HID devices that do not support the F1D0 usage page as
  * mandated by the spec, but still need to be supported.
- * TODO: remove when these devices no longer need to be supported.
+ * TODO(juanlang): remove when these devices no longer need to be supported.
  * @const
  */
 HidGnubbyDevice.HID_VID_PIDS = [
@@ -428,16 +422,20 @@ HidGnubbyDevice.enumerate = function(cb) {
   var numEnumerated = 0;
   var allDevs = [];
 
-  function enumerated(devs) {
-    // Don't double-add a device, it'll just confuse things.
+  function enumerated(f1d0Enumerated, devs) {
+    // Don't double-add a device; it'll just confuse things.
+    // We assume the various calls to getDevices() return from the same
+    // deviceId pool.
     for (var i = 0; i < devs.length; i++) {
       var dev = devs[i];
+      dev.f1d0Only = f1d0Enumerated;
       // Unfortunately indexOf is not usable, since the two calls produce
       // different objects. Compare their deviceIds instead.
       var found = false;
       for (var j = 0; j < allDevs.length; j++) {
         if (allDevs[j].deviceId == dev.deviceId) {
           found = true;
+          allDevs[j].f1d0Only &= f1d0Enumerated;
           break;
         }
       }
@@ -451,11 +449,12 @@ HidGnubbyDevice.enumerate = function(cb) {
   }
 
   // Pass 1: usagePage-based enumeration.
-  chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]}, enumerated);
+  chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]},
+      enumerated.bind(null, true));
   // Pass 2: vid/pid-based enumeration, for legacy devices.
   for (var i = 0; i < HidGnubbyDevice.HID_VID_PIDS.length; i++) {
     var dev = HidGnubbyDevice.HID_VID_PIDS[i];
-    chrome.hid.getDevices({filters: [dev]}, enumerated);
+    chrome.hid.getDevices({filters: [dev]}, enumerated.bind(null, false));
   }
 };
 

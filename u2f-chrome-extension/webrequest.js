@@ -1,9 +1,3 @@
-// Copyright 2014 Google Inc. All rights reserved
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-
 /**
  * @fileoverview Does common handling for requests coming from web pages and
  * routes them to the provided handler.
@@ -12,9 +6,9 @@
 /**
  * FIDO U2F Javascript API Version
  * @const
- * @number
+ * @type {number}
  */
-var JS_API_VERSION = 1.0;
+var JS_API_VERSION = 1.1;
 
 /**
  * Gets the scheme + origin from a web url.
@@ -70,6 +64,25 @@ function isValidRegisteredKeyArray(registeredKeys, appIdRequired) {
 }
 
 /**
+ * Gets the sign challenges from the request. The sign challenges may be the
+ * U2F 1.0 variant, signRequests, or the U2F 1.1 version, registeredKeys.
+ * @param {Object} request The request.
+ * @return {!Array<SignChallenge>|undefined} The sign challenges, if found.
+ */
+function getSignChallenges(request) {
+  if (!request) {
+    return undefined;
+  }
+  var signChallenges;
+  if (request.hasOwnProperty('signRequests')) {
+    signChallenges = request['signRequests'];
+  } else if (request.hasOwnProperty('registeredKeys')) {
+    signChallenges = request['registeredKeys'];
+  }
+  return signChallenges;
+}
+
+/**
  * Returns whether the array of SignChallenges appears to be valid.
  * @param {Array<SignChallenge>} signChallenges The array of sign challenges.
  * @param {boolean} challengeValueRequired Whether each challenge object
@@ -92,22 +105,6 @@ function isValidSignChallengeArray(signChallenges, challengeValueRequired,
   return true;
 }
 
-/** Posts the log message to the log url.
- * @param {string} logMsg the log message to post.
- * @param {string=} opt_logMsgUrl the url to post log messages to.
- */
-function logMessage(logMsg, opt_logMsgUrl) {
-  console.log(UTIL_fmt('logMessage("' + logMsg + '")'));
-
-  if (!opt_logMsgUrl) {
-    return;
-  }
-  // Image fetching is not allowed per packaged app CSP.
-  // But video and audio is.
-  var audio = new Audio();
-  audio.src = opt_logMsgUrl + logMsg;
-}
-
 /**
  * @param {Object} request Request object
  * @param {MessageSender} sender Sender frame
@@ -117,12 +114,6 @@ function logMessage(logMsg, opt_logMsgUrl) {
  */
 function handleWebPageRequest(request, sender, sendResponse) {
   switch (request.type) {
-    case GnubbyMsgTypes.ENROLL_WEB_REQUEST:
-      return handleWebEnrollRequest(sender, request, sendResponse);
-
-    case GnubbyMsgTypes.SIGN_WEB_REQUEST:
-      return handleWebSignRequest(sender, request, sendResponse);
-
     case MessageTypes.U2F_REGISTER_REQUEST:
       return handleU2fEnrollRequest(sender, request, sendResponse);
 
@@ -131,8 +122,8 @@ function handleWebPageRequest(request, sender, sendResponse) {
 
     case MessageTypes.U2F_GET_API_VERSION_REQUEST:
       sendResponse(
-    	  makeU2fGetApiVersionResponse(request, JS_API_VERSION,
-    	      MessageTypes.U2F_GET_API_VERSION_RESPONSE));
+          makeU2fGetApiVersionResponse(request, JS_API_VERSION,
+              MessageTypes.U2F_GET_API_VERSION_RESPONSE));
       return null;
 
     default:
@@ -141,37 +132,6 @@ function handleWebPageRequest(request, sender, sendResponse) {
               MessageTypes.U2F_REGISTER_RESPONSE));
       return null;
   }
-}
-
-/**
- * Set-up listeners for webpage connect.
- * @param {Object} port connection is on.
- * @param {Object} request that got received on port.
- */
-function handleWebPageConnect(port, request) {
-  var closeable;
-
-  var onMessage = function(request) {
-    console.log(UTIL_fmt('request'));
-    console.log(request);
-    closeable = handleWebPageRequest(request, port.sender,
-        function(response) {
-          response['requestId'] = request['requestId'];
-          port.postMessage(response);
-        });
-  };
-
-  var onDisconnect = function() {
-    port.onMessage.removeListener(onMessage);
-    port.onDisconnect.removeListener(onDisconnect);
-    if (closeable) closeable.close();
-  };
-
-  port.onMessage.addListener(onMessage);
-  port.onDisconnect.addListener(onDisconnect);
-
-  // Start work on initial message.
-  onMessage(request);
 }
 
 /**
@@ -216,21 +176,6 @@ function makeU2fErrorResponse(request, code, opt_detail, opt_defaultType) {
 }
 
 /**
- * Makes a response to a U2F request with an error code.
- * @param {Object} request The request to make a response to.
- * @param {number=} version The JS API version to return.
- * @param {string=} opt_defaultType The default response type, if none is
- *     present in the request.
- * @return {Object} The GetJsApiVersionResponse.
- */
-function makeU2fGetApiVersionResponse(request, version, opt_defaultType) {
-  var reply = makeResponseForRequest(request, '_response', opt_defaultType);
-  var data = {'js_api_version': version};
-  reply['responseData'] = data;
-  return reply;
-}
-
-/**
  * Makes a success response to a web request with a responseData object.
  * @param {Object} request The request to make a response to.
  * @param {Object} responseData The response data.
@@ -240,56 +185,6 @@ function makeU2fSuccessResponse(request, responseData) {
   var reply = makeResponseForRequest(request, '_response');
   reply['responseData'] = responseData;
   return reply;
-}
-
-/**
- * Makes a response to a web request with an error code.
- * @param {Object} request The request to make a response to.
- * @param {GnubbyCodeTypes} code The error code to return.
- * @param {string=} opt_defaultType The default response type, if none is
- *     present in the request.
- * @return {Object} The web error.
- */
-function makeWebErrorResponse(request, code, opt_defaultType) {
-  var reply = makeResponseForRequest(request, '_reply', opt_defaultType);
-  reply['code'] = code;
-  return reply;
-}
-
-/**
- * Makes a success response to a web request with a responseData object.
- * @param {Object} request The request to make a response to.
- * @param {Object} responseData The response data.
- * @return {Object} The web error.
- */
-function makeWebSuccessResponse(request, responseData) {
-  var reply = makeResponseForRequest(request, '_reply');
-  reply['code'] = GnubbyCodeTypes.OK;
-  reply['responseData'] = responseData;
-  return reply;
-}
-
-/**
- * Maps an error code from the ErrorCodes namespace to the GnubbyCodeTypes
- * namespace.
- * @param {ErrorCodes} errorCode Error in the ErrorCodes namespace.
- * @param {boolean} forSign Whether the error is for a sign request.
- * @return {GnubbyCodeTypes} Error code in the GnubbyCodeTypes namespace.
- */
-function mapErrorCodeToGnubbyCodeType(errorCode, forSign) {
-  var code;
-  switch (errorCode) {
-    case ErrorCodes.BAD_REQUEST:
-      return GnubbyCodeTypes.BAD_REQUEST;
-
-    case ErrorCodes.DEVICE_INELIGIBLE:
-      return forSign ? GnubbyCodeTypes.NONE_PLUGGED_ENROLLED :
-          GnubbyCodeTypes.ALREADY_ENROLLED;
-
-    case ErrorCodes.TIMEOUT:
-      return GnubbyCodeTypes.WAIT_TOUCH;
-  }
-  return GnubbyCodeTypes.UNKNOWN_ERROR;
 }
 
 /**
@@ -433,6 +328,21 @@ function makeEnrollBrowserData(serverChallenge, origin, opt_tlsChannelId) {
 function makeSignBrowserData(serverChallenge, origin, opt_tlsChannelId) {
   return makeBrowserData(
       'navigator.id.getAssertion', serverChallenge, origin, opt_tlsChannelId);
+}
+
+/**
+ * Makes a response to a U2F request with an error code.
+ * @param {Object} request The request to make a response to.
+ * @param {number=} version The JS API version to return.
+ * @param {string=} opt_defaultType The default response type, if none is
+ *     present in the request.
+ * @return {Object} The GetJsApiVersionResponse.
+ */
+function makeU2fGetApiVersionResponse(request, version, opt_defaultType) {
+  var reply = makeResponseForRequest(request, '_response', opt_defaultType);
+  var data = {'js_api_version': version};
+  reply['responseData'] = data;
+  return reply;
 }
 
 /**

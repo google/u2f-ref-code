@@ -1,9 +1,3 @@
-// Copyright 2014 Google Inc. All rights reserved
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-
 /**
  * @fileoverview Interface for representing a low-level gnubby device.
  */
@@ -16,6 +10,7 @@
 function GnubbyDevice() {}
 
 // Commands of the USB interface.
+// GOOGLE-INTERNAL //depot/google3/security/tools/gnubby/gnubbyd/gnubby_if.h
 /** Echo data through local processor only */
 GnubbyDevice.CMD_PING = 0x81;
 /** Perform reset action and read ATR string */
@@ -42,6 +37,10 @@ GnubbyDevice.CMD_SYNC = 0xbc;
 GnubbyDevice.CMD_ERROR = 0xbf;
 
 // Low-level error codes.
+// BEGIN GOOGLE-INTERNAL
+// //depot/google3/security/tools/gnubby/gnubbyd/gnubby_if.h
+// //depot/google3/security/tools/gnubby/ssh/gnubby_error_codes.h
+// END GOOGLE-INTERNAL
 /** No error */
 GnubbyDevice.OK = 0;
 /** Invalid command */
@@ -54,7 +53,7 @@ GnubbyDevice.INVALID_LEN = 3;
 GnubbyDevice.INVALID_SEQ = 4;
 /** Message has timed out */
 GnubbyDevice.TIMEOUT = 5;
-/** CHannel is busy */
+/** Channel is busy */
 GnubbyDevice.BUSY = 6;
 /** Access denied */
 GnubbyDevice.ACCESS_DENIED = 7;
@@ -78,6 +77,8 @@ GnubbyDevice.COULDNOTDIAL = 264;
 // chrome.usb-related errors.
 /** No device */
 GnubbyDevice.NODEVICE = 512;
+/** More than one device */
+GnubbyDevice.TOOMANY = 513;
 /** Permission denied */
 GnubbyDevice.NOPERMISSION = 666;
 

@@ -1,10 +1,5 @@
-// Copyright 2014 Google Inc. All rights reserved
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
-
 /** @fileoverview Various string utility functions */
+// GOOGLE-INTERNAL by mschilder@google.com
 'use strict';
 
 /**
@@ -229,18 +224,32 @@ function UTIL_JsonSignatureToAsn1(sig) {
   return buf;
 }
 
+function UTIL_prepend_zero(s, n) {
+  if (s.length == n) return s;
+  var l = s.length;
+  for (var i = 0; i < n - l; ++i) {
+    s = '0' + s;
+  }
+  return s;
+}
+
 // hr:min:sec.milli string
 function UTIL_time() {
   var d = new Date();
-  var m = '000' + d.getMilliseconds();
-  var s = d.toTimeString().substring(0, 8) + '.' + m.substring(m.length - 3);
-  return s;
+  var m = UTIL_prepend_zero((d.getMonth() + 1).toString(), 2);
+  var t = UTIL_prepend_zero(d.getDate().toString(), 2);
+  var H = UTIL_prepend_zero(d.getHours().toString(), 2);
+  var M = UTIL_prepend_zero(d.getMinutes().toString(), 2);
+  var S = UTIL_prepend_zero(d.getSeconds().toString(), 2);
+  var L = UTIL_prepend_zero((d.getMilliseconds() * 1000).toString(), 6);
+  return m + t + ' ' + H + ':' + M + ':' + S + '.' + L;
 }
+
 var UTIL_events = [];
 var UTIL_max_events = 500;
 
 function UTIL_fmt(s) {
-  var line = UTIL_time() + ' ' + s;
+  var line = UTIL_time() + ': ' + s;
   if (UTIL_events.push(line) > UTIL_max_events) {
     // Drop from head.
     UTIL_events.splice(0, UTIL_events.length - UTIL_max_events);

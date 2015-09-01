@@ -54,9 +54,6 @@ public class U2FServerReferenceImpl implements U2FServer {
   
   // Object Identifier for the attestation certificate transport extension fidoU2FTransports
   private static final String TRANSPORT_EXTENSION_OID = "1.3.6.1.4.1.45724.2.1.1";
-  // The number of bits in a byte. It is used to know at which index in a BitSet to look for
-  // specific transport values
-  private static final int BITS_IN_A_BYTE = 8;
 
   private static final String TYPE_PARAM = "typ";
   private static final String CHALLENGE_PARAM = "challenge";
@@ -355,33 +352,17 @@ public class U2FServerReferenceImpl implements U2FServer {
     DERBitString bitString = (DERBitString) asn1Object;
 
     byte [] values = bitString.getBytes();
-    int nrBytesUsed = values.length;
-    // Check if more than one byte was used to store the transport values
-    // If so, we need to reverse the byte order before feeding them to a BitSet object
-    // This is because when reading from a byte array, a BitSet starts reading from the end
-    if (nrBytesUsed > 1) {
-      values = reverseOrderOfBytes(values);
-    }
     BitSet bitSet = BitSet.valueOf(values);
 
-    // Parse the actual transport values
-    int nrBitsUsed = nrBytesUsed * BITS_IN_A_BYTE;
     // We might have more defined transports than used by the extension
-    for (int i = 0; i < Transports.values().length && i < nrBitsUsed; i++) {
-      if (bitSet.get(nrBitsUsed - i - 1)) {
+    for (int i = 0; i < 8; i++) {
+      if (bitSet.get(8 - i - 1)) {
         transportsList.add(Transports.values()[i]);
       }
     }
     return transportsList;
   }
 
-  private static byte [] reverseOrderOfBytes (byte[] input) {
-    byte [] output = new byte[input.length];
-    for (int i = 0; i < input.length; i++) {
-       output[i] = input[input.length - i - 1];
-    }
-    return output;
-  }
   private void verifyBrowserData(JsonElement browserDataAsElement, 
       String messageType, EnrollSessionData sessionData) throws U2FException {
     

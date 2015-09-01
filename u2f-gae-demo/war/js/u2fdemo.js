@@ -33,6 +33,11 @@ function tokenToDom(token) {
   card.querySelector('.card').setAttribute("id", token.public_key);
   card.querySelector('.issuer').textContent = token.issuer;
   card.querySelector('.enrollmentTimeValue').textContent = timeString;
+  if (token.transports == null || token.transports === undefined) {
+	card.querySelector('.transportsValue').textContent = "None specified";
+  } else {
+    card.querySelector('.transportsValue').textContent = token.transports;
+  }
   card.querySelector('.keyHandle').textContent = token.key_handle;
   card.querySelector('.publicKey').textContent = token.public_key;
 

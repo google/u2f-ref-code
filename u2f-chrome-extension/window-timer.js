@@ -5,16 +5,19 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 /**
- * @fileoverview Provides an interface representing the browser/extension
- * system's timer interface.
+ * @fileoverview Provides an implementation of the SystemTimer interface based
+ * on window's timer methods.
  */
 'use strict';
 
 /**
- * An interface representing the browser/extension system's timer interface.
- * @interface
+ * Creates an implementation of the SystemTimer interface based on window's
+ * timer methods.
+ * @constructor
+ * @implements {SystemTimer}
  */
-function SystemTimer() {}
+function WindowTimer() {
+}
 
 /**
  * Sets a single-shot timer.
@@ -23,13 +26,17 @@ function SystemTimer() {}
  *     milliseconds.
  * @return {number} A timeout ID, which can be used to cancel the timer.
  */
-SystemTimer.prototype.setTimeout = function(func, timeoutMillis) {};
+WindowTimer.prototype.setTimeout = function(func, timeoutMillis) {
+  return window.setTimeout(func, timeoutMillis);
+};
 
 /**
  * Clears a previously set timer.
  * @param {number} timeoutId The ID of the timer to clear.
  */
-SystemTimer.prototype.clearTimeout = function(timeoutId) {};
+WindowTimer.prototype.clearTimeout = function(timeoutId) {
+  window.clearTimeout(timeoutId);
+};
 
 /**
  * Sets a repeating interval timer.
@@ -38,10 +45,14 @@ SystemTimer.prototype.clearTimeout = function(timeoutId) {};
  *     milliseconds.
  * @return {number} A timeout ID, which can be used to cancel the timer.
  */
-SystemTimer.prototype.setInterval = function(func, timeoutMillis) {};
+WindowTimer.prototype.setInterval = function(func, timeoutMillis) {
+  return window.setInterval(func, timeoutMillis);
+};
 
 /**
  * Clears a previously set interval timer.
  * @param {number} timeoutId The ID of the timer to clear.
  */
-SystemTimer.prototype.clearInterval = function(timeoutId) {};
+WindowTimer.prototype.clearInterval = function(timeoutId) {
+  window.clearInterval(timeoutId);
+};

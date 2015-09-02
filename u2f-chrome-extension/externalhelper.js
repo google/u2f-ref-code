@@ -74,7 +74,8 @@ ExternalHandler.prototype.close = function() {
  * @private
  */
 ExternalHandler.prototype.makeDefaultErrorReply_ = function(request) {
-  return makeHelperErrorResponse(request, this.helperConfig_.defaultError);
+  return makeHelperErrorResponse(request,
+      /** @type {DeviceStatusCodes} */ (this.helperConfig_.defaultError));
 };
 
 /**

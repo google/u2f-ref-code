@@ -11,84 +11,6 @@
 'use strict';
 
 /**
- * Handles a web enroll request.
- * @param {MessageSender} messageSender The message sender.
- * @param {Object} request The web page's enroll request.
- * @param {Function} sendResponse Called back with the result of the enroll.
- * @return {Closeable} A handler object to be closed when the browser channel
- *     closes.
- */
-function handleWebEnrollRequest(messageSender, request, sendResponse) {
-  var sentResponse = false;
-  var closeable = null;
-
-  function sendErrorResponse(error) {
-    var response = makeWebErrorResponse(request,
-        mapErrorCodeToGnubbyCodeType(error.errorCode, false /* forSign */));
-    sendResponseOnce(sentResponse, closeable, response, sendResponse);
-  }
-
-  function sendSuccessResponse(u2fVersion, info, browserData) {
-    var enrollChallenges = request['enrollChallenges'];
-    var enrollChallenge =
-        findEnrollChallengeOfVersion(enrollChallenges, u2fVersion);
-    if (!enrollChallenge) {
-      sendErrorResponse({errorCode: ErrorCodes.OTHER_ERROR});
-      return;
-    }
-    var responseData =
-        makeEnrollResponseData(enrollChallenge, u2fVersion,
-            'enrollData', info, 'browserData', browserData);
-    var response = makeWebSuccessResponse(request, responseData);
-    sendResponseOnce(sentResponse, closeable, response, sendResponse);
-  }
-
-  function timeout() {
-    sendErrorResponse({errorCode: ErrorCodes.TIMEOUT});
-  }
-
-  var sender = createSenderFromMessageSender(messageSender);
-  if (!sender) {
-    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
-    return null;
-  }
-  if (sender.origin.indexOf('http://') == 0 && !HTTP_ORIGINS_ALLOWED) {
-    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
-    return null;
-  }
-
-  if (!isValidEnrollRequest(request, 'enrollChallenges', 'signData')) {
-    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
-    return null;
-  }
-
-  var timeoutValueSeconds = getTimeoutValueFromRequest(request);
-  // Attenuate watchdog timeout value less than the enroller's timeout, so the
-  // watchdog only fires after the enroller could reasonably have called back,
-  // not before.
-  var watchdogTimeoutValueSeconds = attenuateTimeoutInSeconds(
-      timeoutValueSeconds, MINIMUM_TIMEOUT_ATTENUATION_SECONDS / 2);
-  var watchdog = new WatchdogRequestHandler(watchdogTimeoutValueSeconds,
-      timeout);
-  var wrappedErrorCb = watchdog.wrapCallback(sendErrorResponse);
-  var wrappedSuccessCb = watchdog.wrapCallback(sendSuccessResponse);
-
-  var timer = createAttenuatedTimer(
-      FACTORY_REGISTRY.getCountdownFactory(), timeoutValueSeconds);
-  var logMsgUrl = request['logMsgUrl'];
-  var enroller = new Enroller(timer, sender, wrappedErrorCb, wrappedSuccessCb,
-      logMsgUrl);
-  watchdog.setCloseable(/** @type {!Closeable} */ (enroller));
-  closeable = watchdog;
-
-  var registerRequests = request['enrollChallenges'];
-  var signRequests = getSignRequestsFromEnrollRequest(request, 'signData');
-  enroller.doEnroll(registerRequests, signRequests, request['appId']);
-
-  return closeable;
-}
-
-/**
  * Handles a U2F enroll request.
  * @param {MessageSender} messageSender The message sender.
  * @param {Object} request The web page's enroll request.
@@ -106,7 +28,7 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
   }
 
-  function sendSuccessResponse(u2fVersion, info, browserData) {
+  function sendSuccessResponse(u2fVersion, info, clientData) {
     var enrollChallenges = request['registerRequests'];
     var enrollChallenge =
         findEnrollChallengeOfVersion(enrollChallenges, u2fVersion);
@@ -115,8 +37,7 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
       return;
     }
     var responseData =
-        makeEnrollResponseData(enrollChallenge, u2fVersion,
-            'registrationData', info, 'clientData', browserData);
+        makeEnrollResponseData(enrollChallenge, u2fVersion, info, clientData);
     var response = makeU2fSuccessResponse(request, responseData);
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
   }
@@ -135,8 +56,7 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
     return null;
   }
 
-  if (!isValidEnrollRequest(request, 'registerRequests', 'signRequests',
-      'registeredKeys')) {
+  if (!isValidEnrollRequest(request)) {
     sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
   }
@@ -161,8 +81,7 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
   closeable = watchdog;
 
   var registerRequests = request['registerRequests'];
-  var signRequests = getSignRequestsFromEnrollRequest(request,
-      'signRequests', 'registeredKeys');
+  var signRequests = getSignRequestsFromEnrollRequest(request);
   enroller.doEnroll(registerRequests, signRequests, request['appId']);
 
   return closeable;
@@ -171,25 +90,18 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
 /**
  * Returns whether the request appears to be a valid enroll request.
  * @param {Object} request The request.
- * @param {string} enrollChallengesName The name of the enroll challenges value
- *     in the request.
- * @param {string} signChallengesName The name of the sign challenges value in
- *     the request.
- * @param {string=} opt_registeredKeysName The name of the registered keys
- *     value in the request.
  * @return {boolean} Whether the request appears valid.
  */
-function isValidEnrollRequest(request, enrollChallengesName,
-    signChallengesName, opt_registeredKeysName) {
-  if (!request.hasOwnProperty(enrollChallengesName))
+function isValidEnrollRequest(request) {
+  if (!request.hasOwnProperty('registerRequests'))
     return false;
-  var enrollChallenges = request[enrollChallengesName];
+  var enrollChallenges = request['registerRequests'];
   if (!enrollChallenges.length)
     return false;
   var hasAppId = request.hasOwnProperty('appId');
   if (!isValidEnrollChallengeArray(enrollChallenges, !hasAppId))
     return false;
-  var signChallenges = request[signChallengesName];
+  var signChallenges = getSignChallenges(request);
   // A missing sign challenge array is ok, in the case the user is not already
   // enrolled.
   // A challenge value need not necessarily be supplied with every challenge.
@@ -197,13 +109,6 @@ function isValidEnrollRequest(request, enrollChallengesName,
   if (signChallenges &&
       !isValidSignChallengeArray(signChallenges, challengeRequired, !hasAppId))
     return false;
-  if (opt_registeredKeysName) {
-    var registeredKeys = request[opt_registeredKeysName];
-    if (registeredKeys &&
-        !isValidRegisteredKeyArray(registeredKeys, !hasAppId)) {
-      return false;
-    }
-  }
   return true;
 }
 
@@ -275,26 +180,22 @@ function findEnrollChallengeOfVersion(enrollChallenges, version) {
  * @param {EnrollChallenge} enrollChallenge The enroll challenge used to
  *     register.
  * @param {string} u2fVersion Version of gnubby that enrolled.
- * @param {string} enrollDataName The name of the enroll data key in the
- *     responseData object.
- * @param {string} enrollData The enroll data.
- * @param {string} browserDataName The name of the browser data key in the
- *     responseData object.
- * @param {string=} browserData The browser data, if available.
+ * @param {string} registrationData The registration data.
+ * @param {string=} opt_clientData The client data, if available.
  * @return {Object} The responseData object.
  */
-function makeEnrollResponseData(enrollChallenge, u2fVersion, enrollDataName,
-    enrollData, browserDataName, browserData) {
+function makeEnrollResponseData(enrollChallenge, u2fVersion, registrationData,
+    opt_clientData) {
   var responseData = {};
-  responseData[enrollDataName] = enrollData;
+  responseData['registrationData'] = registrationData;
   // Echo the used challenge back in the reply.
   for (var k in enrollChallenge) {
     responseData[k] = enrollChallenge[k];
   }
   if (u2fVersion == 'U2F_V2') {
     // For U2F_V2, the challenge sent to the gnubby is modified to be the
-    // hash of the browser data. Include the browser data.
-    responseData[browserDataName] = browserData;
+    // hash of the client data. Include the client data.
+    responseData['clientData'] = opt_clientData;
   }
   return responseData;
 }
@@ -305,20 +206,14 @@ function makeEnrollResponseData(enrollChallenge, u2fVersion, enrollDataName,
  * (For enrolling, the server isn't interested in the value of a signature,
  * only whether the presented key handle is already enrolled.)
  * @param {Object} request The request.
- * @param {string} signChallengesName The name of the sign challenges value in
- *     the request.
- * @param {string=} opt_registeredKeysName The name of the registered keys
- *     value in the request.
  * @return {Array<SignChallenge>}
  */
-function getSignRequestsFromEnrollRequest(request, signChallengesName,
-    opt_registeredKeysName) {
+function getSignRequestsFromEnrollRequest(request) {
   var signChallenges;
-  if (opt_registeredKeysName &&
-      request.hasOwnProperty(opt_registeredKeysName)) {
-    signChallenges = request[opt_registeredKeysName];
+  if (request.hasOwnProperty('registeredKeys')) {
+    signChallenges = request['registeredKeys'];
   } else {
-    signChallenges = request[signChallengesName];
+    signChallenges = request['signRequests'];
   }
   if (signChallenges) {
     for (var i = 0; i < signChallenges.length; i++) {
@@ -605,18 +500,16 @@ Enroller.prototype.originChecked_ = function(appIds, cb, result) {
     this.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
     return;
   }
-  /** @private {!AppIdChecker} */
-  this.appIdChecker_ = new AppIdChecker(FACTORY_REGISTRY.getTextFetcher(),
-      this.timer_.clone(), this.sender_.origin, appIds, this.allowHttp_,
-      this.logMsgUrl_);
-  this.appIdChecker_.doCheck().then(cb);
+  var appIdChecker = FACTORY_REGISTRY.getAppIdCheckerFactory().create();
+  appIdChecker.
+      checkAppIds(
+          this.timer_.clone(), this.sender_.origin, appIds, this.allowHttp_,
+          this.logMsgUrl_)
+      .then(cb);
 };
 
 /** Closes this enroller. */
 Enroller.prototype.close = function() {
-  if (this.appIdChecker_) {
-    this.appIdChecker_.close();
-  }
   if (this.handler_) {
     this.handler_.close();
     this.handler_ = null;

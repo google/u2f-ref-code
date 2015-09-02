@@ -451,7 +451,7 @@ Gnubby.prototype.write_ = function(cmd, data) {
  * @private
  */
 Gnubby.prototype.exchange_ = function(cmd, data, timeout, cb) {
-  var busyWait = new CountdownTimer(this.busyMillis);
+  var busyWait = new CountdownTimer(Gnubby.SYS_TIMER_, this.busyMillis);
   var self = this;
 
   function retryBusy(rc, rc_data) {
@@ -469,6 +469,13 @@ Gnubby.prototype.exchange_ = function(cmd, data, timeout, cb) {
 
   retryBusy(-GnubbyDevice.BUSY, undefined);  // Start work.
 };
+
+/**
+ * Private instance of timers based on window's timer functions.
+ * @const
+ * @private
+ */
+Gnubby.SYS_TIMER_ = new WindowTimer();
 
 /** Default callback for commands. Simply logs to console.
  * @param {number} rc Result status code
@@ -764,7 +771,7 @@ Gnubby.prototype.apdu = function(data, cb) {
 Gnubby.prototype.reset = function(cb) {
   if (!cb) cb = Gnubby.defaultCallback;
   this.exchange_(GnubbyDevice.CMD_ATR, new ArrayBuffer(0),
-      Gnubby.NORMAL_TIMEOUT, cb);
+      Gnubby.MAX_TIMEOUT, cb);
 };
 
 // byte args[3] = [delay-in-ms before disabling interrupts,

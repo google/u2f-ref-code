@@ -52,24 +52,11 @@ function createSenderFromMessageSender(messageSender) {
  *     have sent the request, and rejected if it can't.
  */
 function tabMatchesOrigin(tab, origin) {
-  return new Promise(function(resolve, reject) {
-    // If the tab's origin matches, trust that the request came from this tab.
-    if (getOriginFromUrl(tab.url) == origin) {
-      resolve(tab.id);
-      return;
-    }
-    // Look for an iframe in the current tab matching the origin.
-    chrome.tabs.executeScript(tab.id, { file: 'taborigincs.js' }, function() {
-        chrome.tabs.sendMessage(tab.id, { origin: origin },
-            function(response) {
-              if (response) {
-                resolve(tab.id);
-              } else {
-                reject(false);
-              }
-            });
-      });
-  });
+  // If the tab's origin matches, trust that the request came from this tab.
+  if (getOriginFromUrl(tab.url) == origin) {
+    return Promise.resolve(tab.id);
+  }
+  return Promise.reject(false);
 }
 
 /**

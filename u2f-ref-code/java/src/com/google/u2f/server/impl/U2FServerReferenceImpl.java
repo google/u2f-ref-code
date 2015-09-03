@@ -409,7 +409,8 @@ public class U2FServerReferenceImpl implements U2FServer {
   private void verifyOrigin(String origin) throws U2FException {
     if (!allowedOrigins.contains(canonicalizeOrigin(origin))) {
       throw new U2FException(origin +
-          " is not a recognized home origin for this backend");
+          " is not a recognized home origin for this backend" +
+          Joiner.on(", ").join(allowedOrigins));
     }
   }
 

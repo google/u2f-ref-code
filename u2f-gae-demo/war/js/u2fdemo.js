@@ -34,9 +34,9 @@ function tokenToDom(token) {
   card.querySelector('.issuer').textContent = token.issuer;
   card.querySelector('.enrollmentTimeValue').textContent = timeString;
   if (token.transports == null || token.transports === undefined) {
-	card.querySelector('.transportsValue').textContent = "None specified";
+	  card.querySelector('.transportsValue').textContent = "None specified";
   } else {
-    card.querySelector('.transportsValue').textContent = token.transports;
+	  card.querySelector('.transportsValue').textContent = token.transports;
   }
   card.querySelector('.keyHandle').textContent = token.key_handle;
   card.querySelector('.publicKey').textContent = token.public_key;
@@ -80,10 +80,22 @@ function hideMessage() {
 
 function highlightTokenCardOnPage(token) {
   console.log(token);
-  var cardContent = $("#" + token.public_key).find(".cardContent");
-  
-  cardContent.addClass("highlight");
-  window.setTimeout(function() { cardContent.removeClass("highlight", 2000); }, 500 );
+
+  var cardChildren = document.getElementById(token.public_key).children;
+  for (i = 0; i < cardChildren.length; i++) {
+    if ($(cardChildren[i]).hasClass("cardContent")) {
+      $(cardChildren[i]).addClass("highlight");
+    }
+  }
+
+  window.setTimeout(
+    function() {
+      for (i = 0; i < cardChildren.length; i++) {
+        $(cardChildren[i]).removeClass("highlight", 2000);
+      }
+    },
+    500
+  );
 }
 
 
@@ -206,4 +218,41 @@ function onError(code, enrolling) {
     showError('unknown error code=' + code);
     break;
   }
+}
+
+if (navigator.userAgent.indexOf("iPhone") > -1) {
+  function executeRequest (request) {
+    var str = JSON.stringify(request);
+    var url = "u2f://auth?" + encodeURI(str);
+    location.replace(url);
+  }
+
+  u2f.callbackMap_ = {};
+  u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
+    var reqId = ++u2f.reqCounter_;
+    u2f.callbackMap_[reqId] = callback;
+    var req = {
+      type: u2f.MessageTypes.U2F_SIGN_REQUEST,
+      signRequests: signRequests,
+      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+      requestId: reqId
+    };
+    executeRequest(req);    
+  };
+
+  u2f.register = function(registerRequests, signRequests,
+    callback, opt_timeoutSeconds) {
+    var reqId = ++u2f.reqCounter_;
+    u2f.callbackMap_[reqId] = callback;
+    var req = {
+      type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
+      signRequests: signRequests,
+      registerRequests: registerRequests,
+      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+      requestId: reqId
+    };
+    executeRequest(req);
+  };
 }

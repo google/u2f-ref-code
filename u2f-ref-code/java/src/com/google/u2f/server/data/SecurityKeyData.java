@@ -39,12 +39,12 @@ public class SecurityKeyData {
   }
 
   public SecurityKeyData(
-		  long enrollmentTime, 
-		  List<Transports> transports,
-		  byte[] keyHandle, 
-		  byte[] publicKey, 
-		  X509Certificate attestationCert,
-		  int counter) {
+	    long enrollmentTime, 
+	    List<Transports> transports,
+	    byte[] keyHandle, 
+	    byte[] publicKey, 
+	    X509Certificate attestationCert,
+	    int counter) {
     this.enrollmentTime = enrollmentTime;
     this.transports = transports;
     this.keyHandle = keyHandle;

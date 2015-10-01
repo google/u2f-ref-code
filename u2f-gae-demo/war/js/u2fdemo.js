@@ -13,16 +13,6 @@ function addTokenInfoToPage(token) {
     document
         .getElementById('tokens')
         .appendChild(tokenToDom(token));
-
-    // now that we've added the card into the dom, let's bind the mouseover
-    // events to it:
-    $("#" + token.public_key)
-      .mouseover(function() {
-          $(this).find(".buttonBar").addClass("visible");
-        })
-      .mouseout(function() { 
-          $(this).find(".buttonBar").removeClass("visible");
-        });
 }
 
 function tokenToDom(token) {

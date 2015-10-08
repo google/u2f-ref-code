@@ -7,6 +7,7 @@
 package com.google.u2f.key.messages;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class AuthenticateResponse extends U2FResponse {
   private final byte userPresence;
@@ -46,12 +47,7 @@ public class AuthenticateResponse extends U2FResponse {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + counter;
-    result = prime * result + Arrays.hashCode(signature);
-    result = prime * result + userPresence;
-    return result;
+    return Objects.hash(userPresence, counter, signature);
   }
 
   @Override
@@ -63,12 +59,8 @@ public class AuthenticateResponse extends U2FResponse {
     if (getClass() != obj.getClass())
       return false;
     AuthenticateResponse other = (AuthenticateResponse) obj;
-    if (counter != other.counter)
-      return false;
-    if (!Arrays.equals(signature, other.signature))
-      return false;
-    if (userPresence != other.userPresence)
-      return false;
-    return true;
+    return Objects.equals(counter, other.counter)
+        && Arrays.equals(signature, other.signature)
+        && Objects.equals(userPresence, other.userPresence);
   }
 }

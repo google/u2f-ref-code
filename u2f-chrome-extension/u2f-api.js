@@ -17,6 +17,11 @@
  */
 var u2f = u2f || {};
 
+/**
+ * FIDO U2F Javascript API Version
+ * @number
+ */
+var JS_API_VERSION;
 
 /**
  * The U2F extension id
@@ -59,13 +64,12 @@ u2f.ErrorCodes = {
  * A message type for registration requests
  * @typedef {{
  *   type: u2f.MessageTypes,
- *   signRequests: Array<u2f.SignRequest>,
- *   registerRequests: ?Array<u2f.RegisterRequest>,
+ *   appId: ?string,
  *   timeoutSeconds: ?number,
  *   requestId: ?number
  * }}
  */
-u2f.Request;
+u2f.U2fRequest;
 
 
 /**
@@ -76,7 +80,7 @@ u2f.Request;
  *   requestId: ?number
  * }}
  */
-u2f.Response;
+u2f.U2fResponse;
 
 
 /**
@@ -88,6 +92,19 @@ u2f.Response;
  */
 u2f.Error;
 
+/**
+ * Data object for a single sign request.
+ * @typedef {enum {BLUETOOTH_RADIO, BLUETOOTH_LOW_ENERGY, USB, NFC}}
+ */
+u2f.Transport;
+
+
+/**
+ * Data object for a single sign request.
+// * @typedef {sequence<u2f.Transport>}
+ * @typedef {Array<u2f.Transport>}
+ */
+u2f.Transports;
 
 /**
  * Data object for a single sign request.
@@ -116,8 +133,7 @@ u2f.SignResponse;
  * Data object for a registration request.
  * @typedef {{
  *   version: string,
- *   challenge: string,
- *   appId: string
+ *   challenge: string
  * }}
  */
 u2f.RegisterRequest;
@@ -126,12 +142,24 @@ u2f.RegisterRequest;
 /**
  * Data object for a registration response.
  * @typedef {{
- *   registrationData: string,
- *   clientData: string
+ *   version: string,
+ *   keyHandle: string,
+ *   transports: Transports,
+ *   appId: string
  * }}
  */
 u2f.RegisterResponse;
 
+/**
+ * Data object for a registered key.
+ * @typedef {{
+ *   version: string,
+ *   keyHandle: string,
+ *   transports: ?Transports,
+ *   appId: ?string
+ * }}
+ */
+u2f.RegisteredKey;
 
 /**
  * Data object for a get API register response.
@@ -143,6 +171,19 @@ u2f.GetJsApiVersionResponse;
 
 
 // Low level MessagePort API support
+
+/**
+  * A message type for low-level MessagePort API registration requests
+  * @typedef {{
+  *   type: u2f.MessageTypes,
+  *   appId: ?string,
+  *   timeoutSeconds: ?number,
+  *   requestId: ?number,
+  *   registerRequests: Array<u2f.RegisterRequest>,
+  *   registeredKeys: Array<u2f.RegisteredKey>
+  * }}
+ */
+u2f.U2fRegisterRequest;
 
 
 /**
@@ -331,7 +372,7 @@ u2f.getPortSingleton_ = function(callback) {
 
 /**
  * Handles response messages from the extension.
- * @param {MessageEvent.<u2f.Response>} message
+ * @param {MessageEvent.<u2f.U2fResponse>} message
  * @private
  */
 u2f.responseHandler_ = function(message) {
@@ -349,47 +390,80 @@ u2f.responseHandler_ = function(message) {
 
 /**
  * Dispatches an array of sign requests to available U2F tokens.
- * @param {Array<u2f.SignRequest>} signRequests
+ * @param {string=} appId
+ * @param {string=} challenge
+ * @param {Array<u2f.RegisteredKey>} registeredKeys
+// * @param {sequence<u2f.RegisteredKey>} registeredKeys
  * @param {function((u2f.Error|u2f.SignResponse))} callback
  * @param {number=} opt_timeoutSeconds
  */
-u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
+u2f.sign = function(appId, challenge, registeredKeys, callback, opt_timeoutSeconds) {
+  console.log("JS_API_VERSION: " + JS_API_VERSION);
   u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
+    if (JS_API_VERSION == 'undefined' || JS_API_VERSION < 1.1) {
+        // Adapt request to the 1.0 JS API
+        for (var i = 0; i < registeredKeys.length; i++) { 
+          registeredKeys[i].challenge = challenge;
+          registeredKeys[i].appId = appId;
+        }
+      }
+
     var req = {
       type: u2f.MessageTypes.U2F_SIGN_REQUEST,
-      signRequests: signRequests,
+      appId: appId,
+      challenge: challenge,
+      registeredKeys: registeredKeys,
       timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
           opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
       requestId: reqId
     };
     port.postMessage(req);
   });
+  
 };
 
 
 /**
  * Dispatches register requests to available U2F tokens. An array of sign
  * requests identifies already registered tokens.
+ * @param {string=} appId
  * @param {Array<u2f.RegisterRequest>} registerRequests
- * @param {Array<u2f.SignRequest>} signRequests
+ * @param {Array<u2f.RegisteredKey>} registeredKeys
+ * @param {sequence<u2f.RegisterRequest>} registerRequests
+ * @param {sequence<u2f.RegisteredKey>} registeredKeys
  * @param {function((u2f.Error|u2f.RegisterResponse))} callback
  * @param {number=} opt_timeoutSeconds
  */
-u2f.register = function(registerRequests, signRequests,
+u2f.register = function(appId, registerRequests, registeredKeys,
     callback, opt_timeoutSeconds) {
+	JS_API_VERSION = 1;
+  console.log("JS_API_VERSION: " + JS_API_VERSION);
   u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
+    
+    if (JS_API_VERSION == 'undefined' || JS_API_VERSION < 1.1) {
+      // Adapt request to the 1.0 JS API
+      for (var i = 0; i < registerRequests.length; i++) { 
+        registerRequests[i].appId = appId;
+      }  
+      for (var i = 0; i < registeredKeys.length; i++) { 
+        registeredKeys[i].challenge = registerRequest[0].challenge;
+         registeredKeys[i].appId = appId;
+      }
+    }
+
     var req = {
-      type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
-      signRequests: signRequests,
-      registerRequests: registerRequests,
-      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
-          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
-      requestId: reqId
-    };
+        type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
+        appId: appId,
+        registerRequests: registerRequests,
+        registeredKeys: registeredKeys,
+        timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+            opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+            requestId: reqId
+        };
     port.postMessage(req);
   });
 };
@@ -413,3 +487,13 @@ u2f.getApiVersion = function(callback, opt_timeoutSeconds) {
     port.postMessage(req);
   });
 };
+
+
+
+function getApiVersion() {
+    u2f.getApiVersion(
+        function (response) {
+            JS_API_VERSION = response['js_api_version'];
+            console.log("Extension JS API Version: ", JS_API_VERSION);
+        });
+}

@@ -45,16 +45,16 @@ import com.google.u2f.server.data.EnrollSessionData;
 import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SecurityKeyData.Transports;
 import com.google.u2f.server.data.SignSessionData;
+import com.google.u2f.server.messages.RegisteredKey;
 import com.google.u2f.server.messages.RegistrationRequest;
 import com.google.u2f.server.messages.RegistrationResponse;
-import com.google.u2f.server.messages.SignRequest;
 import com.google.u2f.server.messages.SignResponse;
+import com.google.u2f.server.messages.U2fSignRequest;
 
 public class U2FServerReferenceImpl implements U2FServer {
   
   // Object Identifier for the attestation certificate transport extension fidoU2FTransports
   private static final String TRANSPORT_EXTENSION_OID = "1.3.6.1.4.1.45724.2.1.1";
-
   // The number of bits in a byte. It is used to know at which index in a BitSet to look for
   // specific transport values
   private static final int BITS_IN_A_BYTE = 8;
@@ -110,9 +110,10 @@ public class U2FServerReferenceImpl implements U2FServer {
     Log.info(">> processRegistrationResponse");
 
     String sessionId = registrationResponse.getSessionId();
-    String browserDataBase64 = registrationResponse.getBd();
+    String clientDataBase64 = registrationResponse.getClientData();
     String rawRegistrationDataBase64 = registrationResponse.getRegistrationData();
 
+    Log.info(">> rawRegistrationDataBase64: " + rawRegistrationDataBase64);
     EnrollSessionData sessionData = dataStore.getEnrollSessionData(sessionId);
 
     if (sessionData == null) {
@@ -120,13 +121,13 @@ public class U2FServerReferenceImpl implements U2FServer {
     }
 
     String appId = sessionData.getAppId();
-    String browserData = new String(Base64.decodeBase64(browserDataBase64));
+    String clientData = new String(Base64.decodeBase64(clientDataBase64));
     byte[] rawRegistrationData = Base64.decodeBase64(rawRegistrationDataBase64);
     Log.info("-- Input --");
     Log.info("  sessionId: " + sessionId);
     Log.info("  challenge: " + Hex.encodeHexString(sessionData.getChallenge()));
     Log.info("  accountName: " + sessionData.getAccountName());
-    Log.info("  browserData: " + browserData);
+    Log.info("  clientData: " + clientData);
     Log.info("  rawRegistrationData: " + Hex.encodeHexString(rawRegistrationData));
 
     RegisterResponse registerResponse = RawMessageCodec.decodeRegisterResponse(rawRegistrationData);
@@ -142,6 +143,8 @@ public class U2FServerReferenceImpl implements U2FServer {
       Log.warning("Could not parse transports extension " + e1.getMessage());
     }
 
+//    transports = new LinkedList<Transports>();
+//    transports.add(Transports.NFC);
     Log.info("-- Parsed rawRegistrationResponse --");
     Log.info("  userPublicKey: " + Hex.encodeHexString(userPublicKey));
     Log.info("  keyHandle: " + Hex.encodeHexString(keyHandle));
@@ -156,8 +159,8 @@ public class U2FServerReferenceImpl implements U2FServer {
     Log.info("  signature: " + Hex.encodeHexString(signature));
 
     byte[] appIdSha256 = cryto.computeSha256(appId.getBytes());
-    byte[] browserDataSha256 = cryto.computeSha256(browserData.getBytes());
-    byte[] signedBytes = RawMessageCodec.encodeRegistrationSignedBytes(appIdSha256, browserDataSha256,
+    byte[] clientDataSha256 = cryto.computeSha256(clientData.getBytes());
+    byte[] signedBytes = RawMessageCodec.encodeRegistrationSignedBytes(appIdSha256, clientDataSha256,
         keyHandle, userPublicKey);
 
     Set<X509Certificate> trustedCertificates = dataStore.getTrustedCertificates();
@@ -165,7 +168,7 @@ public class U2FServerReferenceImpl implements U2FServer {
       Log.warning("attestion cert is not trusted");    
     }
 
-    verifyBrowserData(new JsonParser().parse(browserData), "navigator.id.finishEnrollment", sessionData);
+    verifyBrowserData(new JsonParser().parse(clientData), "navigator.id.finishEnrollment", sessionData);
     
     Log.info("Verifying signature of bytes " + Hex.encodeHexString(signedBytes));
     if (!cryto.verifySignature(attestationCertificate, signedBytes, signature)) {
@@ -184,34 +187,35 @@ public class U2FServerReferenceImpl implements U2FServer {
   }
 
   @Override
-  public List<SignRequest> getSignRequest(String accountName, String appId) throws U2FException {
+  public U2fSignRequest getSignRequest(String accountName, String appId) throws U2FException {
     Log.info(">> getSignRequest " + accountName);
 
     List<SecurityKeyData> securityKeyDataList = dataStore.getSecurityKeyData(accountName);
 
-    ImmutableList.Builder<SignRequest> result = ImmutableList.builder();
-    
+    byte[] challenge = challengeGenerator.generateChallenge(accountName);
+    String challengeBase64 = Base64.encodeBase64URLSafeString(challenge);
+
+    ImmutableList.Builder<RegisteredKey> registeredKeys = ImmutableList.builder();
+    Log.info("  challenge: " + Hex.encodeHexString(challenge));
     for (SecurityKeyData securityKeyData : securityKeyDataList) {
-      byte[] challenge = challengeGenerator.generateChallenge(accountName);
 
       SignSessionData sessionData = new SignSessionData(accountName, appId, 
           challenge, securityKeyData.getPublicKey());
       String sessionId = dataStore.storeSessionData(sessionData);
 
       byte[] keyHandle = securityKeyData.getKeyHandle();
-
+      List<Transports> transports = securityKeyData.getTransports();
       Log.info("-- Output --");
       Log.info("  sessionId: " + sessionId);
-      Log.info("  challenge: " + Hex.encodeHexString(challenge));
       Log.info("  keyHandle: " + Hex.encodeHexString(keyHandle));
 
-      String challengeBase64 = Base64.encodeBase64URLSafeString(challenge);
       String keyHandleBase64 = Base64.encodeBase64URLSafeString(keyHandle);
 
-      Log.info("<< getSignRequest " + accountName);
-      result.add(new SignRequest(U2FConsts.U2F_V2, challengeBase64, appId, keyHandleBase64, sessionId));
+      Log.info("<< getRegisteredKey " + accountName);
+      registeredKeys.add(new RegisteredKey(U2FConsts.U2F_V2, keyHandleBase64, transports, appId, sessionId));
     }
-    return result.build();
+
+    return new U2fSignRequest(challengeBase64, registeredKeys.build());
   }
 
   @Override
@@ -219,8 +223,8 @@ public class U2FServerReferenceImpl implements U2FServer {
     Log.info(">> processSignResponse");
 
     String sessionId = signResponse.getSessionId();
-    String browserDataBase64 = signResponse.getBd();
-    String rawSignDataBase64 = signResponse.getSign();
+    String browserDataBase64 = signResponse.getClientData();
+    String rawSignDataBase64 = signResponse.getSignatureData();
 
     SignSessionData sessionData = dataStore.getSignSessionData(sessionId);
 

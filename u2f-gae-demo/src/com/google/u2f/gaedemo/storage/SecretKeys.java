@@ -10,7 +10,7 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
 
 import java.security.SecureRandom;
 
-import com.google.common.base.Objects;
+import com.googlecode.objectify.Work;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
@@ -25,16 +25,32 @@ public class SecretKeys {
 
   @Ignore private SecureRandom random = new SecureRandom();
 
-  public static void generate() {
-    SecretKeys keys = Objects.firstNonNull(
-        ofy().load().type(SecretKeys.class).id("singleton").now(),
-        new SecretKeys());
-    keys.generateNewKeys();
-    ofy().save().entity(keys).now();
+  private static SecretKeys generate() {
+    return ofy().transact(new Work<SecretKeys>() {
+      @Override
+      public SecretKeys run() {
+        SecretKeys keys = ofy().load().type(SecretKeys.class).id("singleton").now();
+        if (keys != null) {
+          return keys;
+        } else {
+          keys = new SecretKeys();
+          keys.generateNewKeys();
+          ofy().save().entity(keys).now();
+          return keys;
+        }
+      }
+    });
   }
 
   public static SecretKeys get() {
-    return ofy().load().type(SecretKeys.class).id("singleton").now();
+    SecretKeys keys = ofy().load().type(SecretKeys.class).id("singleton").now();
+
+    if (keys == null) {
+      // somebody (we?) need to generate the keys
+      return generate();
+    } else {
+      return keys;
+    }
   }
 
   public SecretKeys() {

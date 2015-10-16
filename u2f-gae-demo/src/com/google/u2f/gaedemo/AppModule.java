@@ -68,7 +68,7 @@ public class AppModule extends AbstractModule {
 
   @Provides @Singleton
   public U2FServer provideU2FServer(ChallengeGenerator challengeGenerator, Crypto crypto, DataStore dataStore) {
-    return new U2FServerReferenceImpl(challengeGenerator, dataStore, crypto, 
+    return new U2FServerReferenceImpl(challengeGenerator, dataStore, crypto,
         ImmutableSet.of(
             // this implementation will only accept signatures from the following origins:
             "http://localhost:8888",

@@ -27,11 +27,11 @@ public class MemoryDataStore implements DataStore {
   private final HashMap<String, EnrollSessionData> sessionDataBase = Maps.newHashMap();
   private final HashMap<String, List<SecurityKeyData>> securityKeyDataBase = Maps.newHashMap();
   private final SessionIdGenerator sessionIdGenerator;
-  
+
   public MemoryDataStore(SessionIdGenerator sessionIdGenerator) {
 	  this.sessionIdGenerator = sessionIdGenerator;
   }
-  
+
   @Override
   public String storeSessionData(EnrollSessionData sessionData) {
 	String sessionId = sessionIdGenerator.generateSessionId(sessionData.getAccountName());
@@ -43,7 +43,7 @@ public class MemoryDataStore implements DataStore {
   public EnrollSessionData getEnrollSessionData(String sessionId) {
     return sessionDataBase.get(sessionId);
   }
-  
+
   @Override
   public SignSessionData getSignSessionData(String sessionId) {
     return (SignSessionData) sessionDataBase.get(sessionId);

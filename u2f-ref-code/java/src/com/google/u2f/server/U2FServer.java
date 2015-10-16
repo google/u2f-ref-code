@@ -20,16 +20,16 @@ public interface U2FServer {
   // registration //
   public RegistrationRequest getRegistrationRequest(String accountName, String appId) throws U2FException;
 
-  public SecurityKeyData processRegistrationResponse(RegistrationResponse registrationResponse, 
+  public SecurityKeyData processRegistrationResponse(RegistrationResponse registrationResponse,
       long currentTimeInMillis) throws U2FException;
 
   // authentication //
   public List<SignRequest> getSignRequest(String accountName, String appId) throws U2FException;
 
   public SecurityKeyData processSignResponse(SignResponse signResponse) throws U2FException;
-  
+
   // token management //
   public List<SecurityKeyData> getAllSecurityKeys(String accountName);
 
-  public void removeSecurityKey(String accountName, byte[] publicKey) throws U2FException;  
+  public void removeSecurityKey(String accountName, byte[] publicKey) throws U2FException;
 }

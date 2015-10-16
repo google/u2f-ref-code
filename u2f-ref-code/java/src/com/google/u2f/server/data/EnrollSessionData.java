@@ -28,8 +28,8 @@ public class EnrollSessionData implements Serializable {
   public byte[] getChallenge() {
     return challenge;
   }
-  
+
   public String getAppId() {
-	return appId; 
+	return appId;
   }
 }

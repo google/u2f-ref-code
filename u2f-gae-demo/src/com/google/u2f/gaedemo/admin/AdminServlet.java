@@ -51,19 +51,19 @@ public class AdminServlet extends HttpServlet {
     resp.setContentType("text/html");
     resp.getWriter().println(renderer.render());
   }
-  
+
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-   
+
     String command = req.getParameter("command");
-    
+
     if ("generateKeys".equalsIgnoreCase(command)) {
       generateKeys(req, resp);
     } else {
-      resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "unknown command");      
+      resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "unknown command");
     }
-    
+
   }
 
   private void generateKeys(HttpServletRequest req, HttpServletResponse resp) throws IOException {

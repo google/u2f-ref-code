@@ -81,7 +81,7 @@ public class U2FClientReferenceImpl implements U2FClient {
 
   @Override
   public void authenticate(String origin, String accountName) throws U2FException {
-    
+
     // the key can be used to sign any of the requests - we're gonna sign the first one.
     SignRequest signRequest = server.getSignRequest(accountName, origin).get(0);
 

@@ -19,7 +19,7 @@ import com.googlecode.objectify.ObjectifyFilter;
 
 public class MyServletModule extends ServletModule {
 
-  @Override 
+  @Override
   protected void configureServlets() {
     serve("/").with(U2F_DemoServlet.class);
     serve("/BeginEnroll").with(BeginEnrollServlet.class);
@@ -27,7 +27,7 @@ public class MyServletModule extends ServletModule {
 
     serve("/BeginSign").with(BeginSignServlet.class);
     serve("/FinishSign").with(FinishSignServlet.class);
-    
+
     serve("/GetTokens").with(GetTokensServlet.class);
     serve("/RemoveToken").with(RemoveTokenServlet.class);
 

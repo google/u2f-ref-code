@@ -53,24 +53,24 @@ public class TokenStorageData {
 
   public SecurityKeyData getSecurityKeyData() {
     X509Certificate x509cert = parseCertificate(attestationCert);
-    return new SecurityKeyData(enrollmentTime, transports, keyHandle, 
+    return new SecurityKeyData(enrollmentTime, transports, keyHandle,
         publicKey, x509cert, counter);
   }
-  
+
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     json.addProperty("enrollment_time", enrollmentTime);
     json.add("transports", getJsonTransports());
     json.addProperty("key_handle", Hex.encodeHexString(keyHandle));
     json.addProperty("public_key", Hex.encodeHexString(publicKey));
-    json.addProperty("issuer", 
-        getSecurityKeyData().getAttestationCertificate().getIssuerX500Principal().getName()); 
+    json.addProperty("issuer",
+        getSecurityKeyData().getAttestationCertificate().getIssuerX500Principal().getName());
     return json;
   }
 
   /**
    * Transforms the List of Transports in a JsonArray of Strings.
-   * 
+   *
    * @return a JsonArray object containing transport values as strings
    */
   private JsonArray getJsonTransports() {

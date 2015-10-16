@@ -43,7 +43,7 @@ public class U2fHttpServer {
   private final U2FServer u2fServer;
 
   private long sessionIdCounter = 0;
-  
+
   public static void main(String[] args) throws InterruptedException {
     new U2fHttpServer();
   }
@@ -64,7 +64,7 @@ public class U2fHttpServer {
       @Override
       public String generateSessionId(String accountName) {
         return new StringBuilder()
-          .append("sessionId_") 
+          .append("sessionId_")
           .append(sessionIdCounter++)
           .append("_")
           .append(accountName)
@@ -96,7 +96,7 @@ public class U2fHttpServer {
     dataStore.addTrustedCertificate(trustedCertificate);
 
     // this implementation will only accept signatures from http://localhost:8080
-    u2fServer = new U2FServerReferenceImpl(challengeGenerator, dataStore, 
+    u2fServer = new U2FServerReferenceImpl(challengeGenerator, dataStore,
         new BouncyCastleCrypto(), ImmutableSet.of("http://localhost:8080"));
     Container dispatchContainer = new RequestDispatcher()
         .registerContainer("/", new StaticHandler("text/html","html/index.html"))

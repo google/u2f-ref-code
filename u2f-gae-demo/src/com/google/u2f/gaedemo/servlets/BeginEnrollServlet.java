@@ -49,9 +49,9 @@ public class BeginEnrollServlet extends HttpServlet {
 		try {
           registrationRequest = u2fServer.getRegistrationRequest(user.getUserId(),
               (req.isSecure() ? "https://" : "http://") + req.getHeader("Host"));
-          
+
           if (singleEnrollment) {
-            signRequests = u2fServer.getSignRequest(user.getUserId(), 
+            signRequests = u2fServer.getSignRequest(user.getUserId(),
                 (req.isSecure() ? "https://" : "http://") + req.getHeader("Host"));
           } else {
             signRequests = ImmutableList.of();
@@ -61,7 +61,7 @@ public class BeginEnrollServlet extends HttpServlet {
 		}
 				
         JsonArray signData = new JsonArray();
-        
+
         for (SignRequest signRequest : signRequests) {
           JsonObject signServerData = new JsonObject();
           signServerData.addProperty("appId", signRequest.getAppId());
@@ -80,7 +80,7 @@ public class BeginEnrollServlet extends HttpServlet {
 	    result.add("enroll_data", enrollData);
 	    result.add("sign_data", signData);
 	    result.addProperty("sessionId", registrationRequest.getSessionId());
-	    
+	
 		resp.setContentType("application/json");
 		resp.getWriter().println(result.toString());
 	}

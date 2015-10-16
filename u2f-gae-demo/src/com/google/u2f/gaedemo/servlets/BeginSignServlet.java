@@ -28,18 +28,18 @@ import com.google.u2f.server.messages.SignRequest;
 @SuppressWarnings("serial")
 @Singleton
 public class BeginSignServlet extends HttpServlet {
-    
+
     private final UserService userService =  UserServiceFactory.getUserService();
     private final U2FServer u2fServer;
-    
+
     @Inject
     public BeginSignServlet(U2FServer u2fServer) {
         this.u2fServer = u2fServer;
     }
-    
+
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         User user = userService.getCurrentUser();
-        
+
         List<SignRequest> signRequests;
         try {
           signRequests = u2fServer.getSignRequest(user.getUserId(),
@@ -47,9 +47,9 @@ public class BeginSignServlet extends HttpServlet {
         } catch (U2FException e) {
           throw new ServletException("couldn't get registration request", e);
         }
-                
+
         JsonArray result = new JsonArray();
-        
+
         for (SignRequest signRequest : signRequests) {
           JsonObject signServerData = new JsonObject();
           signServerData.addProperty("appId", signRequest.getAppId());
@@ -59,7 +59,7 @@ public class BeginSignServlet extends HttpServlet {
           signServerData.addProperty("sessionId", signRequest.getSessionId());
           result.add(signServerData);
         }
-        
+
         resp.setContentType("application/json");
         resp.getWriter().println(result.toString());
     }

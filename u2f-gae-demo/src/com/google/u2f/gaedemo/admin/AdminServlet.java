@@ -50,12 +50,12 @@ public class AdminServlet extends HttpServlet {
     resp.setContentType("text/html");
     resp.getWriter().println(renderer.render());
   }
-  
+
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-   
+
     String command = req.getParameter("command");
-    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "unknown command: " + command);      
+    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "unknown command: " + command);
   }
 }

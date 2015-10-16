@@ -36,7 +36,7 @@ public class SignDataServlet extends JavascriptServlet {
 
     List<SignRequest> signRequests = u2fServer.getSignRequest(userName, "http://localhost:8080");
     JsonArray result = new JsonArray();
-    
+
     for (SignRequest signRequest : signRequests) {
       JsonObject signServerData = new JsonObject();
       signServerData.addProperty("appId", signRequest.getAppId());

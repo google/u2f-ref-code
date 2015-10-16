@@ -30,19 +30,19 @@ public class SecurityKeyData {
   private int counter;
 
   public SecurityKeyData(
-      long enrollmentTime, 
-      byte[] keyHandle, 
-      byte[] publicKey, 
+      long enrollmentTime,
+      byte[] keyHandle,
+      byte[] publicKey,
       X509Certificate attestationCert,
       int counter) {
     this(enrollmentTime, null /* transports */, keyHandle, publicKey, attestationCert, counter);
   }
 
   public SecurityKeyData(
-      long enrollmentTime, 
+      long enrollmentTime,
       List<Transports> transports,
-      byte[] keyHandle, 
-      byte[] publicKey, 
+      byte[] keyHandle,
+      byte[] publicKey,
       X509Certificate attestationCert,
       int counter) {
     this.enrollmentTime = enrollmentTime;
@@ -75,22 +75,22 @@ public class SecurityKeyData {
   public X509Certificate getAttestationCertificate() {
     return attestationCert;
   }
-  
+
   public int getCounter() {
-	return counter; 
+	return counter;
   }
-  
+
   public void setCounter(int newCounterValue) {
     counter = newCounterValue;
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hashCode(
         enrollmentTime,
         transports,
-        keyHandle, 
-        publicKey, 
+        keyHandle,
+        publicKey,
         attestationCert);
   }
 
@@ -100,7 +100,7 @@ public class SecurityKeyData {
       return false;
     }
     SecurityKeyData that = (SecurityKeyData) obj;
-    return Arrays.equals(this.keyHandle, that.keyHandle) 
+    return Arrays.equals(this.keyHandle, that.keyHandle)
         && (this.enrollmentTime == that.enrollmentTime)
         && containSameTransports(this.transports, that.transports)
         && Arrays.equals(this.publicKey, that.publicKey)

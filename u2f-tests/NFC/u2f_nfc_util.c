@@ -19,9 +19,9 @@ const char* printError(uint err);
 
 //Gloabl variables shared with top level routine
 flag log_Apdu =   flagOFF;   // default
-flag log_Crypto = flagOFF;  
-flag arg_Pause = flagOFF;  	
-flag arg_Abort = flagON;  	
+flag log_Crypto = flagOFF;
+flag arg_Pause = flagOFF;
+flag arg_Abort = flagON;
 cmd_apdu_type cmd_apdu;
 
 //Shared between PC/SC Card Access Routines
@@ -189,7 +189,7 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *da
   ulong rlen;
   long rc;
   uint len;
-  uint sw12; 
+  uint sw12;
 
   cmd_apdu = SHORT_APDU;
 
@@ -287,10 +287,10 @@ void getRandom(uint8_t *buf, size_t size)
 uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void *data, uint *rapduLen, void *rapdu )
 {
   uint8_t capdu[1000];
-  ulong rlen = *rapduLen + 2; //Add Buffer for Status 
+  ulong rlen = *rapduLen + 2; //Add Buffer for Status
   ulong len;
   long rc;
-  int sw12; 
+  int sw12;
 
   cmd_apdu = EXTENDED_APDU;
 
@@ -358,9 +358,9 @@ int U2FNFC_connect(void)
   }
 
   printf("Select Reader <Enter>:");
-  key = 10;            
+  key = 10;
   while (key > 9 ) {
-    key = getchar();    
+    key = getchar();
      if(key >= '0' && key <= '9'){
       if(readerNames[key-'0'] != 0){
         key = key - '0';
@@ -368,7 +368,7 @@ int U2FNFC_connect(void)
     }
     else {
       printf("Select Valid Reader <Enter>:");
-    }  
+    }
   }
 
   printf("\nConnecting to: %s \n", readerNames[key]);

@@ -27,7 +27,7 @@ extern "C" void checkPause(const char* prompt);
 //Global Variables from u2f_nfc_utils
 extern "C" flag log_Apdu;
 extern "C" flag log_Crypto;
-extern "C" flag arg_Pause; 	
+extern "C" flag arg_Pause;
 extern "C" flag arg_Abort;
 extern "C" cmd_apdu_type cmd_apdu;
 
@@ -101,7 +101,7 @@ uint test_Sign(cmd_apdu_type cmd_apdu_in, uint expectedSW12 = 0x9000, bool check
 	CHECK_NE(0 , rspLen);
 	CHECK_LE(rspLen, sizeof(U2F_AUTHENTICATE_RESP));
 
-	memcpy(&authRsp, rsp, rspLen); 
+	memcpy(&authRsp, rsp, rspLen);
 	return rspLen;
 }
 
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
 	rapduLen = U2F_VERSION_LEN;
 	CHECK_EQ(SW_NO_ERROR, (xchgAPDUShort(0, 0xa4, 0x04, 0x00, sizeof(u2fAID), u2fAID,  &rapduLen, rapdu)));
 	CHECK_EQ(0, memcmp(u2fVer, rapdu, U2F_VERSION_LEN));
- 
+
 	cout << "Check Unknown INS Response\n";
 	CHECK_EQ(0x6D00, xchgAPDUShort(0, 0 /* not U2F INS */, 0, 0, 0, "", &rapduLen, rapdu));
 	CHECK_EQ(0, rapduLen);
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
 	cout << "Check the Signature & Counter \n";
 	PASS(signCheckSignature( regReq, regRsp, authReq , authRsp, rapduLen));
 	CHECK_EQ(MAKE_UINT32(authRsp.ctr), ctr+1); ctr = MAKE_UINT32(authRsp.ctr);
-  
+
   cout << "ReTest U2F_AUTH, Extended APDU\n";
   PASS(rapduLen = test_Sign(EXTENDED_APDU, 0x9000u));
 	cout << "Check the Signature & Counter \n";

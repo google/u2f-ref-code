@@ -36,7 +36,7 @@ u2f_nfc_util.obj: u2f_nfc_util.c u2f_nfc.h u2f_nfc_util.h u2f_nfc_crypto.h
 # crypto for signature checking
 u2f_nfc_crypto.obj: u2f_nfc_crypto.cc u2f_nfc.h u2f_nfc_util.h u2f_nfc_crypto.h
 	$(CXX) -c $(CFLAGS) u2f_nfc_crypto.cc
-	
+
 # U2F NFC test.
 u2f_nfc_test.exe: u2f_nfc_test.cc u2f_nfc_util.obj u2f_nfc_crypto.obj u2f_nfc.h u2f_nfc_util.h u2f_nfc_crypto.h $(LIBMINCRYPT)
-	$(CXX) $(CFLAGS)  u2f_nfc_test.cc u2f_nfc_util.obj u2f_nfc_crypto.obj $(LIBMINCRYPT) $(LDFLAGS) 
+	$(CXX) $(CFLAGS)  u2f_nfc_test.cc u2f_nfc_util.obj u2f_nfc_crypto.obj $(LIBMINCRYPT) $(LDFLAGS)

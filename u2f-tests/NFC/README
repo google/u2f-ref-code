@@ -6,7 +6,7 @@ git clone https://android.googlesource.com/platform/system/core
 (Current assumption that is that /core is in HID test directory, hence path to libmincrypt is ../HID/core/libmincrypt)
 Drivers for your PC/SC reader(s)
 
-linux: 
+linux:
 sudo apt-get install libpcsclite-dev
 sudo apt-get install pcscd
 
@@ -14,7 +14,7 @@ BUILD:
 linux, make
 
 windows: nmake -f Makefile.win
- 
+
 RUN:
 linux ./u2f_nfc_test
 windows u2f_nfc_test.exe

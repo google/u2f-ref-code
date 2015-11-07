@@ -145,7 +145,7 @@ bool getCertSignature(const std::string& cert,
 }
 
 void enrollCheckSignature( U2F_REGISTER_REQ regReq , U2F_REGISTER_RESP regRsp) {
-  
+
   using std::string;
 
   CHECK_EQ(regRsp.registerId, U2F_REGISTER_ID);
@@ -161,14 +161,14 @@ void enrollCheckSignature( U2F_REGISTER_REQ regReq , U2F_REGISTER_RESP regRsp) {
 
   string sig;
   CHECK_EQ(getSignature(regRsp, &sig), true);
-    
+
   //Log values if required
   if(log_Crypto == flagON){
     std::cout << "Attestation Cert:\n" << b2a(cert) << "\n";
     std::cout << "Attestation Public Key:\n" << b2a(pk)<< "\n";
     std::cout << "Attestation Signature :\n" << b2a(sig)<< "\n";
   }
-  
+
   // Parse signature into two integers.
   p256_int sig_r, sig_s;
   CHECK_EQ(1, dsa_sig_unpack((uint8_t*) (sig.data()), sig.size(),
@@ -178,7 +178,7 @@ void enrollCheckSignature( U2F_REGISTER_REQ regReq , U2F_REGISTER_RESP regRsp) {
   p256_int h;
   SHA256_CTX sha;
   SHA256_init(&sha);
-  uint8_t rfu = 0; //TEST 
+  uint8_t rfu = 0; //TEST
   SHA256_update(&sha, &rfu, sizeof(rfu));  // 0x00
   SHA256_update(&sha, regReq.appId, sizeof(regReq.appId));  // O
   SHA256_update(&sha, regReq.nonce, sizeof(regReq.nonce));  // d
@@ -200,7 +200,7 @@ void signCheckSignature(  U2F_REGISTER_REQ regReq , U2F_REGISTER_RESP regRsp, U2
 
 
   CHECK_EQ(authResp.flags, 0x01);
-  
+
   if(log_Crypto == flagON){
     std::cout << "Authentication Signature:\n" << b2a(authResp.sig, respLength - sizeof(authResp.flags) - sizeof(authResp.ctr))<< "\n";
   }

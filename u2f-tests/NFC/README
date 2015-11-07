@@ -1,0 +1,30 @@
+WHAT:
+Basic U2F NFC Test Harness
+
+DEPENDENCIES:
+git clone https://android.googlesource.com/platform/system/core
+(Current assumption that is that /core is in HID test directory, hence path to libmincrypt is ../HID/core/libmincrypt)
+Drivers for your PC/SC reader(s)
+
+linux:
+sudo apt-get install libpcsclite-dev
+sudo apt-get install pcscd
+
+BUILD:
+linux, make
+
+windows: nmake -f Makefile.win
+
+RUN:
+linux ./u2f_nfc_test
+windows u2f_nfc_test.exe
+
+Command line arguments:
+Add -a to continue execution after an error.
+Add -p to pause after each error and at end.
+Add -v to get an APDU trace
+and -V to get an APDU trace and Crypto data dump
+
+Build and tested on:
+MSVC 10 on Win7 32bit
+LinuxMint 17.1 32bit

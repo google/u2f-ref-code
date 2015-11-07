@@ -1,0 +1,42 @@
+# Copyright 2014 Google Inc. All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+all:  u2f_nfc_test.exe
+
+CFLAGS=-nologo -EHsc -W3 -I ../HID/core/include -I ../HID/core/include/mincrypt  -D__OS_WIN -Zi
+LDFLAGS=winscard.lib
+
+MINCRYPT_PATH = ../HID/core/libmincrypt
+
+# Crypto code.
+LIBMINCRYPT=dsa_sig.obj p256.obj p256_ec.obj p256_ecdsa.obj sha256.obj
+
+dsa_sig.obj: $(MINCRYPT_PATH)/dsa_sig.c
+	$(CC) -Dinline="" -D"dst[P256_NBYTES]"="*dst" -c $(CFLAGS) $(MINCRYPT_PATH)/dsa_sig.c
+
+p256.obj: $(MINCRYPT_PATH)/p256.c
+	$(CC) -c $(CFLAGS) $(MINCRYPT_PATH)/p256.c
+
+p256_ec.obj: $(MINCRYPT_PATH)/p256_ec.c
+	$(CC) -c $(CFLAGS) $(MINCRYPT_PATH)/p256_ec.c
+
+p256_ecdsa.obj: $(MINCRYPT_PATH)/p256_ecdsa.c
+	$(CC) -c $(CFLAGS) $(MINCRYPT_PATH)/p256_ecdsa.c
+
+sha256.obj: $(MINCRYPT_PATH)/sha256.c
+	$(CC) -c $(CFLAGS) $(MINCRYPT_PATH)/sha256.c
+
+# utility routines
+u2f_nfc_util.obj: u2f_nfc_util.c u2f_nfc.h u2f_nfc_util.h u2f_nfc_crypto.h
+	$(CXX) -c $(CFLAGS) u2f_nfc_util.c
+
+# crypto for signature checking
+u2f_nfc_crypto.obj: u2f_nfc_crypto.cc u2f_nfc.h u2f_nfc_util.h u2f_nfc_crypto.h
+	$(CXX) -c $(CFLAGS) u2f_nfc_crypto.cc
+
+# U2F NFC test.
+u2f_nfc_test.exe: u2f_nfc_test.cc u2f_nfc_util.obj u2f_nfc_crypto.obj u2f_nfc.h u2f_nfc_util.h u2f_nfc_crypto.h $(LIBMINCRYPT)
+	$(CXX) $(CFLAGS)  u2f_nfc_test.cc u2f_nfc_util.obj u2f_nfc_crypto.obj $(LIBMINCRYPT) $(LDFLAGS)

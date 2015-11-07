@@ -303,8 +303,8 @@ uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void 
   capdu[5] = (lc>>8) & 0xff;
   capdu[6]= lc & 0xff;
   memcpy((void*)&capdu[7], (const void*)data, lc);
-  capdu[7+lc]=(byte) ((*rapduLen/256) & 0xff);
-  capdu[8+lc]=(byte) (*rapduLen & 0xff);
+  capdu[7+lc]=(uint8_t) ((*rapduLen/256) & 0xff);
+  capdu[8+lc]=(uint8_t) (*rapduLen & 0xff);
   len = lc+9;
 
 

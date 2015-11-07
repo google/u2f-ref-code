@@ -28,20 +28,20 @@ cmd_apdu_type cmd_apdu;
 static SCARDHANDLE hCard;
 
 static void pausePrompt(const char* prompt) {
-	printf("\n%s", prompt);
+  printf("\n%s", prompt);
   fflush ( stdin );
   getchar();
 }
 
 void checkPause(const char* prompt) {
-	if (arg_Pause) pausePrompt(prompt);
+  if (arg_Pause) pausePrompt(prompt);
 }
 
 
 void AbortOrNot(void) {
-	checkPause(arg_Abort==flagOFF?"\nHit Enter to Continue...":"\nHit Enter to Exit...");
-	if (arg_Abort) exit(0);
-	printf("%s","Continuing... (-a option)");
+  checkPause(arg_Abort==flagOFF?"\nHit Enter to Continue...":"\nHit Enter to Exit...");
+  if (arg_Abort) exit(0);
+  printf("%s","Continuing... (-a option)");
 }
 
 
@@ -305,7 +305,7 @@ uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void 
   memcpy((void*)&capdu[7], (const void*)data, lc);
   capdu[7+lc]=(byte) ((*rapduLen/256) & 0xff);
   capdu[8+lc]=(byte) (*rapduLen & 0xff);
-	len = lc+9;
+  len = lc+9;
 
 
 
@@ -389,44 +389,44 @@ int U2FNFC_connect(void)
 //Lookup PCSC error codes & display to user
 const char* printError(uint err)
 {
-	switch (err)
-	{
+  switch (err)
+  {
     case SCARD_S_SUCCESS:return "OK";
-	  case SCARD_E_CANCELLED:return "Command cancelled";
-	  case SCARD_E_CANT_DISPOSE:return "Cannot dispose";
+    case SCARD_E_CANCELLED:return "Command cancelled";
+    case SCARD_E_CANT_DISPOSE:return "Cannot dispose";
     case SCARD_E_INSUFFICIENT_BUFFER:return "Insufficient buffer allocated";
     case SCARD_E_INVALID_ATR: return "Invalid ATR";
     case SCARD_E_INVALID_HANDLE:return "Invalid handle";
-	  case SCARD_E_INVALID_PARAMETER:return "Invalid parameter given";
+    case SCARD_E_INVALID_PARAMETER:return "Invalid parameter given";
     case SCARD_E_INVALID_TARGET:return "Invalid target given";
-		case SCARD_E_INVALID_VALUE:return "Invalid value given";
-		case SCARD_E_NO_MEMORY:return "Not enough memory";
-		case SCARD_F_COMM_ERROR:return "Comm error";
-		case SCARD_F_INTERNAL_ERROR:return "Internal error";
-		case SCARD_F_UNKNOWN_ERROR:return "Unknown error";
-		case SCARD_F_WAITED_TOO_LONG:return "Waited too long";
-		case SCARD_E_UNKNOWN_READER:return "Unknown reader";
-		case SCARD_E_TIMEOUT:return "Timeout";
-		case SCARD_E_SHARING_VIOLATION:return "Sharing violation";
-		case SCARD_E_NO_SMARTCARD:return "No smart card inserted";
-		case SCARD_E_UNKNOWN_CARD:return "Unknown card";
-		case SCARD_E_PROTO_MISMATCH:return "Pprotocol mismatch";
-		case SCARD_E_NOT_READY:return "Not ready";
-		case SCARD_E_SYSTEM_CANCELLED:return "System cancelled";
-		case SCARD_E_NOT_TRANSACTED:return "Not Transacted";
-		case SCARD_E_READER_UNAVAILABLE:return "Reader is unavailable";
-		case SCARD_W_UNSUPPORTED_CARD:return "Card not supported";
-		case SCARD_W_UNRESPONSIVE_CARD:return "Card unresponsive";
-		case SCARD_W_UNPOWERED_CARD:return "Card unpowered";
-		case SCARD_W_RESET_CARD:return "Card reset";
-		case SCARD_E_UNSUPPORTED_FEATURE:return "Unsupported Feature";
-		case SCARD_E_PCI_TOO_SMALL:return "PCI too small";
-		case SCARD_E_READER_UNSUPPORTED:return "Reader unsupported";
-		case SCARD_E_DUPLICATE_READER:return "Duplicate Reader";
-		case SCARD_E_CARD_UNSUPPORTED:return "Card unsupported";
+    case SCARD_E_INVALID_VALUE:return "Invalid value given";
+    case SCARD_E_NO_MEMORY:return "Not enough memory";
+    case SCARD_F_COMM_ERROR:return "Comm error";
+    case SCARD_F_INTERNAL_ERROR:return "Internal error";
+    case SCARD_F_UNKNOWN_ERROR:return "Unknown error";
+    case SCARD_F_WAITED_TOO_LONG:return "Waited too long";
+    case SCARD_E_UNKNOWN_READER:return "Unknown reader";
+    case SCARD_E_TIMEOUT:return "Timeout";
+    case SCARD_E_SHARING_VIOLATION:return "Sharing violation";
+    case SCARD_E_NO_SMARTCARD:return "No smart card inserted";
+    case SCARD_E_UNKNOWN_CARD:return "Unknown card";
+    case SCARD_E_PROTO_MISMATCH:return "Pprotocol mismatch";
+    case SCARD_E_NOT_READY:return "Not ready";
+    case SCARD_E_SYSTEM_CANCELLED:return "System cancelled";
+    case SCARD_E_NOT_TRANSACTED:return "Not Transacted";
+    case SCARD_E_READER_UNAVAILABLE:return "Reader is unavailable";
+    case SCARD_W_UNSUPPORTED_CARD:return "Card not supported";
+    case SCARD_W_UNRESPONSIVE_CARD:return "Card unresponsive";
+    case SCARD_W_UNPOWERED_CARD:return "Card unpowered";
+    case SCARD_W_RESET_CARD:return "Card reset";
+    case SCARD_E_UNSUPPORTED_FEATURE:return "Unsupported Feature";
+    case SCARD_E_PCI_TOO_SMALL:return "PCI too small";
+    case SCARD_E_READER_UNSUPPORTED:return "Reader unsupported";
+    case SCARD_E_DUPLICATE_READER:return "Duplicate Reader";
+    case SCARD_E_CARD_UNSUPPORTED:return "Card unsupported";
     case SCARD_E_NO_SERVICE: return "No Service";
-		case SCARD_E_SERVICE_STOPPED:return "Service stopped";
-		case SCARD_E_NO_READERS_AVAILABLE:return "No Reader ";
-		default:return "Unknown Error";
-	};
+    case SCARD_E_SERVICE_STOPPED:return "Service stopped";
+    case SCARD_E_NO_READERS_AVAILABLE:return "No Reader ";
+    default:return "Unknown Error";
+  };
 }

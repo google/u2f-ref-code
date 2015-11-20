@@ -297,7 +297,6 @@ u2f.WrappedChromeRuntimePort_.prototype.formatSignRequest_ =
  */
 u2f.WrappedChromeRuntimePort_.prototype.formatRegisterRequest_ =
   function(appId, registeredKeys, registerRequests, timeoutSeconds, reqId) {
-  var request;
   if (JS_API_VERSION === undefined || JS_API_VERSION < 1.1) {
     // Adapt request to the 1.0 JS API
     for (var i = 0; i < registerRequests.length; i++) { 

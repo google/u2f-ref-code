@@ -65,7 +65,7 @@ public class BeginEnrollServlet extends HttpServlet {
 		} else {
 		  result.add("registeredKeys", signRequest.getRegisteredKeysAsJson());
 		}
-		  
+
 		resp.setContentType("application/json");
 		resp.getWriter().println(result.toString());
 	}

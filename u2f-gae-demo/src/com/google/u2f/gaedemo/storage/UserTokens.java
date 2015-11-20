@@ -46,7 +46,7 @@ public class UserTokens {
         token.updateCounter(newCounterValue);
         break;
       }
-    }    
+    }
   }
 
   public void addToken(TokenStorageData token) {

@@ -60,7 +60,7 @@ u2f.ErrorCodes = {
 
 
 /**
- * A message type for registration requests
+ * A message for registration requests
  * @typedef {{
  *   type: u2f.MessageTypes,
  *   appId: ?string,

@@ -133,11 +133,6 @@ h1 {
 	position: relative;
   background: rgba(233, 233, 233, 0.9);
   height: 50px;
-  transition: bottom 0.3s;
-}
-
-.card .buttonBar.visible {
-  bottom: 50px;
 }
 
 #dismissErrorButton {

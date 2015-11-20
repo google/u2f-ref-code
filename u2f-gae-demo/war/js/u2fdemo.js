@@ -8,21 +8,25 @@
 // UI Functions                                                              //
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * FIDO U2F Javascript API Version
+ * @number
+ */
+var JS_API_VERSION;
+
+function getApiVersion() {
+    u2f.getApiVersion(
+        function (response) {
+	        JS_API_VERSION = response['js_api_version'];
+	        console.log("Extension JS API Version: ", JS_API_VERSION);
+        });
+}
+
 function addTokenInfoToPage(token) {
     console.log(token);
     document
         .getElementById('tokens')
         .appendChild(tokenToDom(token));
-
-    // now that we've added the card into the dom, let's bind the mouseover
-    // events to it:
-    $("#" + token.public_key)
-      .mouseover(function() {
-          $(this).find(".buttonBar").addClass("visible");
-        })
-      .mouseout(function() { 
-          $(this).find(".buttonBar").removeClass("visible");
-        });
 }
 
 function tokenToDom(token) {
@@ -34,9 +38,9 @@ function tokenToDom(token) {
   card.querySelector('.issuer').textContent = token.issuer;
   card.querySelector('.enrollmentTimeValue').textContent = timeString;
   if (token.transports == null || token.transports === undefined) {
-	  card.querySelector('.transportsValue').textContent = "None specified";
+     card.querySelector('.transportsValue').textContent = "None specified";
   } else {
-	  card.querySelector('.transportsValue').textContent = token.transports;
+     card.querySelector('.transportsValue').textContent = token.transports;
   }
   card.querySelector('.keyHandle').textContent = token.key_handle;
   card.querySelector('.publicKey').textContent = token.public_key;
@@ -132,8 +136,9 @@ function sendBeginEnrollRequest() {
       console.log(beginEnrollResponse);
       showMessage("please touch the token");
       u2f.register(
-        [beginEnrollResponse.enroll_data],
-        beginEnrollResponse.sign_data,
+        beginEnrollResponse.appId,
+        [beginEnrollResponse.registerRequests],
+        beginEnrollResponse.registeredKeys,
         function (response) {
           if (response.errorCode) {
             onError(response.errorCode, true);
@@ -147,16 +152,17 @@ function sendBeginEnrollRequest() {
 
 function sendBeginSignRequest() {
   $.post('/BeginSign', {}, null, 'json')
-   .done(function(signData) {
-      console.log(signData);
+   .done(function(signResponse) {
+      console.log(signResponse);
+      var registeredKeys = signResponse.registeredKeys;
       showMessage("please touch the token");
       // Store sessionIds
       var sessionIds = {};
-      for (var i = 0; i < signData.length; i++) {
-        sessionIds[signData[i].keyHandle] = signData[i].sessionId;
-        delete signData[i]['sessionId'];
+      for (var i = 0; i < registeredKeys.length; i++) {
+        sessionIds[registeredKeys[i].keyHandle] = registeredKeys[i].sessionId;
+        delete registeredKeys[i]['sessionId'];
       }
-      u2f.sign(signData, function (response) {
+      u2f.sign(signResponse.appId, signResponse.challenge, registeredKeys, function (response) {
           if (response.errorCode) {
             onError(response.errorCode, false);
           } else {

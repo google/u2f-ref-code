@@ -38,11 +38,11 @@ public class FinishEnrollServlet extends HttpServlet {
     this.dataStore = dataStore;
   }
 
-  public void doPost(HttpServletRequest req, HttpServletResponse resp) 
+  public void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws IOException, ServletException {
 
     // Simple XSRF protection. We don't want users to be tricked into
-    // submitting other people's enrollment data. Here we're just checking 
+    // submitting other people's enrollment data. Here we're just checking
     // that it's the same user that also started the enrollment - you might
     // want to do something more sophisticated.
     String currentUser = userService.getCurrentUser().getUserId();
@@ -51,18 +51,18 @@ public class FinishEnrollServlet extends HttpServlet {
         .getAccountName();
     if (!currentUser.equals(expectedUser)) {
       throw new ServletException("Cross-site request prohibited");
-    }   
+    }
 
-    
+
     RegistrationResponse registrationResponse = new RegistrationResponse(
-        req.getParameter("registrationData"), 
+        req.getParameter("registrationData"),
         req.getParameter("clientData"),
         req.getParameter("sessionId"));
 
     SecurityKeyData newSecurityKeyData;
     try {
       newSecurityKeyData = u2fServer.processRegistrationResponse(
-          registrationResponse, 
+          registrationResponse,
           System.currentTimeMillis());
     } catch (U2FException e) {
       throw new ServletException(e);

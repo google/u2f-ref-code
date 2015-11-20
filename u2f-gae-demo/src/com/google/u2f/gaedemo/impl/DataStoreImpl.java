@@ -46,7 +46,7 @@ import com.google.u2f.server.data.SignSessionData;
 public class DataStoreImpl implements DataStore {
 
   private final SecureRandom random = new SecureRandom();
-  
+
   @Override
   public void addTrustedCertificate(X509Certificate certificate) {
     // do nothing
@@ -59,7 +59,7 @@ public class DataStoreImpl implements DataStore {
 
   @Override
   public String storeSessionData(EnrollSessionData sessionData) {
-    
+
     SecretKey key = new SecretKeySpec(SecretKeys.get().sessionEncryptionKey(), "AES");
     byte[] ivBytes = new byte[16];
     random.nextBytes(ivBytes);
@@ -68,7 +68,7 @@ public class DataStoreImpl implements DataStore {
     try {
       cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
       cipher.init(Cipher.ENCRYPT_MODE, key, IV);
-    } catch (NoSuchAlgorithmException | NoSuchPaddingException | 
+    } catch (NoSuchAlgorithmException | NoSuchPaddingException |
         InvalidKeyException | InvalidAlgorithmParameterException e) {
       throw new RuntimeException(e);
     }
@@ -79,30 +79,30 @@ public class DataStoreImpl implements DataStore {
     } catch (IllegalBlockSizeException | IOException e) {
       throw new RuntimeException(e);
     }
-    
+
     ByteArrayOutputStream out;
     try {
       out = new ByteArrayOutputStream();
       ObjectOutputStream outer = new ObjectOutputStream(out);
-      
+
       outer.writeObject(sealed);
       outer.flush();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    
+
     return Base64.encodeBase64URLSafeString(out.toByteArray());
   }
 
   @Override
   public EnrollSessionData getEnrollSessionData(String sessionId) {
     SecretKey key = new SecretKeySpec(SecretKeys.get().sessionEncryptionKey(), "AES");
-    
+
     byte[] serialized = Base64.decodeBase64(sessionId);
     ByteArrayInputStream inner = new ByteArrayInputStream(serialized);
     try {
       ObjectInputStream in = new ObjectInputStream(inner);
-      
+
       SealedObject sealed = (SealedObject) in.readObject();
       return (EnrollSessionData) sealed.getObject(key);
     } catch (InvalidKeyException | ClassNotFoundException
@@ -110,7 +110,7 @@ public class DataStoreImpl implements DataStore {
       throw new RuntimeException(e);
     }
   }
-  
+
   @Override
   public SignSessionData getSignSessionData(String sessionId) {
     return (SignSessionData) getEnrollSessionData(sessionId);
@@ -125,7 +125,7 @@ public class DataStoreImpl implements DataStore {
 
     ofy().save().entity(tokens).now();
   }
-  
+
   @Override
   public List<SecurityKeyData> getSecurityKeyData(String accountName) {
     ImmutableList.Builder<SecurityKeyData> result = ImmutableList.builder();
@@ -141,13 +141,13 @@ public class DataStoreImpl implements DataStore {
     tokens.removeToken(publicKey);
     ofy().save().entity(tokens).now();
   }
-  
+
   private UserTokens getUserTokens(String accountName) {
     return Objects.firstNonNull(
         ofy().load().type(UserTokens.class).id(accountName).now(),
         new UserTokens(accountName));
   }
-  
+
   private Collection<TokenStorageData> getAllTokens(String accountName) {
     return getUserTokens(accountName).getTokens();
   }

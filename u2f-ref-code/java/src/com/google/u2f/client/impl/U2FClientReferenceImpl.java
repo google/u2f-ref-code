@@ -85,7 +85,6 @@ public class U2FClientReferenceImpl implements U2FClient {
   @Override
   public void authenticate(String origin, String accountName) throws U2FException {
     U2fSignRequest signRequest = server.getSignRequest(accountName, origin);
-
     String serverChallengeBase64 = signRequest.getChallenge();
     List<RegisteredKey> registeredKeys = signRequest.getRegisteredKeys();
     String version = registeredKeys.get(0).getVersion();

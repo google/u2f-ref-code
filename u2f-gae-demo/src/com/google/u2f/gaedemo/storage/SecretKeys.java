@@ -19,12 +19,12 @@ import com.googlecode.objectify.annotation.Ignore;
 public class SecretKeys {
 
   private static final int AES_KEY_SIZE = 16;
-  
+
   @Id private String id;
   private byte[] sessionEncryptionKey;
-  
+
   @Ignore private SecureRandom random = new SecureRandom();
-  
+
   private static SecretKeys generate() {
     return ofy().transact(new Work<SecretKeys>() {
       @Override
@@ -41,10 +41,10 @@ public class SecretKeys {
       }
     });
   }
-  
+
   public static SecretKeys get() {
     SecretKeys keys = ofy().load().type(SecretKeys.class).id("singleton").now();
-    
+
     if (keys == null) {
       // somebody (we?) need to generate the keys
       return generate();
@@ -52,18 +52,18 @@ public class SecretKeys {
       return keys;
     }
   }
-  
+
   public SecretKeys() {
     id = "singleton";
   }
-  
+
   private void generateNewKeys() {
     if (sessionEncryptionKey == null) {
       sessionEncryptionKey = new byte[AES_KEY_SIZE];
       random.nextBytes(sessionEncryptionKey);
     }
   }
-  
+
   public byte[] sessionEncryptionKey() {
     return sessionEncryptionKey;
   }

@@ -47,7 +47,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
   @Mock ChallengeGenerator mockChallengeGenerator;
   @Mock SessionIdGenerator mockSessionIdGenerator;
   @Mock DataStore mockDataStore;
-  
+
   private final Crypto cryto = new BouncyCastleCrypto();
   private U2FServer u2fServer;
 
@@ -77,7 +77,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
     assertEquals("https://example.com", U2FServerReferenceImpl.canonicalizeOrigin("https://example.com"));
     assertEquals("https://example.com", U2FServerReferenceImpl.canonicalizeOrigin("https://example.com/foo"));
   }
-  
+
   @Test
   public void testGetRegistrationRequest() throws U2FException {
     u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
@@ -230,7 +230,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
       assertTrue(e.getMessage().contains("is not a recognized home origin"));
     }
   }
-  
+
   // @Test
   // TODO: put test back in once we have signature sample on a correct browserdata json
   // (currently, this test uses an enrollment browserdata during a signature)

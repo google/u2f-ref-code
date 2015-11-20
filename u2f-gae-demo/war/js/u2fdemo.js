@@ -226,7 +226,7 @@ function onError(code, enrolling) {
   }
 }
 
-if (navigator.userAgent.indexOf("iPhone") > -1) {
+if ($.inArray(navigator.platform, ["iPhone", "iPad", "iPod"]) > -1) {
   function executeRequest (request) {
     var str = JSON.stringify(request);
     var url = "u2f://auth?" + encodeURI(str);

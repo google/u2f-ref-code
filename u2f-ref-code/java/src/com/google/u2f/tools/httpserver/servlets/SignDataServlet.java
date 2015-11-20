@@ -31,6 +31,7 @@ public class SignDataServlet extends JavascriptServlet {
       resp.setStatus(Status.BAD_REQUEST);
       return;
     }
+
     U2fSignRequest signRequest = u2fServer.getSignRequest(userName, "http://localhost:8080");
     JsonObject result = new JsonObject();
     result.addProperty("challenge", signRequest.getChallenge());

@@ -28,7 +28,7 @@ import com.google.u2f.server.U2FServer;
 @SuppressWarnings("serial")
 @Singleton
 public class RemoveTokenServlet extends HttpServlet {
-    
+
     private final UserService userService =  UserServiceFactory.getUserService();
     private final U2FServer u2fServer;
 
@@ -48,11 +48,11 @@ public class RemoveTokenServlet extends HttpServlet {
         } catch (DecoderException e) {
           throw new ServletException("invalid public key", e);
         }
-        
+
         JsonObject result = new JsonObject();
         result.addProperty("status", "ok");
-        
-        resp.setContentType("application/json");                
+
+        resp.setContentType("application/json");
         resp.getWriter().println(result.toString());
     }
 }

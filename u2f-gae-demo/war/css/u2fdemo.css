@@ -100,7 +100,11 @@ h1 {
 }
 
 .card {
+<<<<<<< HEAD
   width: 500px;
+=======
+	width: 500px;
+>>>>>>> upstream/no-extension
   margin: 20px 40px 20px 0;
   box-shadow: 0px 0.5px 4px #aaaaaa;
   background: #fff;

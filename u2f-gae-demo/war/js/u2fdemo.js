@@ -17,8 +17,8 @@ var JS_API_VERSION;
 function getApiVersion() {
     u2f.getApiVersion(
         function (response) {
-	        JS_API_VERSION = response['js_api_version'];
-	        console.log("Extension JS API Version: ", JS_API_VERSION);
+         JS_API_VERSION = response['js_api_version'];
+         console.log("Extension JS API Version: ", JS_API_VERSION);
         });
 }
 

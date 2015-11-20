@@ -402,26 +402,39 @@ u2f.sign = function(appId, challenge, registeredKeys, callback, opt_timeoutSecon
   u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
-    if (JS_API_VERSION == 'undefined' || JS_API_VERSION < 1.1) {
-        // Adapt request to the 1.0 JS API
-        for (var i = 0; i < registeredKeys.length; i++) { 
-          registeredKeys[i].challenge = challenge;
-          registeredKeys[i].appId = appId;
-        }
+    var request;
+    if (JS_API_VERSION === undefined || JS_API_VERSION < 1.1) {
+      // Adapt request to the 1.0 JS API
+      var signRequests = [];
+      for (var i = 0; i < registeredKeys.length; i++) { 
+        signRequests[i] = {
+            version: registeredKeys[i].version,
+            challenge: challenge,
+            keyHandle: registeredKeys[i].keyHandle,
+            appId: appId
+        };
       }
-
-    var req = {
-      type: u2f.MessageTypes.U2F_SIGN_REQUEST,
-      appId: appId,
-      challenge: challenge,
-      registeredKeys: registeredKeys,
-      timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
-          opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
-      requestId: reqId
-    };
-    port.postMessage(req);
+      request =  {
+        type: u2f.MessageTypes.U2F_SIGN_REQUEST,
+        signRequests: signRequests,
+        timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+            opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+        requestId: reqId
+      };
+    } else {
+      // JS 1.1 API
+      request =  {
+        type: u2f.MessageTypes.U2F_SIGN_REQUEST,
+        appId: appId,
+        challenge: challenge,
+        registeredKeys: registeredKeys,
+        timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+            opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+        requestId: reqId
+      };
+    }
+    port.postMessage(request);
   });
-  
 };
 
 
@@ -443,28 +456,41 @@ u2f.register = function(appId, registerRequests, registeredKeys,
   u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
-    
-    if (JS_API_VERSION == 'undefined' || JS_API_VERSION < 1.1) {
+    var request;
+    if (JS_API_VERSION === undefined || JS_API_VERSION < 1.1) {
       // Adapt request to the 1.0 JS API
       for (var i = 0; i < registerRequests.length; i++) { 
         registerRequests[i].appId = appId;
-      }  
+      } 
+      var signRequests = []; 
       for (var i = 0; i < registeredKeys.length; i++) { 
-        registeredKeys[i].challenge = registerRequest[0].challenge;
-         registeredKeys[i].appId = appId;
+        signRequests[i] = {
+            version: registeredKeys[i].version,
+            challenge: registerRequests[0],
+            keyHandle: registeredKeys[i].keyHandle,
+            appId: appId
+        };
       }
-    }
-
-    var req = {
+      request =  {
         type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
-        appId: appId,
+        signRequests: signRequests,
         registerRequests: registerRequests,
-        registeredKeys: registeredKeys,
         timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
             opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
-            requestId: reqId
-        };
-    port.postMessage(req);
+        requestId: reqId
+      };
+    } else { // JS 1.1 API
+      request = {
+          type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
+          appId: appId,
+          registerRequests: registerRequests,
+          registeredKeys: registeredKeys,
+          timeoutSeconds: (typeof opt_timeoutSeconds !== 'undefined' ?
+              opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC),
+          requestId: reqId
+        }
+    }
+    port.postMessage(request);
   });
 };
 
@@ -487,13 +513,3 @@ u2f.getApiVersion = function(callback, opt_timeoutSeconds) {
     port.postMessage(req);
   });
 };
-
-
-
-function getApiVersion() {
-    u2f.getApiVersion(
-        function (response) {
-            JS_API_VERSION = response['js_api_version'];
-            console.log("Extension JS API Version: ", JS_API_VERSION);
-        });
-}

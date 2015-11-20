@@ -259,6 +259,7 @@ u2f.WrappedChromeRuntimePort_ = function(port) {
 u2f.WrappedChromeRuntimePort_.prototype.formatSignRequest_ =
   function(appId, challenge, registeredKeys, timeoutSeconds, reqId) {
   if (JS_API_VERSION === undefined || JS_API_VERSION < 1.1) {
+    console.log("SIGN: Using the old JS api");
     // Adapt request to the 1.0 JS API
     var signRequests = [];
     for (var i = 0; i < registeredKeys.length; i++) { 
@@ -276,6 +277,8 @@ u2f.WrappedChromeRuntimePort_.prototype.formatSignRequest_ =
       requestId: reqId
     };
   }
+  console.log("SIGN: Using the new JS api");
+  // JS 1.1 API
   return {
     type: u2f.MessageTypes.U2F_SIGN_REQUEST,
     appId: appId,
@@ -296,7 +299,9 @@ u2f.WrappedChromeRuntimePort_.prototype.formatSignRequest_ =
  */
 u2f.WrappedChromeRuntimePort_.prototype.formatRegisterRequest_ =
   function(appId, registeredKeys, registerRequests, timeoutSeconds, reqId) {
+  var request;
   if (JS_API_VERSION === undefined || JS_API_VERSION < 1.1) {
+    console.log("REGISTER: Using the old JS api");
     // Adapt request to the 1.0 JS API
     for (var i = 0; i < registerRequests.length; i++) { 
       registerRequests[i].appId = appId;
@@ -310,18 +315,26 @@ u2f.WrappedChromeRuntimePort_.prototype.formatRegisterRequest_ =
           appId: appId
       };
     }
-    
-    var req = {
+    console.log("registerRequests");
+    console.log(registerRequests);
+    console.log("request");
+    console.log({
+      type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
+      signRequests: signRequests,
+      registerRequests: registerRequests,
+      timeoutSeconds: timeoutSeconds,
+      requestId: reqId
+    });
+    return {
       type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
       signRequests: signRequests,
       registerRequests: registerRequests,
       timeoutSeconds: timeoutSeconds,
       requestId: reqId
     };
-    console.log("request: ");
-    console.log(req);
-    return req;
-  }
+  } 
+  // JS 1.1 API
+  console.log("REGISTER: Using the new JS api");
   return {
     type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
     appId: appId,

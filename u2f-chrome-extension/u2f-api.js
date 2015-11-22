@@ -21,7 +21,7 @@ var u2f = u2f || {};
  * FIDO U2F Javascript API Version
  * @number
  */
-var JS_API_VERSION;
+var js_api_version;
 
 /**
  * The U2F extension id
@@ -101,7 +101,6 @@ u2f.Transport;
 
 /**
  * Data object for a single sign request.
-// * @typedef {sequence<u2f.Transport>}
  * @typedef {Array<u2f.Transport>}
  */
 u2f.Transports;
@@ -390,20 +389,45 @@ u2f.responseHandler_ = function(message) {
 
 /**
  * Dispatches an array of sign requests to available U2F tokens.
+ * If the JS API version supported by the extension is not known, it first sends a
+ * message to the extension to find out the supported API version and then it sends
+ * the sign request.
  * @param {string=} appId
  * @param {string=} challenge
  * @param {Array<u2f.RegisteredKey>} registeredKeys
-// * @param {sequence<u2f.RegisteredKey>} registeredKeys
  * @param {function((u2f.Error|u2f.SignResponse))} callback
  * @param {number=} opt_timeoutSeconds
  */
 u2f.sign = function(appId, challenge, registeredKeys, callback, opt_timeoutSeconds) {
-  console.log("JS_API_VERSION: " + JS_API_VERSION);
+  console.log("js_api_version: " + js_api_version);
+  if (js_api_version === undefined) {
+    // Send a message to get the extension to JS API version, then send the actual sign request.
+    u2f.getApiVersion(
+        function (response) {
+          js_api_version = response['js_api_version'] === undefined ? 0 : response['js_api_version'];
+          console.log("Extension JS API Version: ", js_api_version);
+          u2f.sendSignRequest(appId, challenge, registeredKeys, callback, opt_timeoutSeconds);
+        });
+  } else {
+    // We know the JS API version. Send the actual sign request in the supported API version.
+    u2f.sendSignRequest(appId, challenge, registeredKeys, callback, opt_timeoutSeconds);
+  }
+};
+
+/**
+ * Dispatches an array of sign requests to available U2F tokens.
+ * @param {string=} appId
+ * @param {string=} challenge
+ * @param {Array<u2f.RegisteredKey>} registeredKeys
+ * @param {function((u2f.Error|u2f.SignResponse))} callback
+ * @param {number=} opt_timeoutSeconds
+ */
+u2f.sendSignRequest = function(appId, challenge, registeredKeys, callback, opt_timeoutSeconds) {
   u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
     var request;
-    if (JS_API_VERSION === undefined || JS_API_VERSION < 1.1) {
+    if (js_api_version === undefined || js_api_version < 1.1) {
       // Adapt request to the 1.0 JS API
       var signRequests = [];
       for (var i = 0; i < registeredKeys.length; i++) { 
@@ -437,10 +461,12 @@ u2f.sign = function(appId, challenge, registeredKeys, callback, opt_timeoutSecon
   });
 };
 
-
 /**
  * Dispatches register requests to available U2F tokens. An array of sign
  * requests identifies already registered tokens.
+ * If the JS API version supported by the extension is not known, it first sends a
+ * message to the extension to find out the supported API version and then it sends
+ * the register request.
  * @param {string=} appId
  * @param {Array<u2f.RegisterRequest>} registerRequests
  * @param {Array<u2f.RegisteredKey>} registeredKeys
@@ -451,13 +477,38 @@ u2f.sign = function(appId, challenge, registeredKeys, callback, opt_timeoutSecon
  */
 u2f.register = function(appId, registerRequests, registeredKeys,
     callback, opt_timeoutSeconds) {
-	JS_API_VERSION = 1;
-  console.log("JS_API_VERSION: " + JS_API_VERSION);
+  if (js_api_version === undefined) {
+    // Send a message to get the extension to JS API version, then send the actual register request.
+    u2f.getApiVersion(
+        function (response) {
+          js_api_version = response['js_api_version'] === undefined ? 0: response['js_api_version'];
+          console.log("Extension JS API Version: ", js_api_version);
+          u2f.sendRegisterRequest(appId, registerRequests, registeredKeys,
+              callback, opt_timeoutSeconds);
+        });
+  } else {
+    // We know the JS API version. Send the actual register request in the supported API version.
+    u2f.sendRegisterRequest(appId, registerRequests, registeredKeys,
+        callback, opt_timeoutSeconds);
+  }
+};
+
+/**
+ * Dispatches register requests to available U2F tokens. An array of sign
+ * requests identifies already registered tokens.
+ * @param {string=} appId
+ * @param {Array<u2f.RegisterRequest>} registerRequests
+ * @param {Array<u2f.RegisteredKey>} registeredKeys
+ * @param {function((u2f.Error|u2f.RegisterResponse))} callback
+ * @param {number=} opt_timeoutSeconds
+ */
+u2f.sendRegisterRequest = function(appId, registerRequests, registeredKeys,
+    callback, opt_timeoutSeconds) {
   u2f.getPortSingleton_(function(port) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
     var request;
-    if (JS_API_VERSION === undefined || JS_API_VERSION < 1.1) {
+    if (js_api_version === undefined || js_api_version < 1.1) {
       // Adapt request to the 1.0 JS API
       for (var i = 0; i < registerRequests.length; i++) { 
         registerRequests[i].appId = appId;

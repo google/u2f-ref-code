@@ -7,16 +7,14 @@
 package com.google.u2f.tools.httpserver.servlets;
 
 import java.io.PrintStream;
-import java.util.List;
 
 import org.simpleframework.http.Request;
 import org.simpleframework.http.Response;
 import org.simpleframework.http.Status;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.u2f.server.U2FServer;
-import com.google.u2f.server.messages.SignRequest;
+import com.google.u2f.server.messages.U2fSignRequest;
 
 public class SignDataServlet extends JavascriptServlet {
 
@@ -34,18 +32,11 @@ public class SignDataServlet extends JavascriptServlet {
       return;
     }
 
-    List<SignRequest> signRequests = u2fServer.getSignRequest(userName, "http://localhost:8080");
-    JsonArray result = new JsonArray();
-
-    for (SignRequest signRequest : signRequests) {
-      JsonObject signServerData = new JsonObject();
-      signServerData.addProperty("appId", signRequest.getAppId());
-      signServerData.addProperty("challenge", signRequest.getChallenge());
-      signServerData.addProperty("version", signRequest.getVersion());
-      signServerData.addProperty("sessionId", signRequest.getSessionId());
-      signServerData.addProperty("keyHandle", signRequest.getKeyHandle());
-      result.add(signServerData);
-    }
+    U2fSignRequest signRequest = u2fServer.getSignRequest(userName, "http://localhost:8080");
+    JsonObject result = new JsonObject();
+    result.addProperty("challenge", signRequest.getChallenge());
+    result.addProperty("appId", "http://localhost:8080");
+    result.add("registeredKeys", signRequest.getRegisteredKeysAsJson());
 
     body.println("var signData = " + result.toString() + ";");
   }

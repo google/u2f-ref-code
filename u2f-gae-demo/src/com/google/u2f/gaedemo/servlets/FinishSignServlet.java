@@ -25,8 +25,6 @@ import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SignSessionData;
 import com.google.u2f.server.messages.SignResponse;
 
-import org.apache.commons.codec.binary.Base64;
-
 @SuppressWarnings("serial")
 @Singleton
 public class FinishSignServlet extends HttpServlet {
@@ -59,12 +57,12 @@ public class FinishSignServlet extends HttpServlet {
 
 
     SignResponse signResponse = new SignResponse(
-        req.getParameter("clientData"),
+        req.getParameter("keyHandle"),
         req.getParameter("signatureData"),
-        Base64.encodeBase64URLSafeString(sessionData.getChallenge()),
-        req.getParameter("sessionId"),
-        sessionData.getAppId());
-
+        req.getParameter("clientData"),
+        req.getParameter("sessionId")
+        );
+    
     SecurityKeyData securityKeyData;
     try {
       securityKeyData = u2fServer.processSignResponse(signResponse);

@@ -12,8 +12,8 @@ import com.google.u2f.U2FException;
 import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.messages.RegistrationRequest;
 import com.google.u2f.server.messages.RegistrationResponse;
-import com.google.u2f.server.messages.SignRequest;
 import com.google.u2f.server.messages.SignResponse;
+import com.google.u2f.server.messages.U2fSignRequest;
 
 public interface U2FServer {
 
@@ -24,7 +24,7 @@ public interface U2FServer {
       long currentTimeInMillis) throws U2FException;
 
   // authentication //
-  public List<SignRequest> getSignRequest(String accountName, String appId) throws U2FException;
+  public U2fSignRequest getSignRequest(String accountName, String appId) throws U2FException;
 
   public SecurityKeyData processSignResponse(SignResponse signResponse) throws U2FException;
 

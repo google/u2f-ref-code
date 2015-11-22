@@ -6,115 +6,115 @@
  */
 
 body {
-	font-family: Arial,sans-serif;
-	color: #222;
-	margin: 0;
-	padding: 0;
-	border: 0;
-	background: #f7f7f7;
-	overflow: hidden;
-	padding-top: 77px;
+  font-family: Arial,sans-serif;
+  color: #222;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #f7f7f7;
+  overflow: hidden;
+  padding-top: 77px;
 }
 
 h1 {
-	font-size: 120%;
+  font-size: 120%;
   font-weight: normal;
   margin-top: 20px;
 }
 
 #header {
-	position: absolute;
-	top: 0px;
-	width: 100%;
-	
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  
 }
 
 #main {
-	height: 100%;
+  height: 100%;
   padding-left: 45px;
   overflow: scroll;
 }
 
 #gc-googlebar {
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-	min-width: 952px;
-	width: auto !important;
-	width: 952px;
-	position: relative;
-	background: #f1f1f1;
-	border-bottom: 1px solid #e5e5e5;
-	height: 77px;
-	margin: 0;
-	overflow: hidden;
-	padding: 24px 44px;
-	color: rgba(255,255,255,0.5);
-	box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.32);
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  min-width: 952px;
+  width: auto !important;
+  width: 952px;
+  position: relative;
+  background: #f1f1f1;
+  border-bottom: 1px solid #e5e5e5;
+  height: 77px;
+  margin: 0;
+  overflow: hidden;
+  padding: 24px 44px;
+  color: rgba(255,255,255,0.5);
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.32);
 }
 
 #gc-googlebar .gc-social {
-	float: right;
-	font-size: 12px;
-	margin-top: -1px;
+  float: right;
+  font-size: 12px;
+  margin-top: -1px;
 }
 
 #gc-googlebar .signed-in>div {
-	float: left;
+  float: left;
 }
 
 #gc-googlebar .signed-in a, 
 #gc-googlebar .signed-in a:visited {
-	display: block;
-	text-align: right;
-	line-height: 140%;
-	color: #808080;
+  display: block;
+  text-align: right;
+  line-height: 140%;
+  color: #808080;
 }
 
 #gc-googlebar .gc-social .email {
-	font-weight: bold;
-	color: #777;
+  font-weight: bold;
+  color: #777;
 }
 
 #gc-googlebar .signed-in a {
-	text-decoration: none;
+  text-decoration: none;
 }
 
 #gc-googlebar .gc-social img {
-	vertical-align: middle;
-	border: 1px solid #acacac;
-	margin-left: 8px;
-	-webkit-border-radius: 16px;
-	-moz-border-radius: 16px;
-	-ms-border-radius: 16px;
-	-o-border-radius: 16px;
-	border-radius: 16px;
-	width: 30px;
-	height: 30px;
+  vertical-align: middle;
+  border: 1px solid #acacac;
+  margin-left: 8px;
+  -webkit-border-radius: 16px;
+  -moz-border-radius: 16px;
+  -ms-border-radius: 16px;
+  -o-border-radius: 16px;
+  border-radius: 16px;
+  width: 30px;
+  height: 30px;
 }
 
 #gc-googlebar .title {
-	color: #222;
-	float: left;
-	font-size: 188%;
+  color: #222;
+  float: left;
+  font-size: 188%;
 }
 
 .card {
-	width: 500px;
+  width: 500px;
   margin: 20px 40px 20px 0;
-	box-shadow: 0px 0.5px 4px #aaaaaa;;
-	background: #fff;
-	display: inline-block;
-	overflow: hidden;
+  box-shadow: 0px 0.5px 4px #aaaaaa;
+  background: #fff;
+  display: inline-block;
+  overflow: hidden;
 }
 
 .highlight {
-	background-color: #83FF83;
+  background-color: #83FF83;
 }
 
 .cardTitle {
-	height: 29px;
-	font-size: 115%;
+  height: 29px;
+  font-size: 115%;
   background: #EBEBEB;
   padding-left: 25px;
   padding-top: 10px;
@@ -122,66 +122,66 @@ h1 {
 }
 
 .removeCardButton {
-	margin: 10px 20px;
+  margin: 10px 20px;
   font-weight: bold;
   font-size: 90%;
 }
 
 .card .buttonBar {
   bottom: 0px;
-	position: relative;
+  position: relative;
   background: rgba(233, 233, 233, 0.9);
   height: 50px;
 }
 
 #dismissErrorButton {
-	background-image: url('/img/cross.png');
-	width: 30px;
-	height: 30px;
-	background-repeat: no-repeat;
-	background-position-y: 0;
-	background-position-x: 0;
-	border-radius: 50%;
-	float: right;
-	top: -36px;
-	right: 8;
-	background-color: rgba(255, 195, 195, 0);
-	border-width: 0px;
-	opacity: 0.6;
+  background-image: url('/img/cross.png');
+  width: 30px;
+  height: 30px;
+  background-repeat: no-repeat;
+  background-position-y: 0;
+  background-position-x: 0;
+  border-radius: 50%;
+  float: right;
+  top: -36px;
+  right: 8;
+  background-color: rgba(255, 195, 195, 0);
+  border-width: 0px;
+  opacity: 0.6;
 }
 
 #addToken, #testAuth {
-	margin-top: 25px;
-	width: 197px;
-	font-size: 90%;
-	box-shadow: 0 1px 6px rgba(0,0,0,0.13);
+  margin-top: 25px;
+  width: 197px;
+  font-size: 90%;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.13);
 }
 
 #testAuth {
-	padding: 8px 0 8px 0;
-	margin-top: 40px;
+  padding: 8px 0 8px 0;
+  margin-top: 40px;
 }
 
 #sidebar label {
-	font-size: 90%;
-	display: inline-block;
-	margin-top: 6px;
-	color: #F7F7F7;
-	font-weight: normal;
+  font-size: 90%;
+  display: inline-block;
+  margin-top: 6px;
+  color: #F7F7F7;
+  font-weight: normal;
 }
 
 .cardContent {
-	padding: 25px;
+  padding: 25px;
 }
 
 .cardLabel {
   color: #5F5F5F;
-	margin-top: 10px;
-	font-size: 90%;
+  margin-top: 10px;
+  font-size: 90%;
 }
 
 .issuer {
-	font-size: 120%;
+  font-size: 120%;
 }
 
 .enrollmentTime, .transports {
@@ -191,21 +191,21 @@ h1 {
 }
 
 .keyHandle, .publicKey {
-	font-family: monospace;
-	word-wrap: break-word;
-	color: #9E9E9E;
+  font-family: monospace;
+  word-wrap: break-word;
+  color: #9E9E9E;
 }
 
 #errormessage {
-	height: 30px;
+  height: 30px;
   width: 100%;
   background: rgb(255, 170, 166);
   padding: 10px 40px 0px 40px;
 }
 
 #errorbox {
-	height: 40px;
-	overflow: hidden;
+  height: 40px;
+  overflow: hidden;
   transition: height 0.5s;
 }
 
@@ -231,30 +231,30 @@ h1 {
 }
 
 #sidebar {
-	float: left;
-	width: 200px;
-	background-color: #4285F4;
-	padding: 25px 10px;
-	height: 100%;
-	overflow-y: hidden;
+  float: left;
+  width: 200px;
+  background-color: #4285F4;
+  padding: 25px 10px;
+  height: 100%;
+  overflow-y: hidden;
 }
 
 #downloadCrx {
-	position: absolute;
-	bottom: 0%;
-	width: 200px;
-	font-size: 90%;
-	margin-bottom: 20px;	
+  position: absolute;
+  bottom: 0%;
+  width: 200px;
+  font-size: 90%;
+  margin-bottom: 20px;  
 }
 
 #downloadCrx a:link, a:hover, a:visited {
-	color: #fff;
-	text-decoration: none;
+  color: #fff;
+  text-decoration: none;
 }
 
 #downloadCrx a {
-	display: block;
-	margin-top: 20px;
+  display: block;
+  margin-top: 20px;
 }
 
 #downloadCrx a:hover {

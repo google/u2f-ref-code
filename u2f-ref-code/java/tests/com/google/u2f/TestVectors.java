@@ -330,6 +330,8 @@ public class TestVectors {
   protected static final byte[] KEY_HANDLE_2 = parseHex(
       "3c2415e1760d1108105720c6069a9039c99d09f76909c36d9efc35093731f85f"
           + "55ac6d73ea69de7d9005ae9507b95e149e19676272fc202d949a3ab151b96870");
+  protected static final String KEY_HANDLE_2_BASE64 =
+      Base64.encodeBase64URLSafeString(KEY_HANDLE_2);
   protected static final byte[] USER_PUBLIC_KEY_2 = parseHex(
       "04478e16bbdbbb741a660a000314a8b6bd63095196ed704c52eebc0fa02a618f"
           + "19ff59df18451a11cee43defd9a29b5710f63dfc671f752b1b0c6ca76c8427af"

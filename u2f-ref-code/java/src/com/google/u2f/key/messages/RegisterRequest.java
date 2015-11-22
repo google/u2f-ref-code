@@ -7,6 +7,7 @@
 package com.google.u2f.key.messages;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class RegisterRequest extends U2FRequest {
   private final byte[] challengeSha256;
@@ -38,11 +39,7 @@ public class RegisterRequest extends U2FRequest {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + Arrays.hashCode(applicationSha256);
-    result = prime * result + Arrays.hashCode(challengeSha256);
-    return result;
+    return Objects.hash(applicationSha256, challengeSha256);
   }
 
   @Override
@@ -54,10 +51,7 @@ public class RegisterRequest extends U2FRequest {
     if (getClass() != obj.getClass())
       return false;
     RegisterRequest other = (RegisterRequest) obj;
-    if (!Arrays.equals(applicationSha256, other.applicationSha256))
-      return false;
-    if (!Arrays.equals(challengeSha256, other.challengeSha256))
-      return false;
-    return true;
+    return Arrays.equals(applicationSha256, other.applicationSha256)
+        && Arrays.equals(challengeSha256, other.challengeSha256);
   }
 }

@@ -6,6 +6,8 @@
 
 package com.google.u2f.client.impl;
 
+import java.util.List;
+
 import org.apache.commons.codec.binary.Base64;
 
 import com.google.gson.JsonObject;
@@ -24,9 +26,10 @@ import com.google.u2f.key.messages.AuthenticateResponse;
 import com.google.u2f.key.messages.RegisterRequest;
 import com.google.u2f.key.messages.RegisterResponse;
 import com.google.u2f.server.U2FServer;
+import com.google.u2f.server.messages.RegisteredKey;
 import com.google.u2f.server.messages.RegistrationRequest;
 import com.google.u2f.server.messages.RegistrationResponse;
-import com.google.u2f.server.messages.SignRequest;
+import com.google.u2f.server.messages.U2fSignRequest;
 import com.google.u2f.server.messages.SignResponse;
 
 public class U2FClientReferenceImpl implements U2FClient {
@@ -81,15 +84,14 @@ public class U2FClientReferenceImpl implements U2FClient {
 
   @Override
   public void authenticate(String origin, String accountName) throws U2FException {
+    U2fSignRequest signRequest = server.getSignRequest(accountName, origin);
 
-    // the key can be used to sign any of the requests - we're gonna sign the first one.
-    SignRequest signRequest = server.getSignRequest(accountName, origin).get(0);
-
-    String version = signRequest.getVersion();
-    String appId = signRequest.getAppId();
     String serverChallengeBase64 = signRequest.getChallenge();
-    String keyHandleBase64 = signRequest.getKeyHandle();
-    String sessionId = signRequest.getSessionId();
+    List<RegisteredKey> registeredKeys = signRequest.getRegisteredKeys();
+    String version = registeredKeys.get(0).getVersion();
+    String appId = registeredKeys.get(0).getAppId();
+    String keyHandleBase64 = registeredKeys.get(0).getKeyHandle();
+    String sessionId = registeredKeys.get(0).getSessionId();
 
     if (!version.equals(U2FConsts.U2F_V2)) {
       throw new U2FException(String.format("Unsupported protocol version: %s", version));
@@ -105,7 +107,6 @@ public class U2FClientReferenceImpl implements U2FClient {
     byte[] clientDataSha256 = crypto.computeSha256(clientData);
     byte[] appIdSha256 = crypto.computeSha256(appId);
     byte[] keyHandle = Base64.decodeBase64(keyHandleBase64);
-
     AuthenticateResponse authenticateResponse = key.authenticate(new AuthenticateRequest(
         UserPresenceVerifier.USER_PRESENT_FLAG, clientDataSha256, appIdSha256, keyHandle));
 
@@ -113,7 +114,7 @@ public class U2FClientReferenceImpl implements U2FClient {
     String rawAuthenticateResponse64 = Base64.encodeBase64URLSafeString(rawAuthenticateResponse);
     String clientDataBase64 = Base64.encodeBase64URLSafeString(clientData.getBytes());
 
-    server.processSignResponse(new SignResponse(clientDataBase64, rawAuthenticateResponse64,
-        serverChallengeBase64, sessionId, appId));
+    server.processSignResponse(
+        new SignResponse(keyHandleBase64, rawAuthenticateResponse64, clientDataBase64, sessionId));
   }
 }

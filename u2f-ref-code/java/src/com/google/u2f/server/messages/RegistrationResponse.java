@@ -6,19 +6,21 @@
 
 package com.google.u2f.server.messages;
 
+import java.util.Objects;
+
 public class RegistrationResponse {
   /** websafe-base64(raw registration response message) */
   private final String registrationData;
 
   /** websafe-base64(UTF8(stringified(client data))) */
-  private final String bd;
+  private final String clientData;
 
   /** session id originally passed */
   private final String sessionId;
 
-  public RegistrationResponse(String registrationData, String bd, String sessionId) {
+  public RegistrationResponse(String registrationData, String clientData, String sessionId) {
     this.registrationData = registrationData;
-    this.bd = bd;
+    this.clientData = clientData;
     this.sessionId = sessionId;
   }
 
@@ -26,8 +28,8 @@ public class RegistrationResponse {
     return registrationData;
   }
 
-  public String getBd() {
-    return bd;
+  public String getClientData() {
+    return clientData;
   }
 
   public String getSessionId() {
@@ -36,12 +38,7 @@ public class RegistrationResponse {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((bd == null) ? 0 : bd.hashCode());
-    result = prime * result + ((registrationData == null) ? 0 : registrationData.hashCode());
-    result = prime * result + ((sessionId == null) ? 0 : sessionId.hashCode());
-    return result;
+    return Objects.hash(registrationData, clientData, sessionId);
   }
 
   @Override
@@ -53,10 +50,10 @@ public class RegistrationResponse {
     if (getClass() != obj.getClass())
       return false;
     RegistrationResponse other = (RegistrationResponse) obj;
-    if (bd == null) {
-      if (other.bd != null)
+    if (clientData == null) {
+      if (other.clientData != null)
         return false;
-    } else if (!bd.equals(other.bd))
+    } else if (!clientData.equals(other.clientData))
       return false;
     if (registrationData == null) {
       if (other.registrationData != null)

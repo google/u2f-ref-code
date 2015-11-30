@@ -24,8 +24,16 @@ flag arg_Pause = flagOFF;
 flag arg_Abort = flagON;
 cmd_apdu_type cmd_apdu;
 
+//Chaining Blocksize frpm reader - Le
+static uint16_t blockSize = 256;
+
 //Shared between PC/SC Card Access Routines
 static SCARDHANDLE hCard;
+
+void setChainingLc(uint16_t size){
+  blockSize = (size<=256?size:256);
+}
+
 
 static void pausePrompt(const char* prompt) {
   printf("\n%s", prompt);
@@ -109,8 +117,11 @@ void  printCmdAPDU(uint8_t apduin[], ulong lenin){
     printf("p1:%02X ", apduin[P1]);
     printf("p2:%02X\n", apduin[P2]);
     printf("Lc: %u(0x%04X) ", Lc, Lc);
-    printf("Le: %u(0x%04X)\n", Le, Le);
-
+    printf("Le: %u(0x%04X)", Le, Le);
+    if(Le ==0){
+      printf("(Le=256)");
+    }
+    printf("\n");
     for (i = 0; i < Lc; i++) {
       printf("%02X", apduin[i+DataOffset]);
       if( ((i & 0xf) == 0xf) || (i==Lc-1)){
@@ -127,10 +138,7 @@ void printRespAPDU( uint8_t apduin[], ulong lenin){
   ulong i;
   if(log_Apdu == flagON){
     printf("Response APDU, Length: %lu(0x%04lX)\n", lenin, lenin);
-    if((lenin > 255)  && (cmd_apdu == SHORT_APDU)){
-      printf("!! ERROR !!, Extended Response to Short APDU Input\n");
-    }
-
+    printf("Status=>%02X:%02X\n", apduin[lenin-2],apduin[lenin-1] );
     for (i = 0; i < lenin-2; i++) {
       printf("%02X", apduin[i]);
       if( (i & 0xf) == 0xf){
@@ -140,13 +148,7 @@ void printRespAPDU( uint8_t apduin[], ulong lenin){
         printf(":");
       }
     }
-    if(lenin >= 2){
-      printf("\nStatus=>%02X:%02X\n", apduin[lenin-2],apduin[lenin-1] );
-      if((apduin[lenin-2] == 0x61)  && (cmd_apdu == EXTENDED_APDU)){
-        printf("!! ERROR !!, DATA AVAILABLE (Chained) Response to Extended APDU Input\n");
-      }
-    }
-    printf("\n");
+  printf("\n");
   }
 }
 
@@ -179,13 +181,12 @@ void dumpHex(const char *descr, uint8_t *buf, int bcnt)
   }
 }
 
-#define CHUNK_SIZE  240
 
-uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *data, uint *rapduLen, void *rapdu )
+uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *data, uint *rapduLen, void *rapdu)
 {
-  uint8_t capdu[1000];
+  uint8_t capdu[APDU_BUFFER_SIZE];
   uint8_t *dp = (uint8_t *) data;
-  uint8_t rapduBuf[260];
+  uint8_t rapduBuf[APDU_BUFFER_SIZE];
   ulong rlen;
   long rc;
   uint len;
@@ -200,16 +201,16 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *da
 
   for (;;) {
     capdu[CLA] = (uint8_t) (cla & 0xff);
-    if (lc > CHUNK_SIZE) cla |= 0x10;
+    if (lc > blockSize) cla |= 0x10;
     if (lc) {
-      capdu[LC] = (lc > CHUNK_SIZE) ? CHUNK_SIZE : lc;
+      capdu[LC] = (lc > blockSize) ?blockSize : lc;
       memcpy((void*)&capdu[DATA_NON_EXTENDED], (const void *) dp, (size_t)capdu[LC]);
-      capdu[DATA_NON_EXTENDED+capdu[LC]] = 0; //CHUNK_SIZE; // Insert Le
+      capdu[DATA_NON_EXTENDED+capdu[LC]] = (blockSize==256?0:blockSize); 
       len = 6 + capdu[LC];
-      dp += CHUNK_SIZE;
+      dp += blockSize;
       lc -= capdu[LC];
     } else {
-      capdu[LC] = 0; // CHUNK_SIZE;    // Insert Le
+      capdu[LC] = (blockSize==256?0:blockSize); 
       len = 5;
     }
 
@@ -220,6 +221,10 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *da
       NULL, rapduBuf, &rlen);
     if (!check("SCardTransmit (1)", rc)) return PCSC_ERROR;
     printRespAPDU(rapduBuf, rlen);
+    if(rlen > (ulong)(blockSize) + 2){
+      printf("!! ERROR !!, Response Longer than Le (Extended Response to Short APDU Input?) \n");
+      return SW_ERROR_ANY;
+    }
 
 
     if (!lc) break;
@@ -259,13 +264,17 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *da
     capdu[1] = 0xc0;
     capdu[2] = 0;
     capdu[3] = 0;
-    capdu[4] = CHUNK_SIZE;
+    capdu[4] = (uint8_t)(blockSize==256?0:blockSize);
 
     rlen = sizeof(rapduBuf);
     printCmdAPDU(capdu, 5);
     rc = SCardTransmit(hCard, SCARD_PCI_T1, (uint8_t *) &capdu, 5, NULL, rapduBuf, &rlen);
-    if (!check("SCardTransmit (2)", rc)) return PCSC_ERROR;
+    if (!check("SCardTransmit (2)", rc)) {return PCSC_ERROR;}
     printRespAPDU(rapduBuf, rlen);
+    if(rlen > (ulong)(blockSize) + 2) {
+      printf("!! ERROR !!, Response Longer than Le (Extended Response to Short APDU Input?) \n");
+      return SW_ERROR_ANY;
+    }
   }
 
   *rapduLen = len;
@@ -286,7 +295,7 @@ void getRandom(uint8_t *buf, size_t size)
 
 uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void *data, uint *rapduLen, void *rapdu )
 {
-  uint8_t capdu[1000];
+  uint8_t capdu[APDU_BUFFER_SIZE];
   ulong rlen = *rapduLen + 2; //Add Buffer for Status
   ulong len;
   long rc;
@@ -307,15 +316,18 @@ uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void 
   capdu[8+lc]=(uint8_t) (*rapduLen & 0xff);
   len = lc+9;
 
-
-
   printCmdAPDU(capdu, len);
   rc = SCardTransmit(hCard, SCARD_PCI_T1, capdu, len, NULL, (uint8_t*) rapdu, &rlen );
   if (!check("SCardTransmit (3)", rc)) return PCSC_ERROR;
   printRespAPDU((uint8_t*) rapdu, rlen);
-
+ 
+  if(rlen >= 2){
+    if(((uint8_t*)rapdu)[rlen-2] == 0x61){
+      printf("!! ERROR !!, DATA AVAILABLE (Chained) Response to Extended APDU Input\n");
+      return SW_ERROR_ANY;
+    }
+  }
   *rapduLen = rlen-2;
-
   sw12 = (int) (((uint8_t*)rapdu)[rlen-2] << 8) | ((uint8_t*)rapdu)[rlen-1];
   return sw12;
 }

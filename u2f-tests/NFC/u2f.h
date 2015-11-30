@@ -21,13 +21,16 @@ typedef unsigned int      uint32_t;
 typedef unsigned int  uint;
 typedef unsigned long ulong;
 
-//define ourselves to pass between C++ / C as MSCV c doesn't support bool
+//define ourselves to pass between C++ / C as MSVC c doesn't support bool
 typedef enum {flagOFF = 0, flagON} flag;
 
 // General U2F constants
 #define MAX_ECDSA_SIG_SIZE  72  // asn1 DER format
-#define MAX_KH_SIZE  128  // key handle
-#define MAX_CERT_SIZE  2048  // attestation certificate
+#define MIN_KH_SIZE  32
+#define MAX_KH_SIZE  255        // key handle
+#define MAX_CERT_SIZE  2048     // attestation certificate
+
+#define APDU_BUFFER_SIZE 5000
 
 #define U2F_APPID_SIZE  32
 #define U2F_NONCE_SIZE  32
@@ -37,11 +40,11 @@ typedef enum {flagOFF = 0, flagON} flag;
 #define U2F_INS_AUTHENTICATE  0x02
 
 // U2F_REGISTER instruction defines
-#define U2F_REGISTER_ID  0x05  // magic constant
+#define U2F_REGISTER_ID  0x05       // magic constant
 #define U2F_REGISTER_HASH_ID  0x00  // magic constant
 
 // Authentication parameter byte
-#define U2F_AUTH_ENFORCE  0x03  // Require user presence
+#define U2F_AUTH_ENFORCE  0x03     // Require user presence
 #define U2F_AUTH_CHECK_ONLY  0x07  // Test but do not consume
 
 #define U2F_CTR_SIZE            4       // Size of counter field
@@ -69,7 +72,7 @@ typedef enum {flagOFF = 0, flagON} flag;
                        _a < _b ? _a : _b; })
 #endif
 
-#define CHECK_INFO __FUNCTION__ << "[" << __LINE__ << "]:"
+#define CHECK_INFO "FILE:" << __FILE__ " FUNCTION:" << __FUNCTION__ << " LINE:" << __LINE__ << "\n"
 
 #ifdef _MSC_VER //ANSI codes are a pain on PC
 #define CHECK_EQ(a,b) do { if ((a)!=(b)) { std::cerr << "CHECK_EQ fail at " << CHECK_INFO#a << " != "#b << ":"; AbortOrNot(); }} while(0)

@@ -23,6 +23,7 @@ extern "C" uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, con
 extern "C" uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void *data, uint *rapduLen, void *rapdu );
 extern "C" void AbortOrNot(void);
 extern "C" void checkPause(const char* prompt);
+extern "C" void setChainingLc(uint16_t size);
 
 //Global Variables from u2f_nfc_utils
 extern "C" flag log_Apdu;
@@ -40,7 +41,7 @@ U2F_AUTHENTICATE_RESP authRsp;
 void test_Enroll(cmd_apdu_type cmd_apdu_in, uint expectedSW12 = 0x9000) {
 
   uint rspLen = sizeof(U2F_REGISTER_RESP);
-  uint8_t rsp[MAX_RESP_APDU_SIZE];
+  uint8_t rsp[APDU_BUFFER_SIZE];
 
   // pick random origin and challenge.
   for (size_t i = 0; i < sizeof(regReq.nonce); ++i)
@@ -73,7 +74,7 @@ void test_Enroll(cmd_apdu_type cmd_apdu_in, uint expectedSW12 = 0x9000) {
 uint test_Sign(cmd_apdu_type cmd_apdu_in, uint expectedSW12 = 0x9000, bool checkOnly = false) {
 
   uint rspLen = sizeof(U2F_AUTHENTICATE_RESP);
-  uint8_t rsp[MAX_RESP_APDU_SIZE];
+  uint8_t rsp[APDU_BUFFER_SIZE];
 
   // pick random challenge and use registered appId.
   for (size_t i = 0; i < sizeof(authReq.nonce); ++i)
@@ -115,7 +116,7 @@ int main(int argc, char* argv[]) {
 
   //Allocate buffers for response APDU
   uint rapduLen = 0;
-  uint8_t rapdu[MAX_RESP_APDU_SIZE];
+  uint8_t rapdu[APDU_BUFFER_SIZE];
   uint32_t ctr;
 
   while (--argc > 0) {
@@ -168,10 +169,18 @@ int main(int argc, char* argv[]) {
   CHECK_EQ(0x6700u, xchgAPDUShort( 0, U2F_INS_REGISTER, 0, 0, 0, "", &rapduLen, rapdu));
   CHECK_EQ(0, rapduLen);
 
+  setChainingLc(256);
   cout << "Valid U2F_REGISTER, Short APDU\n";
   PASS(test_Enroll(SHORT_APDU, 0x9000u));
   cout << "Check the Signature\n";
   PASS(enrollCheckSignature( regReq , regRsp));
+
+  setChainingLc(100);
+  cout << "Valid U2F_REGISTER, Short APDU, Change BlockSize\n";
+  PASS(test_Enroll(SHORT_APDU, 0x9000u));
+  cout << "Check the Signature\n";
+  PASS(enrollCheckSignature( regReq , regRsp));
+  setChainingLc(256);
 
   cout << "Valid U2F_REGISTER, Extended APDU\n";
   PASS(test_Enroll(EXTENDED_APDU, 0x9000u));

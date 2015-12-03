@@ -24,14 +24,14 @@ flag arg_Pause = flagOFF;
 flag arg_Abort = flagON;
 cmd_apdu_type cmd_apdu;
 
-//Chaining Blocksize frpm reader - Le
+//Chaining Blocksize from reader - Le
 static uint16_t blockSize = 256;
 
 //Shared between PC/SC Card Access Routines
 static SCARDHANDLE hCard;
 
 void setChainingLc(uint16_t size){
-  blockSize = (size<=256?size:256);
+  blockSize = ( size <= 256 ? size : 256);
 }
 
 
@@ -118,7 +118,7 @@ void  printCmdAPDU(uint8_t apduin[], ulong lenin){
     printf("p2:%02X\n", apduin[P2]);
     printf("Lc: %u(0x%04X) ", Lc, Lc);
     printf("Le: %u(0x%04X)", Le, Le);
-    if(Le ==0){
+    if(Le == 0){
       printf("(Le=256)");
     }
     printf("\n");
@@ -203,14 +203,14 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *da
     capdu[CLA] = (uint8_t) (cla & 0xff);
     if (lc > blockSize) cla |= 0x10;
     if (lc) {
-      capdu[LC] = (lc > blockSize) ?blockSize : lc;
+      capdu[LC] = (lc > blockSize) ? blockSize : lc;
       memcpy((void*)&capdu[DATA_NON_EXTENDED], (const void *) dp, (size_t)capdu[LC]);
-      capdu[DATA_NON_EXTENDED+capdu[LC]] = (blockSize==256?0:blockSize); 
+      capdu[DATA_NON_EXTENDED+capdu[LC]] = (blockSize == 256 ? 0 : blockSize); 
       len = 6 + capdu[LC];
       dp += blockSize;
       lc -= capdu[LC];
     } else {
-      capdu[LC] = (blockSize==256?0:blockSize); 
+      capdu[LC] = ( blockSize == 256 ? 0 : blockSize); 
       len = 5;
     }
 
@@ -264,7 +264,7 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *da
     capdu[1] = 0xc0;
     capdu[2] = 0;
     capdu[3] = 0;
-    capdu[4] = (uint8_t)(blockSize==256?0:blockSize);
+    capdu[4] = (uint8_t)(blockSize == 256 ? 0 : blockSize);
 
     rlen = sizeof(rapduBuf);
     printCmdAPDU(capdu, 5);
@@ -321,7 +321,7 @@ uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void 
   if (!check("SCardTransmit (3)", rc)) return PCSC_ERROR;
   printRespAPDU((uint8_t*) rapdu, rlen);
  
-  if(rlen >= 2){
+  if(rlen >= 2) {
     if(((uint8_t*)rapdu)[rlen-2] == 0x61){
       printf("!! ERROR !!, DATA AVAILABLE (Chained) Response to Extended APDU Input\n");
       return SW_ERROR_ANY;

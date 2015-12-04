@@ -1,4 +1,4 @@
-//Based on code from Google & Yubico.
+// Based on code from Google & Yubico.
 
 #ifndef __U2F_UTIL_H_INCLUDED__
 #define __U2F_UTIL_H_INCLUDED__
@@ -21,8 +21,11 @@ extern "C" {
 #endif
 
 int U2FNFC_connect(void);
-uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *data, uint *rapduLen, void *rapdu );
-uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void *data, uint *rapduLen, void *rapdu );
+uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc,
+                   const void *data, uint *rapduLen, void *rapdu);
+
+uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc,
+                      const void *data, uint *rapduLen, void *rapdu);
 
 #ifdef __cplusplus
 }

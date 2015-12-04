@@ -1,4 +1,4 @@
-//Based on code from Google & Yubico.
+// Based on code from Google & Yubico.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,27 +17,26 @@
 #include <winscard.h>
 const char* printError(uint err);
 
-//Gloabl variables shared with top level routine
-flag log_Apdu =   flagOFF;   // default
+// Gloabl variables shared with top level routine
+flag log_Apdu = flagOFF;  // default
 flag log_Crypto = flagOFF;
 flag arg_Pause = flagOFF;
 flag arg_Abort = flagON;
 cmd_apdu_type cmd_apdu;
 
-//Chaining Blocksize from reader - Le
+// Chaining Blocksize from reader - Le
 static uint16_t blockSize = 256;
 
-//Shared between PC/SC Card Access Routines
+// Shared between PC/SC Card Access Routines
 static SCARDHANDLE hCard;
 
-void setChainingLc(uint16_t size){
+void setChainingLc(uint16_t size) {
   blockSize = ( size <= 256 ? size : 256);
 }
 
-
 static void pausePrompt(const char* prompt) {
   printf("\n%s", prompt);
-  fflush ( stdin );
+  fflush(stdin);
   getchar();
 }
 
@@ -45,66 +44,66 @@ void checkPause(const char* prompt) {
   if (arg_Pause) pausePrompt(prompt);
 }
 
-
 void AbortOrNot(void) {
   checkPause(arg_Abort==flagOFF?"\nHit Enter to Continue...":"\nHit Enter to Exit...");
   if (arg_Abort) exit(0);
   printf("%s","Continuing... (-a option)");
 }
 
-
-int check(const char *func, long rc)
-{
+int check(const char *func, long rc) {
   if (rc == SCARD_S_SUCCESS) return 1;
-  //Don't try to continue after PC/SC error
+  // Don't try to continue after PC/SC error
   printf("%s: PC/SC error %08lx:%s\n", func, rc, printError(rc));
   checkPause("Hit Enter to Exit...");
   exit(0);
 }
 
-void  printCmdAPDU(uint8_t apduin[], ulong lenin){
+void  printCmdAPDU(uint8_t apduin[], ulong lenin) {
   uint8_t i;
   uint Lc, Le, DataOffset;
   printf("\n");
-  if(log_Apdu == flagON){
-    //Determine case of Command APDU
-    if(lenin == 4){
+  if (log_Apdu == flagON) {
+    // Determine case of Command APDU
+    if (lenin == 4) {
       printf("Cmd APDU, Case 1\n");
       Lc = 0;
       Le = 0;
       DataOffset = 0;
     }
-    else if(lenin == 5){
+    else if (lenin == 5) {
       printf("Cmd APDU, Case 2S\n");
       Lc = 0;
       Le = (uint) apduin[4];
       DataOffset = 0;
     }
-    else if((lenin == (5u + apduin[4])) && (apduin[4] != 0)){
+    else if ((lenin == (5u + apduin[4])) && (apduin[4] != 0)) {
       printf("Cmd APDU, Case 3S\n");
       Lc = apduin[4];
       Le = 0;
       DataOffset = 5u;
     }
-    else if((lenin == (6u + apduin[4])) && (apduin[4] != 0)){
+    else if ((lenin == (6u + apduin[4])) && (apduin[4] != 0)) {
       printf("Cmd APDU, Case 4S\n");
       Lc = apduin[4];
       Le = apduin[lenin-1];
       DataOffset = 5;
     }
-    else if((lenin == 7u) && (apduin[4] == 0)){
+    else if ((lenin == 7u) && (apduin[4] == 0)) {
       printf("Cmd APDU, Case 2Extended\n");
       Lc = 0;
       Le = (uint) (apduin[5]*256u + apduin[6]);
       DataOffset = 0;
     }
-    else if((lenin ==  7u + ((uint) (apduin[5]*256 + apduin[6]))) && (apduin[4] == 0)){
+    else if ((lenin ==  7u + ((uint) (apduin[5]*256 + apduin[6]))) &&
+             (apduin[4] == 0)) {
+
       printf("Cmd APDU, Case 3Extended\n");
       Lc = (uint) (apduin[5]*256u + apduin[6]);
       Le = 0;
       DataOffset = 7;
     }
-    else if((lenin ==  9u + ((uint) (apduin[5]*256 + apduin[6]))) && (apduin[4] == 0)){
+    else if ((lenin ==  9u + ((uint) (apduin[5]*256 + apduin[6]))) &&
+             (apduin[4] == 0)) {
       printf("Cmd APDU, Case 4Extended\n");
       Lc = (uint) (apduin[5]*256 + apduin[6]);
       Le = (uint) 256u*apduin[lenin-2] +  apduin[lenin-1];
@@ -118,13 +117,13 @@ void  printCmdAPDU(uint8_t apduin[], ulong lenin){
     printf("p2:%02X\n", apduin[P2]);
     printf("Lc: %u(0x%04X) ", Lc, Lc);
     printf("Le: %u(0x%04X)", Le, Le);
-    if(Le == 0){
+    if (Le == 0) {
       printf("(Le=256)");
     }
     printf("\n");
     for (i = 0; i < Lc; i++) {
       printf("%02X", apduin[i+DataOffset]);
-      if( ((i & 0xf) == 0xf) || (i==Lc-1)){
+      if ( ((i & 0xf) == 0xf) || (i==Lc-1)) {
         printf("\n");
       }
       else{
@@ -134,27 +133,25 @@ void  printCmdAPDU(uint8_t apduin[], ulong lenin){
   }
 }
 
-void printRespAPDU( uint8_t apduin[], ulong lenin){
+void printRespAPDU( uint8_t apduin[], ulong lenin) {
   ulong i;
-  if(log_Apdu == flagON){
+  if (log_Apdu == flagON) {
     printf("Response APDU, Length: %lu(0x%04lX)\n", lenin, lenin);
     printf("Status=>%02X:%02X\n", apduin[lenin-2],apduin[lenin-1] );
     for (i = 0; i < lenin-2; i++) {
       printf("%02X", apduin[i]);
-      if( (i & 0xf) == 0xf){
+      if ( (i & 0xf) == 0xf) {
         printf("\n");
       }
       else{
         printf(":");
       }
     }
-  printf("\n");
+    printf("\n");
   }
 }
 
-
-void dumpHex(const char *descr, uint8_t *buf, int bcnt)
-{
+void dumpHex(const char *descr, uint8_t *buf, int bcnt) {
   int i, j;
   uint8_t *p = buf;
 
@@ -181,9 +178,8 @@ void dumpHex(const char *descr, uint8_t *buf, int bcnt)
   }
 }
 
-
-uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *data, uint *rapduLen, void *rapdu)
-{
+uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc,
+    const void *data, uint *rapduLen, void *rapdu) {
   uint8_t capdu[APDU_BUFFER_SIZE];
   uint8_t *dp = (uint8_t *) data;
   uint8_t rapduBuf[APDU_BUFFER_SIZE];
@@ -204,7 +200,9 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *da
     if (lc > blockSize) cla |= 0x10;
     if (lc) {
       capdu[LC] = (lc > blockSize) ? blockSize : lc;
-      memcpy((void*)&capdu[DATA_NON_EXTENDED], (const void *) dp, (size_t)capdu[LC]);
+      memcpy((void*)&capdu[DATA_NON_EXTENDED], (const void *) dp,
+          (size_t)capdu[LC]);
+
       capdu[DATA_NON_EXTENDED+capdu[LC]] = (blockSize == 256 ? 0 : blockSize); 
       len = 6 + capdu[LC];
       dp += blockSize;
@@ -221,7 +219,7 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *da
       NULL, rapduBuf, &rlen);
     if (!check("SCardTransmit (1)", rc)) return PCSC_ERROR;
     printRespAPDU(rapduBuf, rlen);
-    if(rlen > (ulong)(blockSize) + 2){
+    if (rlen > (ulong)(blockSize) + 2) {
       printf("!! ERROR !!, Response Longer than Le (Extended Response to Short APDU Input?) \n");
       return SW_ERROR_ANY;
     }
@@ -271,7 +269,7 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *da
     rc = SCardTransmit(hCard, SCARD_PCI_T1, (uint8_t *) &capdu, 5, NULL, rapduBuf, &rlen);
     if (!check("SCardTransmit (2)", rc)) {return PCSC_ERROR;}
     printRespAPDU(rapduBuf, rlen);
-    if(rlen > (ulong)(blockSize) + 2) {
+    if (rlen > (ulong)(blockSize) + 2) {
       printf("!! ERROR !!, Response Longer than Le (Extended Response to Short APDU Input?) \n");
       return SW_ERROR_ANY;
     }
@@ -282,19 +280,16 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc, const void *da
   return sw12;
 }
 
-void utilInit(void)
-{
+void utilInit(void) {
   srand((unsigned int) time(0));
 }
 
-void getRandom(uint8_t *buf, size_t size)
-{
+void getRandom(uint8_t *buf, size_t size) {
   while (size--) *buf++ = (uint8_t) rand();
 }
 
-
-uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void *data, uint *rapduLen, void *rapdu )
-{
+uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc,
+    const void *data, uint *rapduLen, void *rapdu ) {
   uint8_t capdu[APDU_BUFFER_SIZE];
   ulong rlen = *rapduLen + 2; //Add Buffer for Status
   ulong len;
@@ -321,8 +316,8 @@ uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void 
   if (!check("SCardTransmit (3)", rc)) return PCSC_ERROR;
   printRespAPDU((uint8_t*) rapdu, rlen);
  
-  if(rlen >= 2) {
-    if(((uint8_t*)rapdu)[rlen-2] == 0x61){
+  if (rlen >= 2) {
+    if (((uint8_t*)rapdu)[rlen-2] == 0x61) {
       printf("!! ERROR !!, DATA AVAILABLE (Chained) Response to Extended APDU Input\n");
       return SW_ERROR_ANY;
     }
@@ -332,8 +327,7 @@ uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc, const void 
   return sw12;
 }
 
-int U2FNFC_connect(void)
-{
+int U2FNFC_connect(void) {
   ulong dwActiveProtocol, dwRecvLength;
   uint8_t pbRecvBuffer[0x100];
   LPTSTR  pmszReaders = NULL;
@@ -373,8 +367,8 @@ int U2FNFC_connect(void)
   key = 10;
   while (key > 9 ) {
     key = getchar();
-     if(key >= '0' && key <= '9'){
-      if(readerNames[key-'0'] != 0){
+     if (key >= '0' && key <= '9') {
+      if (readerNames[key-'0'] != 0) {
         key = key - '0';
       }
     }
@@ -398,9 +392,8 @@ int U2FNFC_connect(void)
   return 0;
 }
 
-//Lookup PCSC error codes & display to user
-const char* printError(uint err)
-{
+// Lookup PCSC error codes & display to user
+const char* printError(uint err) {
   switch (err)
   {
     case SCARD_S_SUCCESS:return "OK";

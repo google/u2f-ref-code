@@ -19,7 +19,7 @@ typedef unsigned int      uint32_t;
 typedef unsigned int  uint;
 typedef unsigned long ulong;
 
-// Define ourselves to pass between C++ / C as MSCV c doesn't support bool
+// Define ourselves to pass between C++ / C as MSVC c doesn't support bool
 typedef enum {flagOFF = 0, flagON} flag;
 
 // General U2F constants

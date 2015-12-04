@@ -26,11 +26,10 @@ public class SignFinishServlet extends HtmlServlet {
   @Override
   public void generateBody(Request req, Response resp, PrintStream body) {
     SignResponse signResponse = new SignResponse(
-        req.getParameter("browserData"),
+        req.getParameter("keyHandle"),
         req.getParameter("signData"),
-        req.getParameter("challenge"),
-        req.getParameter("sessionId"),
-        req.getParameter("appId"));
+        req.getParameter("browserData"),
+        req.getParameter("sessionId"));
     try {
       u2fServer.processSignResponse(signResponse);
       body.println("Success!!!");

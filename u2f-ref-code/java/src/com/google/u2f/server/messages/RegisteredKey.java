@@ -6,18 +6,32 @@
 
 package com.google.u2f.server.messages;
 
+import java.util.List;
 import java.util.Objects;
 
-public class RegistrationRequest {
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.u2f.server.data.SecurityKeyData;
+import com.google.u2f.server.data.SecurityKeyData.Transports;
+
+public class RegisteredKey {
   /**
    * Version of the protocol that the to-be-registered U2F token must speak. For
    * the version of the protocol described herein, must be "U2F_V2"
    */
   private final String version;
 
-  /** The websafe-base64-encoded challenge. */
-  private final String challenge;
+  /**
+   * websafe-base64 encoding of the key handle obtained from the U2F token
+   * during registration.
+   */
+  private final String keyHandle;
 
+  /**
+   * 
+   */
+  private final List<Transports> transports;
   /**
    * The application id that the RP would like to assert. The U2F token will
    * enforce that the key handle provided above is associated with this
@@ -35,9 +49,12 @@ public class RegistrationRequest {
    */
   private final String sessionId;
 
-  public RegistrationRequest(String version, String challenge, String appId, String sessionId) {
+  public RegisteredKey(String version, String keyHandle, List<Transports> transports,
+      String appId, String sessionId) {
+    super();
     this.version = version;
-    this.challenge = challenge;
+    this.keyHandle = keyHandle;
+    this.transports = transports;
     this.appId = appId;
     this.sessionId = sessionId;
   }
@@ -46,12 +63,16 @@ public class RegistrationRequest {
     return version;
   }
 
-  public String getChallenge() {
-    return challenge;
+  public List<Transports> getTransports() {
+    return transports;
   }
-
+  
   public String getAppId() {
     return appId;
+  }
+
+  public String getKeyHandle() {
+    return keyHandle;
   }
 
   public String getSessionId() {
@@ -60,7 +81,7 @@ public class RegistrationRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(challenge, version, sessionId, appId);
+    return Objects.hash(version, keyHandle, transports, appId, sessionId);
   }
 
   @Override
@@ -71,10 +92,32 @@ public class RegistrationRequest {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    RegistrationRequest other = (RegistrationRequest) obj;
+    RegisteredKey other = (RegisteredKey) obj;
     return Objects.equals(version, other.version)
-        && Objects.equals(challenge, other.challenge)
+        && Objects.equals(keyHandle, other.keyHandle)
+        && SecurityKeyData.containSameTransports(transports, other.transports)
         && Objects.equals(appId, other.appId)
         && Objects.equals(sessionId, other.sessionId);
+  }
+
+  private JsonArray getTransportsAsJson() {
+    if (this.transports == null) {
+      return null;
+    }
+    JsonArray transportsArray =  new JsonArray();
+    for (Transports transport : this.transports) {
+      transportsArray.add(new JsonPrimitive(transport.toString()));
+    }
+    return transportsArray;
+  }
+
+  public JsonObject getJson() {
+    JsonObject result = new JsonObject();
+    result.addProperty("appId", appId);
+    result.addProperty("version", version);
+    result.addProperty("keyHandle", keyHandle);
+    result.addProperty("sessionId", sessionId);
+    result.add("transports", getTransportsAsJson());
+    return result;
   }
 }

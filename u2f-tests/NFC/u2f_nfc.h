@@ -1,9 +1,9 @@
 //Based on code from Google & Yubico.
 
-//Define Local Values for errors in rotunes that should replay with APDU Status
+//Define Local Values for errors in routines that should replay with APDU Status
 #define SW_NO_ERROR     0x9000
 #define SW_ERROR_ANY    0xffff
-#define PCSC_ERROR    0xfffe
+#define PCSC_ERROR      0xfffe
 
 //Convert big-endian U2F to little-endian
 #define MAKE_UINT32(x)  ( (uint32_t) (((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) | ((x>> 8) & 0x0000ff00) | ((x>>24) & 0x000000ff)) )
@@ -59,8 +59,6 @@ typedef struct {
 #ifndef __NO_PRAGMA_PACK
 #pragma pack(pop)
 #endif
-
-#define MAX_RESP_APDU_SIZE 1000 //Fom Temp Buffer Allocation
 
 // AID for U2F applet
 #define U2F_APPLET_AID          {0xA0, 0x00, 0x00, 0x06, 0x47, 0x2F, 0x00, 0x01 }

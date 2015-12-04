@@ -53,7 +53,8 @@ bool getCertificate(const U2F_REGISTER_RESP& rsp,
                     std::string* cert) {
   size_t hkLen = rsp.keyHandleLen;
 
-  CHECK_GE(hkLen, 64);
+  CHECK_GE(hkLen, MIN_KH_SIZE);
+  CHECK_LE(hkLen, MAX_KH_SIZE);  //Superflous at the moment, but just in case MAX_KH_SIZE changes
   CHECK_LT(hkLen, sizeof(rsp.keyHandleCertSig));
 
   size_t certOff = hkLen;
@@ -150,8 +151,6 @@ void enrollCheckSignature( U2F_REGISTER_REQ regReq , U2F_REGISTER_RESP regRsp) {
 
   CHECK_EQ(regRsp.registerId, U2F_REGISTER_ID);
   CHECK_EQ(regRsp.pubKey.pointFormat, U2F_POINT_UNCOMPRESSED);
-
-
 
   string cert;
   CHECK_EQ(getCertificate(regRsp, &cert), true);

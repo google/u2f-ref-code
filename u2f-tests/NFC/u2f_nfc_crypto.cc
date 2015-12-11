@@ -1,4 +1,4 @@
-//Based on code from Google & Yubico.
+// Based on code from Google & Yubico.
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -39,12 +39,24 @@ std::string a2b(const std::string& s) {
   std::string result;
   int v;
   for (size_t i = 0; i < s.size(); ++i) {
-    if ((i & 1) == 1) v <<= 4; else v = 0;
+    if ((i & 1) == 1) {
+      v <<= 4;
+    } else {
+      v = 0;
+    }
+
     char d = s[i];
-    if (d >= '0' && d <= '9') v += (d - '0');
-    else if (d >= 'A' && d <= 'F') v += (d - 'A' + 10);
-    else if (d >= 'a' && d <= 'f') v += (d - 'a' + 10);
-    if ((i & 1) == 1) result.push_back(v & 255);
+    if (d >= '0' && d <= '9') {
+      v += (d - '0');
+    } else if (d >= 'A' && d <= 'F') {
+      v += (d - 'A' + 10);
+    } else if (d >= 'a' && d <= 'f') {
+      v += (d - 'a' + 10);
+    }
+
+    if ((i & 1) == 1) {
+      result.push_back(v & 255);
+    }
   }
   return result;
 }
@@ -53,7 +65,8 @@ bool getCertificate(const U2F_REGISTER_RESP& rsp,
                     std::string* cert) {
   size_t hkLen = rsp.keyHandleLen;
 
-  CHECK_GE(hkLen, 64);
+  CHECK_GE(hkLen, MIN_KH_SIZE);
+  CHECK_LE(hkLen, MAX_KH_SIZE);  //Superflous at the moment, but just in case MAX_KH_SIZE changes
   CHECK_LT(hkLen, sizeof(rsp.keyHandleCertSig));
 
   size_t certOff = hkLen;
@@ -144,26 +157,21 @@ bool getCertSignature(const std::string& cert,
   return true;
 }
 
-void enrollCheckSignature( U2F_REGISTER_REQ regReq , U2F_REGISTER_RESP regRsp) {
-
-  using std::string;
-
+void enrollCheckSignature(U2F_REGISTER_REQ regReq, U2F_REGISTER_RESP regRsp) {
   CHECK_EQ(regRsp.registerId, U2F_REGISTER_ID);
   CHECK_EQ(regRsp.pubKey.pointFormat, U2F_POINT_UNCOMPRESSED);
 
-
-
-  string cert;
+  std::string cert;
   CHECK_EQ(getCertificate(regRsp, &cert), true);
 
-  string pk;
+  std::string pk;
   CHECK_EQ(getSubjectPublicKey(cert, &pk), true);
 
-  string sig;
+  std::string sig;
   CHECK_EQ(getSignature(regRsp, &sig), true);
 
-  //Log values if required
-  if(log_Crypto == flagON){
+  // Log values if required
+  if (log_Crypto == flagON) {
     std::cout << "Attestation Cert:\n" << b2a(cert) << "\n";
     std::cout << "Attestation Public Key:\n" << b2a(pk)<< "\n";
     std::cout << "Attestation Signature :\n" << b2a(sig)<< "\n";
@@ -171,14 +179,14 @@ void enrollCheckSignature( U2F_REGISTER_REQ regReq , U2F_REGISTER_RESP regRsp) {
 
   // Parse signature into two integers.
   p256_int sig_r, sig_s;
-  CHECK_EQ(1, dsa_sig_unpack((uint8_t*) (sig.data()), sig.size(),
+  CHECK_EQ(1, dsa_sig_unpack(reinterpret_cast<uint8_t*>(sig.data()), sig.size(),
                              &sig_r, &sig_s));
 
   // Compute hash as integer.
   p256_int h;
   SHA256_CTX sha;
   SHA256_init(&sha);
-  uint8_t rfu = 0; //TEST
+  uint8_t rfu = 0;  // TEST
   SHA256_update(&sha, &rfu, sizeof(rfu));  // 0x00
   SHA256_update(&sha, regReq.appId, sizeof(regReq.appId));  // O
   SHA256_update(&sha, regReq.nonce, sizeof(regReq.nonce));  // d
@@ -189,26 +197,30 @@ void enrollCheckSignature( U2F_REGISTER_REQ regReq , U2F_REGISTER_RESP regRsp) {
   // Parse subject public key into two integers.
   CHECK_EQ(pk.size(), U2F_EC_POINT_SIZE);
   p256_int pk_x, pk_y;
-  p256_from_bin((uint8_t*) pk.data() + 1, &pk_x);
-  p256_from_bin((uint8_t*) pk.data() + 1 + U2F_EC_KEY_SIZE, &pk_y);
+  p256_from_bin(reinterpret_cast<uint8_t*>(pk.data()) + 1, &pk_x);
+  p256_from_bin(reinterpret_cast<uint8_t*>(pk.data()) + 1 + U2F_EC_KEY_SIZE,
+                &pk_y);
 
   // Verify signature.
   CHECK_EQ(1, p256_ecdsa_verify(&pk_x, &pk_y, &h, &sig_r, &sig_s));
 }
 
-void signCheckSignature(  U2F_REGISTER_REQ regReq , U2F_REGISTER_RESP regRsp, U2F_AUTHENTICATE_REQ authReq , U2F_AUTHENTICATE_RESP authResp,  int respLength) {
-
-
+void signCheckSignature(U2F_REGISTER_REQ regReq,
+                        U2F_REGISTER_RESP regRsp,
+                        U2F_AUTHENTICATE_REQ authReq,
+                        U2F_AUTHENTICATE_RESP authResp,
+                        int respLength) {
   CHECK_EQ(authResp.flags, 0x01);
 
-  if(log_Crypto == flagON){
-    std::cout << "Authentication Signature:\n" << b2a(authResp.sig, respLength - sizeof(authResp.flags) - sizeof(authResp.ctr))<< "\n";
+  if (log_Crypto == flagON) {
+    std::cout << "Authentication Signature:\n" << b2a(authResp.sig, respLength -
+              sizeof(authResp.flags) - sizeof(authResp.ctr)) << "\n";
   }
   // Parse signature from authenticate response.
   p256_int sig_r, sig_s;
-  CHECK_EQ(1, dsa_sig_unpack(authResp.sig,
-                             respLength - sizeof(authResp.flags) - sizeof(authResp.ctr),
-                             &sig_r, &sig_s));
+  CHECK_EQ(1, dsa_sig_unpack(authResp.sig, respLength - sizeof(authResp.flags) -
+                             sizeof(authResp.ctr), &sig_r, &sig_s));
+
   // Compute hash as integer.
   p256_int h;
   SHA256_CTX sha;
@@ -226,5 +238,4 @@ void signCheckSignature(  U2F_REGISTER_REQ regReq , U2F_REGISTER_RESP regRsp, U2
 
   // Verify signature.
   CHECK_EQ(1, p256_ecdsa_verify(&pk_x, &pk_y, &h, &sig_r, &sig_s));
-
 }

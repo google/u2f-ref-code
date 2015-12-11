@@ -58,6 +58,33 @@ int check(const char *func, long rc) {
   exit(0);
 }
 
+double getTimestampMs(void) {
+#ifdef _MSC_VER
+	FILETIME gtime;
+	ULONGLONG tret;
+	GetSystemTimeAsFileTime( &gtime );
+	tret = (((ULONGLONG)gtime.dwHighDateTime << 32) | ((ULONGLONG)gtime.dwLowDateTime));
+	return (double) (tret / 10000.0);
+#else
+	struct timespec st;
+	clock_gettime( CLOCK_MONOTONIC, &st );
+	return ((double)(st.tv_sec * 1000.0)  + (double)(st.tv_nsec / 1000000.0));
+#endif
+}
+
+int printTransactionTime(double start, double stop){
+	double elapsed;
+	elapsed  = stop-start;
+	if((elapsed > 0.0)  && (elapsed < NFC_TIMEOUT_MS)  ){
+		printf("Transaction Time: %.0f ms\n", elapsed);
+		return SUCCESS;
+	}
+   else {
+	   	printf("!!Transaction Time FAIL!!: %.0f ms\n", elapsed);
+		return SW_ERROR_ANY;
+   }
+}
+
 void  printCmdAPDU(uint8_t apduin[], ulong lenin) {
   uint8_t i;
   uint Lc, Le, DataOffset;
@@ -180,6 +207,7 @@ void dumpHex(const char *descr, uint8_t *buf, int bcnt) {
 
 uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc,
     const void *data, uint *rapduLen, void *rapdu) {
+  double start, stop;
   uint8_t capdu[APDU_BUFFER_SIZE];
   uint8_t *dp = (uint8_t *) data;
   uint8_t rapduBuf[APDU_BUFFER_SIZE];
@@ -215,20 +243,25 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc,
     rlen = sizeof(rapduBuf);
 
     printCmdAPDU(capdu, len);
+	  
+    start = getTimestampMs();
     rc = SCardTransmit(hCard, SCARD_PCI_T1, (uint8_t *) &capdu, len,
       NULL, rapduBuf, &rlen);
+	  stop = getTimestampMs();
+    
     if (!check("SCardTransmit (1)", rc)) return PCSC_ERROR;
     printRespAPDU(rapduBuf, rlen);
     if (rlen > (ulong)(blockSize) + 2) {
       printf("!! ERROR !!, Response Longer than Le (Extended Response to Short APDU Input?) \n");
       return SW_ERROR_ANY;
     }
-
+	  if (printTransactionTime(start,stop) != SUCCESS){
+	    return SW_ERROR_ANY;
+	  }
 
     if (!lc) break;
 
     // If chaining, verify expected response
-
     if (rlen != 2 || rapduBuf[0] != 0x90 || rapduBuf[1] != 0x00) {
       printf("Invalid cAPDU chain block response\n");
     }
@@ -266,13 +299,21 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc,
 
     rlen = sizeof(rapduBuf);
     printCmdAPDU(capdu, 5);
+    
+    start = getTimestampMs();
     rc = SCardTransmit(hCard, SCARD_PCI_T1, (uint8_t *) &capdu, 5, NULL, rapduBuf, &rlen);
     if (!check("SCardTransmit (2)", rc)) {return PCSC_ERROR;}
+    stop = getTimestampMs();
+    
     printRespAPDU(rapduBuf, rlen);
     if (rlen > (ulong)(blockSize) + 2) {
       printf("!! ERROR !!, Response Longer than Le (Extended Response to Short APDU Input?) \n");
       return SW_ERROR_ANY;
     }
+    if (printTransactionTime(start,stop) != SUCCESS){
+	    return SW_ERROR_ANY;
+	  }
+
   }
 
   *rapduLen = len;
@@ -290,6 +331,7 @@ void getRandom(uint8_t *buf, size_t size) {
 
 uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc,
     const void *data, uint *rapduLen, void *rapdu ) {
+  double start, stop;
   uint8_t capdu[APDU_BUFFER_SIZE];
   ulong rlen = *rapduLen + 2; //Add Buffer for Status
   ulong len;
@@ -311,17 +353,23 @@ uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc,
   capdu[8+lc]=(uint8_t) (*rapduLen & 0xff);
   len = lc+9;
 
+  start  = getTimestampMs();
   printCmdAPDU(capdu, len);
   rc = SCardTransmit(hCard, SCARD_PCI_T1, capdu, len, NULL, (uint8_t*) rapdu, &rlen );
+  stop = getTimestampMs();
+  
   if (!check("SCardTransmit (3)", rc)) return PCSC_ERROR;
   printRespAPDU((uint8_t*) rapdu, rlen);
- 
   if (rlen >= 2) {
     if (((uint8_t*)rapdu)[rlen-2] == 0x61) {
       printf("!! ERROR !!, DATA AVAILABLE (Chained) Response to Extended APDU Input\n");
       return SW_ERROR_ANY;
     }
   }
+  if (printTransactionTime(start,stop) != SUCCESS){
+	    return SW_ERROR_ANY;
+	}
+
   *rapduLen = rlen-2;
   sw12 = (int) (((uint8_t*)rapdu)[rlen-2] << 8) | ((uint8_t*)rapdu)[rlen-1];
   return sw12;
@@ -435,3 +483,4 @@ const char* printError(uint err) {
     default:return "Unknown Error";
   };
 }
+

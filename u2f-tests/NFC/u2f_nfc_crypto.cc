@@ -66,7 +66,7 @@ bool getCertificate(const U2F_REGISTER_RESP& rsp,
   size_t hkLen = rsp.keyHandleLen;
 
   CHECK_GE(hkLen, MIN_KH_SIZE);
-  CHECK_LE(hkLen, MAX_KH_SIZE);  //Superflous at the moment, but just in case MAX_KH_SIZE changes
+  CHECK_LE(hkLen, MAX_KH_SIZE);  // Superflous at the moment, but just in case MAX_KH_SIZE changes
   CHECK_LT(hkLen, sizeof(rsp.keyHandleCertSig));
 
   size_t certOff = hkLen;
@@ -181,7 +181,7 @@ void enrollCheckSignature(U2F_REGISTER_REQ regReq, U2F_REGISTER_RESP regRsp) {
   p256_int sig_r, sig_s;
   CHECK_EQ(1, dsa_sig_unpack((uint8_t*)(sig.data()), sig.size(),
                              &sig_r, &sig_s));
-  
+
   // Compute hash as integer.
   p256_int h;
   SHA256_CTX sha;

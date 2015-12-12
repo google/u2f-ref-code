@@ -221,7 +221,7 @@ uint xchgAPDUShort(uint cla, uint ins, uint p1, uint p2, uint lc,
       memcpy((void*)&capdu[DATA_NON_EXTENDED], (const void *) dp,
           (size_t)capdu[LC]);
 
-      capdu[DATA_NON_EXTENDED+capdu[LC]] = (blockSize == 256 ? 0 : blockSize);
+      capdu[DATA_NON_EXTENDED + capdu[LC]] = (blockSize == 256 ? 0 : blockSize);
       len = 6 + capdu[LC];
       dp += blockSize;
       lc -= capdu[LC];

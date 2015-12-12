@@ -59,15 +59,13 @@ typedef enum {flagOFF = 0, flagON} flag;
 #define usleep(x) Sleep((x + 999) / 1000)
 #else
 #include <unistd.h>
-#define max(a, b) \
-           ({ __typeof__ (a) _a = (a); \
-                       __typeof__ (b) _b = (b); \
-                       _a > _b ? _a : _b; })
+#define max(a, b) ({ __typeof__ (a) _a = (a); \
+                     __typeof__ (b) _b = (b); \
+                     _a > _b ? _a : _b; })
 
-#define min(a, b) \
-           ({ __typeof__ (a) _a = (a); \
-                       __typeof__ (b) _b = (b); \
-                       _a < _b ? _a : _b; })
+#define min(a, b) ({ __typeof__ (a) _a = (a); \
+                     __typeof__ (b) _b = (b); \
+                     _a < _b ? _a : _b; })
 #endif
 
 #define CHECK_INFO "FILE:" << __FILE__ " FUNCTION:" << __FUNCTION__ << " LINE:" << __LINE__ << "\n"
@@ -91,8 +89,6 @@ typedef enum {flagOFF = 0, flagON} flag;
 #endif
 
 #define INFO if (arg_Verbose) U2F_info(__FUNCTION__, __LINE__) << ": "
-
-
 
 #ifdef __cplusplus
 }

@@ -66,7 +66,7 @@ bool getCertificate(const U2F_REGISTER_RESP& rsp,
   size_t hkLen = rsp.keyHandleLen;
 
   CHECK_GE(hkLen, MIN_KH_SIZE);
-  CHECK_LE(hkLen, MAX_KH_SIZE);  //Superflous at the moment, but just in case MAX_KH_SIZE changes
+  CHECK_LE(hkLen, MAX_KH_SIZE);  // Superflous at the moment, but just in case MAX_KH_SIZE changes
   CHECK_LT(hkLen, sizeof(rsp.keyHandleCertSig));
 
   size_t certOff = hkLen;
@@ -179,7 +179,7 @@ void enrollCheckSignature(U2F_REGISTER_REQ regReq, U2F_REGISTER_RESP regRsp) {
 
   // Parse signature into two integers.
   p256_int sig_r, sig_s;
-  CHECK_EQ(1, dsa_sig_unpack(reinterpret_cast<uint8_t*>(sig.data()), sig.size(),
+  CHECK_EQ(1, dsa_sig_unpack((uint8_t*)(sig.data()), sig.size(),
                              &sig_r, &sig_s));
 
   // Compute hash as integer.
@@ -197,8 +197,8 @@ void enrollCheckSignature(U2F_REGISTER_REQ regReq, U2F_REGISTER_RESP regRsp) {
   // Parse subject public key into two integers.
   CHECK_EQ(pk.size(), U2F_EC_POINT_SIZE);
   p256_int pk_x, pk_y;
-  p256_from_bin(reinterpret_cast<uint8_t*>(pk.data()) + 1, &pk_x);
-  p256_from_bin(reinterpret_cast<uint8_t*>(pk.data()) + 1 + U2F_EC_KEY_SIZE,
+  p256_from_bin((uint8_t*)(pk.data()) + 1, &pk_x);
+  p256_from_bin((uint8_t*)(pk.data()) + 1 + U2F_EC_KEY_SIZE,
                 &pk_y);
 
   // Verify signature.

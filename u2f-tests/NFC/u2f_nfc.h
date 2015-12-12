@@ -5,6 +5,9 @@
 #define SW_NO_ERROR     0x9000
 #define SW_ERROR_ANY    0xffff
 #define PCSC_ERROR      0xfffe
+#define SUCCESS         0x0
+
+#define NFC_TIMEOUT_MS  800.0
 
 // Convert big-endian U2F to little-endian
 #define MAKE_UINT32(x)  ( (uint32_t) (((x << 24) & 0xff000000) | ((x << 8) & 0x00ff0000) | ((x>> 8) & 0x0000ff00) | ((x>>24) & 0x000000ff)) )
@@ -68,4 +71,3 @@ typedef struct {
 // Response Message
 #define U2F_VERSION             {'U', '2', 'F', '_', 'V', '2' }
 #define U2F_VERSION_LEN         6
-

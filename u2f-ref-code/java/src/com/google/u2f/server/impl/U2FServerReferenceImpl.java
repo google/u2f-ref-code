@@ -270,7 +270,7 @@ public class U2FServerReferenceImpl implements U2FServer {
     Log.info("  counter: " + counter);
     Log.info("  signature: " + Hex.encodeHexString(signature));
 
-    if (userPresence != UserPresenceVerifier.USER_PRESENT_FLAG) {
+    if ((userPresence & UserPresenceVerifier.USER_PRESENT_FLAG) == 0 ) {
       throw new U2FException("User presence invalid during authentication");
     }
 

@@ -16,13 +16,7 @@ do not modify/remove the key in ``manifest.json``.
 
 ## Communicating with the extension
 
-The simplest way for web pages to talk to the extension is to load the script
-``chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js``. This installs
-a namespace ``u2f`` as described in U2F JavaScript API draft sent to the mailing
-list. If you are willing to load this script in your pages, you can safely skip
-the remainder of this section.
-
-The U2F JavaScript API draft also describes how websites can talk directly to
+The U2F JavaScript API draft describes how websites can talk directly to
 the extension via a [MessagePort][messageport], in cases where they do not
 whish to load a script from the extension. How a port to this extension is
 obtained depends on whether the source origin is whitelisted as *externally
@@ -71,8 +65,6 @@ function getIframePort(callback) {
 };
 ```
 
-For a full example refer to ``u2f-api.js``.
-
 The drawback of this transport is that the websites [TLS channel id][channelid]
 will not be available to the extension, and thus not included in signed U2F
 assertions.
@@ -92,9 +84,7 @@ obtaining a message port to the extension is simpler:
 ```
 
 The returned port will be a Chrome runtime port object, which has slightly
-different syntax for how event handlers are added. Again, see ``u2f-api.js``
-for a full example and how to wrap this in a HTML5 MessagePort compatible
-interface.
+different syntax for how event handlers are added.
 
 ### Extending the extension with an external helper
 

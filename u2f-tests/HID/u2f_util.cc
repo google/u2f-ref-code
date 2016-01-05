@@ -376,7 +376,7 @@ int U2Fob_apdu(struct U2Fob* device,
                const std::string& out,
                std::string* in) {
   uint8_t buf[4096];
-  size_t bufSize = out.size() + 5 + 2 + 2;
+  size_t nc = out.size() ? (3 + out.size()) : 0;
 
   // Construct outgoing message.
   memset(buf, 0xEE, sizeof(buf));
@@ -384,14 +384,27 @@ int U2Fob_apdu(struct U2Fob* device,
   buf[1] = INS;
   buf[2] = P1;
   buf[3] = P2;
-  buf[4] = 0;  // extended length
-  buf[5] = (out.size() >> 8) & 255;
-  buf[6] = (out.size() & 255);
-  memcpy(buf + 7, out.data(), out.size());
-  buf[7 + out.size() + 0] = 0;
-  buf[7 + out.size() + 1] = 0;
 
-  return U2Fob_exchange(device, buf, bufSize, in);
+  uint8_t offs = 4;
+
+  // Encode lc.
+  if (nc) {
+    buf[offs++] = 0;  // extended length
+    buf[offs++] = (out.size() >> 8) & 255;
+    buf[offs++] = (out.size() & 255);
+    memcpy(buf + offs, out.data(), out.size());
+    offs += out.size();
+  }
+
+  // Encode le.
+  if (!nc) {
+    // When there are no data sent, an extra 0 is necessary prior to Le.
+    buf[offs++] = 0;
+  }
+  buf[offs++] = 0;
+  buf[offs++] = 0;
+
+  return U2Fob_exchange(device, buf, offs, in);
 }
 
 bool getCertificate(const U2F_REGISTER_RESP& rsp,

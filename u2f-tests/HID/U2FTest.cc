@@ -67,7 +67,25 @@ U2F_REGISTER_RESP regRsp;
 
 void test_Version() {
   string rsp;
-  CHECK_EQ(0x9000, U2Fob_apdu(device, 0, U2F_INS_VERSION, 0, 0, "", &rsp));
+  int res = U2Fob_apdu(device, 0, U2F_INS_VERSION, 0, 0, "", &rsp);
+  if (res == 0x9000) {
+    CHECK_EQ(rsp, "U2F_V2");
+    return;
+  }
+
+  // Non-ISO 7816-4 compliant U2F_INS_VERSION "APDU" that includes Lc value 0,
+  // for compatibility with older devices.
+  uint8_t buf[4 + 3 + 2];
+  buf[0] = 0;  // CLA
+  buf[1] = U2F_INS_VERSION;  // INS
+  buf[2] = 0;  // P1
+  buf[3] = 0;  // P2
+  buf[4] = 0;  // extended length
+  buf[5] = 0;  // Lc = 0 (Not ISO 7816-4 compliant)
+  buf[6] = 0;  // Lc = 0 (Not ISO 7816-4 compliant)
+  buf[7] = 0;  // Le = 0
+  buf[8] = 0;  // Le = 0
+  CHECK_EQ(0x9000, U2Fob_exchange(device, buf, sizeof(buf), &rsp));
   CHECK_EQ(rsp, "U2F_V2");
 }
 

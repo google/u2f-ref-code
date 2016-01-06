@@ -344,30 +344,16 @@ int U2Fob_recv(struct U2Fob* device, uint8_t* cmd,
   return result;
 }
 
-int U2Fob_apdu(struct U2Fob* device,
-               uint8_t CLA, uint8_t INS, uint8_t P1, uint8_t P2,
-               const std::string& out,
-              std::string* in) {
-  uint8_t buf[4096];
-  size_t bufSize = out.size() + 5 + 2 + 2;
+int U2Fob_exchange(struct U2Fob* device,
+                   void* data,
+                   size_t size,
+                   std::string* in) {
   uint8_t cmd = U2FHID_MSG;
 
-  // Construct outgoing message.
-  memset(buf, 0xEE, sizeof(buf));
-  buf[0] = CLA;
-  buf[1] = INS;
-  buf[2] = P1;
-  buf[3] = P2;
-  buf[4] = 0;  // extended length
-  buf[5] = (out.size() >> 8) & 255;
-  buf[6] = (out.size() & 255);
-  memcpy(buf + 7, out.data(), out.size());
-  buf[7 + out.size() + 0] = 0;
-  buf[7 + out.size() + 1] = 0;
-
-  int res = U2Fob_send(device, cmd, buf, bufSize);
+  int res = U2Fob_send(device, cmd, data, size);
   if (res != 0) return res;
 
+  uint8_t buf[4096];
   memset(buf, 0xEE, sizeof(buf));
   res = U2Fob_recv(device, &cmd, buf, sizeof(buf), 5.0);
   if (res < 0) return res;
@@ -383,6 +369,33 @@ int U2Fob_apdu(struct U2Fob* device,
   in->assign(reinterpret_cast<char*>(buf), res);
 
   return sw12;
+}
+
+int U2Fob_apdu(struct U2Fob* device,
+               uint8_t CLA, uint8_t INS, uint8_t P1, uint8_t P2,
+               const std::string& out,
+               std::string* in) {
+  uint8_t buf[4096];
+  size_t bufSize = 4 + 2 + (out.size() ? (3 + out.size()) : 0);
+
+  // Construct outgoing message.
+  memset(buf, 0xEE, sizeof(buf));
+  buf[0] = CLA;
+  buf[1] = INS;
+  buf[2] = P1;
+  buf[3] = P2;
+
+  uint8_t offs = 4;
+  if (out.size()) {
+    buf[offs++] = 0;  // extended length
+    buf[offs++] = (out.size() >> 8) & 255;
+    buf[offs++] = (out.size() & 255);
+    memcpy(buf + offs, out.data(), out.size());
+  }
+  buf[offs + out.size() + 0] = 0;
+  buf[offs + out.size() + 1] = 0;
+
+  return U2Fob_exchange(device, buf, bufSize, in);
 }
 
 bool getCertificate(const U2F_REGISTER_RESP& rsp,

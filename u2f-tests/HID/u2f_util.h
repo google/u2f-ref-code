@@ -112,6 +112,14 @@ int U2Fob_recv(struct U2Fob* device, uint8_t* cmd,
 // returns
 //   negative error
 //   positive sw12, e.g. 0x9000, 0x6985 etc.
+int U2Fob_exchange(struct U2Fob* device,
+                   void* data,
+                   size_t size,
+                   std::string* in);
+
+// returns
+//   negative error
+//   positive sw12, e.g. 0x9000, 0x6985 etc.
 int U2Fob_apdu(struct U2Fob* device,
                uint8_t CLA, uint8_t INS, uint8_t P1, uint8_t P2,
                const std::string& out,

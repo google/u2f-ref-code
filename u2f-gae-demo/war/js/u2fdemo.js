@@ -139,8 +139,8 @@ function sendBeginEnrollRequest() {
 function sendBeginSignRequest() {
   $.post('/BeginSign', {}, null, 'json')
    .done(function(signResponse) {
-      console.log(signResponse);
-      var registeredKeys = signResponse.registeredKeys;
+     console.log(signResponse);
+     var registeredKeys = signResponse.registeredKeys;
       showMessage("please touch the token");
       // Store sessionIds
       var sessionIds = {};
@@ -212,6 +212,8 @@ function onError(code, enrolling) {
   }
 }
 
+// TODO(fixme) Refactor and merge the sign and register methods for iOS with
+// the code in u2f-api.js.
 if ($.inArray(navigator.platform, ["iPhone", "iPad", "iPod"]) > -1) {
   function executeRequest (request) {
     var str = JSON.stringify(request);
@@ -220,9 +222,21 @@ if ($.inArray(navigator.platform, ["iPhone", "iPad", "iPod"]) > -1) {
   }
 
   u2f.callbackMap_ = {};
-  u2f.sign = function(signRequests, callback, opt_timeoutSeconds) {
+  u2f.sign = function(appId, challenge, registeredKeys, callback, opt_timeoutSeconds) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
+    // Convert the request to JS 1.0 API, which is what the iOS app supports.
+    // TODO(fixme) Stop converting the request to 1.0 API when the iOS app supports the
+    // JS 1.1 API requests.
+    var signRequests = [];
+    for (var i = 0; i < registeredKeys.length; i++) { 
+      signRequests[i] = {
+          version: registeredKeys[i].version,
+          challenge: challenge,
+          keyHandle: registeredKeys[i].keyHandle,
+          appId: appId
+      };
+    }
     var req = {
       type: u2f.MessageTypes.U2F_SIGN_REQUEST,
       signRequests: signRequests,
@@ -233,10 +247,24 @@ if ($.inArray(navigator.platform, ["iPhone", "iPad", "iPod"]) > -1) {
     executeRequest(req);    
   };
 
-  u2f.register = function(registerRequests, signRequests,
-    callback, opt_timeoutSeconds) {
+  u2f.register = function(appId, registerRequests, registeredKeys, callback, opt_timeoutSeconds) {
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
+    // Convert the request to JS 1.0 API, which is what the iOS app supports.
+    // TODO(fixme) Stop converting the request to 1.0 API when the iOS app supports the
+    // JS 1.1 API requests.
+    for (var i = 0; i < registerRequests.length; i++) { 
+      registerRequests[i].appId = appId;
+    } 
+    var signRequests = []; 
+    for (var i = 0; i < registeredKeys.length; i++) { 
+      signRequests[i] = {
+          version: registeredKeys[i].version,
+          challenge: registerRequests[0],
+          keyHandle: registeredKeys[i].keyHandle,
+          appId: appId
+      };
+    }
     var req = {
       type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
       signRequests: signRequests,

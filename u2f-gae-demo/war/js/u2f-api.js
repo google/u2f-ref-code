@@ -205,6 +205,8 @@ u2f.getMessagePort = function(callback) {
     });
   } else if (u2f.isAndroidChrome_()) {
     u2f.getAuthenticatorPort_(callback);
+  } else if (u2f.isIosChrome_()) {
+    u2f.getIosPort_(callback);
   } else {
     // chrome.runtime was not available at all, which is normal
     // when this origin doesn't have access to any extensions.
@@ -220,6 +222,14 @@ u2f.isAndroidChrome_ = function() {
   var userAgent = navigator.userAgent;
   return userAgent.indexOf('Chrome') != -1 &&
   userAgent.indexOf('Android') != -1;
+};
+
+/**
+ * Detect chrome running on iOS based on the browser's platform.
+ * @private
+ */
+u2f.isIosChrome_ = function() {
+  return $.inArray(navigator.platform, ["iPhone", "iPad", "iPod"]) > -1;
 };
 
 /**
@@ -247,6 +257,17 @@ u2f.getAuthenticatorPort_ = function(callback) {
 };
 
 /**
+ * Return a 'port' abstraction to the iOS client app.
+ * @param {function(u2f.WrappedIosPort_)} callback
+ * @private
+ */
+u2f.getIosPort_ = function(callback) {
+  setTimeout(function() {
+    callback(new u2f.WrappedIosPort_());
+  }, 0);
+};
+
+/**
  * A wrapper for chrome.runtime.Port that is compatible with MessagePort.
  * @param {Port} port
  * @constructor
@@ -268,7 +289,7 @@ u2f.formatSignRequest_ =
   if (js_api_version === undefined || js_api_version < 1.1) {
     // Adapt request to the 1.0 JS API
     var signRequests = [];
-    for (var i = 0; i < registeredKeys.length; i++) { 
+    for (var i = 0; i < registeredKeys.length; i++) {
       signRequests[i] = {
           version: registeredKeys[i].version,
           challenge: challenge,
@@ -566,7 +587,7 @@ u2f.WrappedAuthenticatorPort_
  * @return {Object}
  */
 u2f.WrappedAuthenticatorPort_.prototype.formatRegisterRequest_ =
-    function(appId, registeredKeys, registerRequests, timeoutSeconds, reqId) {    
+    function(appId, registeredKeys, registerRequests, timeoutSeconds, reqId) {
   var request = {
       'type': u2f.MessageTypes.U2F_REGISTER_REQUEST,
       'appId': appId,
@@ -586,6 +607,68 @@ u2f.WrappedAuthenticatorPort_.prototype.formatRegisterRequest_ =
   return intentUrl;
 };
 
+/**
+ * Wrap the iOS client app with a MessagePort interface.
+ * @constructor
+ * @private
+ */
+u2f.WrappedIosPort_ = function() {};
+
+/**
+ * Launch the iOS client app request
+ * @param {Object} message
+ */
+u2f.WrappedIosPort_.prototype.postMessage = function(message) {
+  var str = JSON.stringify(message);
+  var url = "u2f://auth?" + encodeURI(str);
+  location.replace(url);
+};
+
+/**
+ * Tells what type of port this is.
+ * @return {String} port type
+ */
+u2f.WrappedIosPort_.prototype.getPortType = function() {
+  return "WrappedIosPort_";
+};
+
+/**
+ * Emulates the HTML 5 addEventListener interface.
+ * @param {string} eventName
+ * @param {function({data: Object})} handler
+ */
+u2f.WrappedIosPort_.prototype.addEventListener = function(eventName, handler) {
+  var name = eventName.toLowerCase();
+  if (name !== 'message') {
+    console.error('WrappedIosPort only supports message');
+  }
+};
+
+/**
+ * Format a return a sign request.
+ * @param {Array<u2f.SignRequest>} signRequests
+ * @param {number} timeoutSeconds (ignored for now)
+ * @param {number} reqId
+ * @return {string}
+ */
+u2f.WrappedIosPort_.prototype.formatSignRequest_ =
+    function(appId, challenge, registeredKeys, timeoutSeconds, reqId) {
+  return u2f.formatSignRequest_(appId, challenge, registeredKeys, timeoutSeconds, reqId);
+};
+
+/**
+ * Format a return a register request.
+ * @param {Array<u2f.SignRequest>} signRequests
+ * @param {Array<u2f.RegisterRequest>} enrollChallenges
+ * @param {number} timeoutSeconds (ignored for now)
+ * @param {number} reqId
+ * @return {Object}
+ */
+u2f.WrappedIosPort_.prototype.formatRegisterRequest_ =
+    function(appId, registeredKeys, registerRequests, timeoutSeconds, reqId) {
+  return u2f.formatRegisterRequest_(
+          appId, registeredKeys, registerRequests, timeoutSeconds, reqId);
+};
 
 /**
  * Sets up an embedded trampoline iframe, sourced from the extension.
@@ -699,7 +782,7 @@ u2f.responseHandler_ = function(message) {
 
 /**
  * Dispatches an array of sign requests to available U2F tokens.
- * If the JS API version supported by the extension is not known, it first sends a
+ * If the JS API version supported by the extension is unknown, it first sends a
  * message to the extension to find out the supported API version and then it sends
  * the sign request.
  * @param {string=} appId
@@ -750,7 +833,7 @@ u2f.sendSignRequest = function(appId, challenge, registeredKeys, callback, opt_t
 /**
  * Dispatches register requests to available U2F tokens. An array of sign
  * requests identifies already registered tokens.
- * If the JS API version supported by the extension is not known, it first sends a
+ * If the JS API version supported by the extension is unknown, it first sends a
  * message to the extension to find out the supported API version and then it sends
  * the register request.
  * @param {string=} appId
@@ -814,9 +897,11 @@ u2f.sendRegisterRequest = function(appId, registerRequests, registeredKeys, call
  */
 u2f.getApiVersion = function(callback, opt_timeoutSeconds) {
  u2f.getPortSingleton_(function(port) {
-   // If we are using Google Authenticator rather than Chrome
-   // do not do not fire an intent to ask which JS API version to use. 
-   if (port.getPortType && port.getPortType() == 'WrappedAuthenticatorPort_') {
+   // If we are using Android Google Authenticator or iOS client app
+   // do not fire an intent to ask which JS API version to use.
+   /* TODO(fixme): Upgrade iOS support to JS 1.1 */
+   if (port.getPortType &&
+       (port.getPortType() == 'WrappedAuthenticatorPort_' || port.getPortType() == 'WrappedIosPort_')) {
      callback( {'js_api_version': 0});
      return;
    }

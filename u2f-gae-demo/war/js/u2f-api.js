@@ -645,32 +645,6 @@ u2f.WrappedIosPort_.prototype.addEventListener = function(eventName, handler) {
 };
 
 /**
- * Format a return a sign request.
- * @param {Array<u2f.SignRequest>} signRequests
- * @param {number} timeoutSeconds (ignored for now)
- * @param {number} reqId
- * @return {string}
- */
-u2f.WrappedIosPort_.prototype.formatSignRequest_ =
-    function(appId, challenge, registeredKeys, timeoutSeconds, reqId) {
-  return u2f.formatSignRequest_(appId, challenge, registeredKeys, timeoutSeconds, reqId);
-};
-
-/**
- * Format a return a register request.
- * @param {Array<u2f.SignRequest>} signRequests
- * @param {Array<u2f.RegisterRequest>} enrollChallenges
- * @param {number} timeoutSeconds (ignored for now)
- * @param {number} reqId
- * @return {Object}
- */
-u2f.WrappedIosPort_.prototype.formatRegisterRequest_ =
-    function(appId, registeredKeys, registerRequests, timeoutSeconds, reqId) {
-  return u2f.formatRegisterRequest_(
-          appId, registeredKeys, registerRequests, timeoutSeconds, reqId);
-};
-
-/**
  * Sets up an embedded trampoline iframe, sourced from the extension.
  * @param {function(MessagePort)} callback
  * @private
@@ -897,14 +871,18 @@ u2f.sendRegisterRequest = function(appId, registerRequests, registeredKeys, call
  */
 u2f.getApiVersion = function(callback, opt_timeoutSeconds) {
  u2f.getPortSingleton_(function(port) {
-   // If we are using Android Google Authenticator or iOS client app
-   // do not fire an intent to ask which JS API version to use.
-   /* TODO(fixme): Upgrade iOS support to JS 1.1 */
-   if (port.getPortType &&
-       (port.getPortType() == 'WrappedAuthenticatorPort_' || port.getPortType() == 'WrappedIosPort_')) {
-     callback( {'js_api_version': 0});
-     return;
-   }
+    // If we are using Android Google Authenticator or iOS client app,
+    // do not fire an intent to ask which JS API version to use.
+    if (port.getPortType && port.getPortType() == 'WrappedAuthenticatorPort_') {
+      callback({'js_api_version': 0});
+      return;
+    }
+
+    if (port.getPortType && port.getPortType() == 'WrappedIosPort_') {
+      callback({'js_api_version': 1.1});
+      return;
+    }
+
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
     var req = {

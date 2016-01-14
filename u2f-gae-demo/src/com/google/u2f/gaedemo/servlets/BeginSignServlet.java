@@ -49,7 +49,7 @@ public class BeginSignServlet extends HttpServlet {
     JsonObject result = new JsonObject();
     result.addProperty("challenge", signRequest.getChallenge());
     result.addProperty("appId", appId);
-    result.add("registeredKeys", signRequest.getRegisteredKeysAsJson());
+    result.add("registeredKeys", signRequest.getRegisteredKeysAsJson(appId));
 
     resp.setContentType("application/json");
     resp.getWriter().println(result.toString());

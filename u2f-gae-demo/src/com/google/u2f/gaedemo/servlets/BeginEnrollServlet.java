@@ -51,8 +51,8 @@ public class BeginEnrollServlet extends HttpServlet {
       throw new ServletException("couldn't get registration request", e);
     }
 
-	  JsonObject result = new JsonObject();
-    result.addProperty("appId", registrationRequest.getAppId());
+    JsonObject result = new JsonObject();
+    result.addProperty("appId", appId);
     result.addProperty("sessionId", registrationRequest.getSessionId());
     
 	  JsonObject registerRequests = new JsonObject();
@@ -63,7 +63,7 @@ public class BeginEnrollServlet extends HttpServlet {
 		if(allowReregistration) {
 		  result.add("registeredKeys", new JsonArray());
 		} else {
-		  result.add("registeredKeys", signRequest.getRegisteredKeysAsJson());
+		  result.add("registeredKeys", signRequest.getRegisteredKeysAsJson(appId));
 		}
 
 		resp.setContentType("application/json");

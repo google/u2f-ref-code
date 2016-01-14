@@ -117,7 +117,10 @@ public class RegisteredKey {
     result.addProperty("version", version);
     result.addProperty("keyHandle", keyHandle);
     result.addProperty("sessionId", sessionId);
-    result.add("transports", getTransportsAsJson());
+    JsonArray transportsJson = getTransportsAsJson();
+    if (transportsJson != null) {
+      result.add("transports", transportsJson);
+    }
     return result;
   }
 }

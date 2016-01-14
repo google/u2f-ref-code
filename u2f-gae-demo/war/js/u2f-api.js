@@ -155,6 +155,7 @@ u2f.RegisterRequest;
  */
 u2f.RegisterResponse;
 
+
 /**
  * Data object for a registered key.
  * @typedef {{
@@ -164,7 +165,7 @@ u2f.RegisterResponse;
  *   appId: ?string
  * }}
  */
-u2f.RegisteredKey;  
+u2f.RegisteredKey;
 
 
 /**
@@ -327,11 +328,11 @@ u2f.formatRegisterRequest_ =
   function(appId, registeredKeys, registerRequests, timeoutSeconds, reqId) {
   if (js_api_version === undefined || js_api_version < 1.1) {
     // Adapt request to the 1.0 JS API
-    for (var i = 0; i < registerRequests.length; i++) { 
+    for (var i = 0; i < registerRequests.length; i++) {
       registerRequests[i].appId = appId;
-    } 
-    var signRequests = []; 
-    for (var i = 0; i < registeredKeys.length; i++) { 
+    }
+    var signRequests = [];
+    for (var i = 0; i < registeredKeys.length; i++) {
       signRequests[i] = {
           version: registeredKeys[i].version,
           challenge: registerRequests[0],
@@ -346,7 +347,7 @@ u2f.formatRegisterRequest_ =
       timeoutSeconds: timeoutSeconds,
       requestId: reqId
     };
-  } 
+  }
   // JS 1.1 API
   return {
     type: u2f.MessageTypes.U2F_REGISTER_REQUEST,
@@ -402,8 +403,11 @@ u2f.WrappedAuthenticatorPort_ = function() {
  * @param {Object} message
  */
 u2f.WrappedAuthenticatorPort_.prototype.postMessage = function(message) {
-  var intentLocation = /** @type {string} */ (message);
-  document.location = intentLocation;
+  var intentUrl =
+    u2f.WrappedAuthenticatorPort_.INTENT_URL_BASE_ +
+    ';S.request=' + encodeURIComponent(JSON.stringify(message)) +
+    ';end';
+  document.location = intentUrl;
 };
 
 /**
@@ -448,63 +452,9 @@ u2f.WrappedAuthenticatorPort_.prototype.onRequestUpdate_ =
   if (messageObject.hasOwnProperty('data')) {
     responseObject = /** @type {Object} */ (
         JSON.parse(messageObject['data']));
-    responseObject['requestId'] = this.requestId_;
   }
 
-  /* Sign responses from the authenticator do not conform to U2F,
-   * convert to U2F here. */
-  responseObject = this.doResponseFixups_(responseObject);
   callback({'data': responseObject});
-};
-
-/**
- * Fixup the response provided by the Authenticator to conform with
- * the U2F spec.
- * @param {Object} responseData
- * @return {Object} the U2F compliant response object
- */
-u2f.WrappedAuthenticatorPort_.prototype.doResponseFixups_ =
-    function(responseObject) {
-  if (responseObject.hasOwnProperty('responseData')) {
-    return responseObject;
-  } else if (this.requestObject_['type'] != u2f.MessageTypes.U2F_SIGN_REQUEST) {
-    // Only sign responses require fixups.  If this is not a response
-    // to a sign request, then an internal error has occurred.
-    return {
-      'type': u2f.MessageTypes.U2F_REGISTER_RESPONSE,
-      'responseData': {
-        'errorCode': u2f.ErrorCodes.OTHER_ERROR,
-        'errorMessage': 'Internal error: invalid response from Authenticator'
-      }
-    };
-  }
-
-  /* Non-conformant sign response, do fixups. */
-  var encodedChallengeObject = responseObject['challenge'];
-  if (typeof encodedChallengeObject !== 'undefined') {
-    var challengeObject = JSON.parse(atob(encodedChallengeObject));
-    var serverChallenge = challengeObject['challenge'];
-    var challengesList = this.requestObject_['signData'];
-    var requestChallengeObject = null;
-    for (var i = 0; i < challengesList.length; i++) {
-      var challengeObject = challengesList[i];
-      if (challengeObject['keyHandle'] == responseObject['keyHandle']) {
-        requestChallengeObject = challengeObject;
-        break;
-      }
-    }
-  }
-  var responseData = {
-      'errorCode': responseObject['resultCode'],
-      'keyHandle': responseObject['keyHandle'],
-      'signatureData': responseObject['signature'],
-      'clientData': encodedChallengeObject
-  };
-  return {
-    'type': u2f.MessageTypes.U2F_SIGN_RESPONSE,
-    'responseData': responseData,
-    'requestId': responseObject['requestId']
-  }
 };
 
 /**
@@ -514,98 +464,6 @@ u2f.WrappedAuthenticatorPort_.prototype.doResponseFixups_ =
  */
 u2f.WrappedAuthenticatorPort_.INTENT_URL_BASE_ =
   'intent:#Intent;action=com.google.android.apps.authenticator.AUTHENTICATE';
-
-/**
- * Format a return a sign request.
- * @param {Array<u2f.SignRequest>} signRequests
- * @param {number} timeoutSeconds (ignored for now)
- * @param {number} reqId
- * @return {string}
- */
-u2f.WrappedAuthenticatorPort_.prototype.formatSignRequest_ =
-  function(appId, challenge, registeredKeys, timeoutSeconds, reqId) {
-  /* TODO(fixme): stash away requestId, as the authenticator app does
-   * not return it for sign responses. */
-  this.requestId_ = reqId;
-  // Fall back to 1.0 API
-  var signRequests = [];
-  for (var i = 0; i < registeredKeys.length; i++) { 
-    signRequests[i] = {
-        version: registeredKeys[i].version,
-        challenge: challenge,
-        keyHandle: registeredKeys[i].keyHandle,
-        appId: appId
-    };
-  }
-  /* TODO(fixme): stash away the signRequests, to deal with the legacy
-   * response format returned by the Authenticator app. */
-  this.requestObject_ = {
-      'type': u2f.MessageTypes.U2F_SIGN_REQUEST,
-      'signData': signRequests,
-      'requestId': reqId,
-      'timeout': timeoutSeconds
-  };
-
-  var intentUrl =
-    u2f.WrappedAuthenticatorPort_.INTENT_URL_BASE_ +
-    ';S.appId=' + encodeURIComponent(appId) +
-    ';S.eventId=' + reqId +
-    ';S.challenges=' +
-    encodeURIComponent(
-        JSON.stringify(this.getBrowserDataList_(signRequests))) + ';end';
-  return intentUrl;
-};
-
-/**
- * Get the browser data objects from the challenge list
- * @param {Array} challenges list of challenges
- * @return {Array} list of browser data objects
- * @private
- */
-u2f.WrappedAuthenticatorPort_
-.prototype.getBrowserDataList_ = function(challenges) {
-  return challenges
-  .map(function(challenge) {
-    var browserData = {
-        'typ': 'navigator.id.getAssertion',
-        'challenge': challenge['challenge']
-    };
-    var challengeObject = {
-        'challenge' : browserData,
-        'keyHandle' : challenge['keyHandle']
-    };
-    return challengeObject;
-  });
-};
-
-/**
- * Format a return a register request.
- * @param {Array<u2f.SignRequest>} signRequests
- * @param {Array<u2f.RegisterRequest>} enrollChallenges
- * @param {number} timeoutSeconds (ignored for now)
- * @param {number} reqId
- * @return {Object}
- */
-u2f.WrappedAuthenticatorPort_.prototype.formatRegisterRequest_ =
-    function(appId, registeredKeys, registerRequests, timeoutSeconds, reqId) {
-  var request = {
-      'type': u2f.MessageTypes.U2F_REGISTER_REQUEST,
-      'appId': appId,
-      'registerRequests': registerRequests,
-      'registeredKeys': registeredKeys,
-      'requestId': reqId,
-      'timeoutSeconds': timeoutSeconds
-  };
-  var intentUrl =
-    u2f.WrappedAuthenticatorPort_.INTENT_URL_BASE_ +
-    ';S.request=' + encodeURIComponent(JSON.stringify(request)) +
-    ';end';
-  /* TODO(fixme): stash away requestId, this is is not necessary for
-   * register requests, but here to keep parity with sign.
-   */
-  this.requestId_ = reqId;
-  return intentUrl;
-};
 
 /**
  * Wrap the iOS client app with a MessagePort interface.
@@ -794,12 +652,7 @@ u2f.sendSignRequest = function(appId, challenge, registeredKeys, callback, opt_t
     u2f.callbackMap_[reqId] = callback;
     var timeoutSeconds = (typeof opt_timeoutSeconds !== 'undefined' ?
         opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC);
-    var req;
-    if (port.getPortType && port.getPortType() == 'WrappedAuthenticatorPort_') {
-      req = port.formatSignRequest_(appId, challenge, registeredKeys, timeoutSeconds, reqId);
-    } else {
-      req = u2f.formatSignRequest_(appId, challenge, registeredKeys, timeoutSeconds, reqId);
-    }
+    var req = u2f.formatSignRequest_(appId, challenge, registeredKeys, timeoutSeconds, reqId);
     port.postMessage(req);
   });
 };
@@ -848,14 +701,8 @@ u2f.sendRegisterRequest = function(appId, registerRequests, registeredKeys, call
     u2f.callbackMap_[reqId] = callback;
     var timeoutSeconds = (typeof opt_timeoutSeconds !== 'undefined' ?
         opt_timeoutSeconds : u2f.EXTENSION_TIMEOUT_SEC);
-    var req;
-    if (port.getPortType && port.getPortType() == 'WrappedAuthenticatorPort_') {
-      req = port.formatRegisterRequest_(
-          appId, registeredKeys, registerRequests, timeoutSeconds, reqId);
-    } else {
-      req = u2f.formatRegisterRequest_(
-          appId, registeredKeys, registerRequests, timeoutSeconds, reqId);
-    }
+    var req = u2f.formatRegisterRequest_(
+        appId, registeredKeys, registerRequests, timeoutSeconds, reqId);
     port.postMessage(req);
   });
 };
@@ -871,18 +718,23 @@ u2f.sendRegisterRequest = function(appId, registerRequests, registeredKeys, call
  */
 u2f.getApiVersion = function(callback, opt_timeoutSeconds) {
  u2f.getPortSingleton_(function(port) {
-    // If we are using Android Google Authenticator or iOS client app,
-    // do not fire an intent to ask which JS API version to use.
-    if (port.getPortType && port.getPortType() == 'WrappedAuthenticatorPort_') {
-      callback({'js_api_version': 0});
-      return;
-    }
+   // If we are using Android Google Authenticator or iOS client app,
+   // do not fire an intent to ask which JS API version to use.
+   if (port.getPortType) {
+     var apiVersion;
+     switch (port.getPortType()) {
+       case 'WrappedIosPort_':
+       case 'WrappedAuthenticatorPort_':
+         apiVersion = 1.1;
+         break;
 
-    if (port.getPortType && port.getPortType() == 'WrappedIosPort_') {
-      callback({'js_api_version': 1.1});
-      return;
-    }
-
+       default:
+         apiVersion = 0;
+         break;
+     }
+     callback({ 'js_api_version': apiVersion });
+     return;
+   }
     var reqId = ++u2f.reqCounter_;
     u2f.callbackMap_[reqId] = callback;
     var req = {

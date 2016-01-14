@@ -109,14 +109,17 @@ int U2Fob_recv(struct U2Fob* device, uint8_t* cmd,
                void* data, size_t size,
                float timeoutSeconds);
 
+// Exchanges a pre-formatted APDU buffer with the device.
 // returns
 //   negative error
 //   positive sw12, e.g. 0x9000, 0x6985 etc.
-int U2Fob_exchange(struct U2Fob* device,
-                   void* data,
-                   size_t size,
-                   std::string* in);
+int U2Fob_exchange_apdu_buffer(struct U2Fob* device,
+                               void* data,
+                               size_t size,
+                               std::string* in);
 
+// Formats an APDU with the given field values, and exchanges it
+// with the device.
 // returns
 //   negative error
 //   positive sw12, e.g. 0x9000, 0x6985 etc.

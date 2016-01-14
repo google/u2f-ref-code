@@ -85,7 +85,7 @@ void test_Version() {
   buf[6] = 0;  // Lc = 0 (Not ISO 7816-4 compliant)
   buf[7] = 0;  // Le = 0
   buf[8] = 0;  // Le = 0
-  CHECK_EQ(0x9000, U2Fob_exchange(device, buf, sizeof(buf), &rsp));
+  CHECK_EQ(0x9000, U2Fob_exchange_apdu_buffer(device, buf, sizeof(buf), &rsp));
   CHECK_EQ(rsp, "U2F_V2");
 }
 

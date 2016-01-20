@@ -1,14 +1,5 @@
 # Reference code for U2F specifications
 
----------------------------
-
-**Note:** Unless you want to experiment with changing how Chrome implements support for 
-U2F, we recommend using the [no-extension](https://github.com/google/u2f-ref-code/tree/no-extension) branch instead. 
-The [no-extension](https://github.com/google/u2f-ref-code/tree/no-extension) branch makes use of Chrome's built-in 
-support for U2F, whereas this master branch shows how to write a Chrome extension that bypasses Chrome's built-in support.
-
----------------------------
-
 This code implements the FIDO U2F specifications being developed at
 http://fidoalliance.org/.  This code is intended as a reference and resource
 for developers who are interested in exploring U2F.  The code consists of the

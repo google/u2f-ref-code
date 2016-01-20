@@ -28,25 +28,26 @@ import com.google.u2f.server.messages.U2fSignRequest;
 @SuppressWarnings("serial")
 @Singleton
 public class BeginEnrollServlet extends HttpServlet {
-	
-	private final UserService userService =  UserServiceFactory.getUserService();
-	private final U2FServer u2fServer;
-	
-	@Inject
-	public BeginEnrollServlet(U2FServer u2fServer) {
-		this.u2fServer = u2fServer;
-	}
-	
-	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-		User user = userService.getCurrentUser();
-		boolean allowReregistration = Boolean.valueOf(req.getParameter("reregistration"));
-		RegistrationRequest registrationRequest;
-		U2fSignRequest signRequest;
-		String appId = (req.isSecure() ? "https://" : "http://") + req.getHeader("Host");
 
-		try {
+  private final UserService userService =  UserServiceFactory.getUserService();
+  private final U2FServer u2fServer;
+
+  @Inject
+  public BeginEnrollServlet(U2FServer u2fServer) {
+    this.u2fServer = u2fServer;
+  }
+
+  public void doPost(HttpServletRequest req, HttpServletResponse resp)
+      throws IOException, ServletException {
+    User user = userService.getCurrentUser();
+    boolean allowReregistration = Boolean.valueOf(req.getParameter("reregistration"));
+    RegistrationRequest registrationRequest;
+    U2fSignRequest signRequest;
+    String appId = (req.isSecure() ? "https://" : "http://") + req.getHeader("Host");
+
+    try {
       registrationRequest = u2fServer.getRegistrationRequest(user.getUserId(), appId);
-		  signRequest = u2fServer.getSignRequest(user.getUserId(), appId);
+      signRequest = u2fServer.getSignRequest(user.getUserId(), appId);
     } catch (U2FException e) {
       throw new ServletException("couldn't get registration request", e);
     }
@@ -54,19 +55,19 @@ public class BeginEnrollServlet extends HttpServlet {
     JsonObject result = new JsonObject();
     result.addProperty("appId", appId);
     result.addProperty("sessionId", registrationRequest.getSessionId());
-    
-	  JsonObject registerRequests = new JsonObject();
-		registerRequests.addProperty("challenge", registrationRequest.getChallenge());
-		registerRequests.addProperty("version", registrationRequest.getVersion());
-		result.add("registerRequests", registerRequests);
 
-		if(allowReregistration) {
-		  result.add("registeredKeys", new JsonArray());
-		} else {
-		  result.add("registeredKeys", signRequest.getRegisteredKeysAsJson(appId));
-		}
+    JsonObject registerRequests = new JsonObject();
+    registerRequests.addProperty("challenge", registrationRequest.getChallenge());
+    registerRequests.addProperty("version", registrationRequest.getVersion());
+    result.add("registerRequests", registerRequests);
 
-		resp.setContentType("application/json");
-		resp.getWriter().println(result.toString());
-	}
+    if(allowReregistration) {
+      result.add("registeredKeys", new JsonArray());
+    } else {
+      result.add("registeredKeys", signRequest.getRegisteredKeysAsJson(appId));
+    }
+
+    resp.setContentType("application/json");
+    resp.getWriter().println(result.toString());
+  }
 }

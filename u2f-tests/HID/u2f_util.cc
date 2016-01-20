@@ -344,10 +344,10 @@ int U2Fob_recv(struct U2Fob* device, uint8_t* cmd,
   return result;
 }
 
-int U2Fob_exchange(struct U2Fob* device,
-                   void* data,
-                   size_t size,
-                   std::string* in) {
+int U2Fob_exchange_apdu_buffer(struct U2Fob* device,
+                               void* data,
+                               size_t size,
+                               std::string* in) {
   uint8_t cmd = U2FHID_MSG;
 
   int res = U2Fob_send(device, cmd, data, size);
@@ -404,7 +404,7 @@ int U2Fob_apdu(struct U2Fob* device,
   buf[offs++] = 0;
   buf[offs++] = 0;
 
-  return U2Fob_exchange(device, buf, offs, in);
+  return U2Fob_exchange_apdu_buffer(device, buf, offs, in);
 }
 
 bool getCertificate(const U2F_REGISTER_RESP& rsp,

@@ -17,12 +17,12 @@ In order to deploy to https://noext-dot-u2fdemo.appspot.com, set the version val
 ```
 
 ## CrxJs
-In order to configure the appspot server to call the U2F extension you have, set Set the extension id in [u2f-api.js](https://github.com/google/u2f-ref-code/blob/master/u2f-gae-demo/war/js/u2f-api.js) to ```kmendfapggjehodndflmmgagdbamhnfd```:
+In order to configure the appspot server to call the U2F extension you have, set the extension id in [u2f-api.js](https://github.com/google/u2f-ref-code/blob/master/u2f-gae-demo/war/js/u2f-api.js) to ```kmendfapggjehodndflmmgagdbamhnfd```:
 ```
   u2f.EXTENSION_ID = 'kmendfapggjehodndflmmgagdbamhnfd';
 ```
  
-In order to deploy to https://crxjs-dot-u2fdemo.appspot.com, set et the version value to ```crxjs``` in [appengine-web.xml](https://github.com/google/u2f-ref-code/blob/master/u2f-gae-demo/war/WEB-INF/appengine-web.xml):
+In order to deploy to https://crxjs-dot-u2fdemo.appspot.com, set the version value to ```crxjs``` in [appengine-web.xml](https://github.com/google/u2f-ref-code/blob/master/u2f-gae-demo/war/WEB-INF/appengine-web.xml):
 ```
   <version>crxjs</version>
 ```

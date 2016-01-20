@@ -16,10 +16,21 @@ import com.google.common.base.Objects;
 
 public class SecurityKeyData {
   public enum Transports {
-    BLUETOOTH_RADIO,
-    BLUETOOTH_LOW_ENERGY,
-    USB,
-    NFC
+    BLUETOOTH_BREDR("bt"),
+    BLUETOOTH_LOW_ENERGY("ble"),
+    USB("usb"),
+    NFC("nfc");
+
+    private String mValue;
+
+    Transports(String value) {
+      mValue = value;
+    }
+
+    @Override
+    public String toString() {
+      return mValue;
+    }
   }
 
   private final long enrollmentTime;
@@ -77,7 +88,7 @@ public class SecurityKeyData {
   }
 
   public int getCounter() {
-	return counter;
+    return counter;
   }
 
   public void setCounter(int newCounterValue) {

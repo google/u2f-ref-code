@@ -121,7 +121,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
     u2fServer.processRegistrationResponse(registrationResponse, 0L);
 
     List<Transports> transports = new LinkedList<Transports>();
-    transports.add(Transports.BLUETOOTH_RADIO);
+    transports.add(Transports.BLUETOOTH_BREDR);
     verify(mockDataStore).addSecurityKeyData(eq(ACCOUNT_NAME),
         eq(new SecurityKeyData(0L, transports, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
             TRUSTED_CERTIFICATE_ONE_TRANSPORT, 0)));
@@ -143,7 +143,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
     u2fServer.processRegistrationResponse(registrationResponse, 0L);
 
     List<Transports> transports = new LinkedList<Transports>();
-    transports.add(Transports.BLUETOOTH_RADIO);
+    transports.add(Transports.BLUETOOTH_BREDR);
     transports.add(Transports.BLUETOOTH_LOW_ENERGY);
     transports.add(Transports.NFC);
     verify(mockDataStore).addSecurityKeyData(eq(ACCOUNT_NAME),

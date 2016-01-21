@@ -32,11 +32,12 @@ public class SignDataServlet extends JavascriptServlet {
       return;
     }
 
-    U2fSignRequest signRequest = u2fServer.getSignRequest(userName, "http://localhost:8080");
+    String appId = "http://localhost:8080";
+    U2fSignRequest signRequest = u2fServer.getSignRequest(userName, appId);
     JsonObject result = new JsonObject();
     result.addProperty("challenge", signRequest.getChallenge());
-    result.addProperty("appId", "http://localhost:8080");
-    result.add("registeredKeys", signRequest.getRegisteredKeysAsJson());
+    result.addProperty("appId", appId);
+    result.add("registeredKeys", signRequest.getRegisteredKeysAsJson(appId));
 
     body.println("var signData = " + result.toString() + ";");
   }

@@ -111,9 +111,11 @@ public class RegisteredKey {
     return transportsArray;
   }
 
-  public JsonObject getJson() {
+  public JsonObject getJson(String defaultAppId) {
     JsonObject result = new JsonObject();
-    result.addProperty("appId", appId);
+    if (appId != null && !appId.equals(defaultAppId)) {
+      result.addProperty("appId", appId);
+    }
     result.addProperty("version", version);
     result.addProperty("keyHandle", keyHandle);
     result.addProperty("sessionId", sessionId);

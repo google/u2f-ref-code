@@ -6,6 +6,7 @@
 
 package com.google.u2f.server.messages;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,9 +30,10 @@ public class RegisteredKey {
   private final String keyHandle;
 
   /**
-   * 
+   * The transports registered for this key handle.
    */
   private final List<Transports> transports;
+
   /**
    * The application id that the RP would like to assert. The U2F token will
    * enforce that the key handle provided above is associated with this
@@ -66,7 +68,7 @@ public class RegisteredKey {
   public List<Transports> getTransports() {
     return transports;
   }
-  
+
   public String getAppId() {
     return appId;
   }
@@ -100,17 +102,6 @@ public class RegisteredKey {
         && Objects.equals(sessionId, other.sessionId);
   }
 
-  private JsonArray getTransportsAsJson() {
-    if (this.transports == null) {
-      return null;
-    }
-    JsonArray transportsArray =  new JsonArray();
-    for (Transports transport : this.transports) {
-      transportsArray.add(new JsonPrimitive(transport.toString()));
-    }
-    return transportsArray;
-  }
-
   public JsonObject getJson(String defaultAppId) {
     JsonObject result = new JsonObject();
     if (appId != null && !appId.equals(defaultAppId)) {
@@ -119,10 +110,24 @@ public class RegisteredKey {
     result.addProperty("version", version);
     result.addProperty("keyHandle", keyHandle);
     result.addProperty("sessionId", sessionId);
-    JsonArray transportsJson = getTransportsAsJson();
-    if (transportsJson != null) {
-      result.add("transports", transportsJson);
+    String transportsString = getTransportsAsString();
+    if (transportsString != null) {
+      result.addProperty("transports", transportsString);
     }
     return result;
+  }
+
+  private String getTransportsAsString() {
+    if (this.transports == null) {
+      return null;
+    }
+    StringBuilder stringBuilder = new StringBuilder();
+    for (int i = 0; i < transports.size(); i++) {
+      stringBuilder.append(transports.get(i));
+      if (i < transports.size() - 1) {
+        stringBuilder.append(",");
+      }
+    }
+    return stringBuilder.toString();
   }
 }

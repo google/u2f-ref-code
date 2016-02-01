@@ -418,8 +418,9 @@ HidGnubbyDevice.HID_VID_PIDS = [
 
 /**
  * @param {function(Array)} cb Enumeration callback
+ * @param {GnubbyEnumerationTypes=} opt_type Which type of enumeration to do.
  */
-HidGnubbyDevice.enumerate = function(cb) {
+HidGnubbyDevice.enumerate = function(cb, opt_type) {
   /**
    * One pass using getDevices, and one for each of the hardcoded vid/pids.
    * @const
@@ -454,13 +455,24 @@ HidGnubbyDevice.enumerate = function(cb) {
     }
   }
 
-  // Pass 1: usagePage-based enumeration.
-  chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]},
-      enumerated.bind(null, true));
-  // Pass 2: vid/pid-based enumeration, for legacy devices.
-  for (var i = 0; i < HidGnubbyDevice.HID_VID_PIDS.length; i++) {
-    var dev = HidGnubbyDevice.HID_VID_PIDS[i];
-    chrome.hid.getDevices({filters: [dev]}, enumerated.bind(null, false));
+  // Pass 1: usagePage-based enumeration, for FIDO U2F devices. If non-FIDO
+  // devices are asked for, "implement" this pass by providing it the empty
+  // list. (enumerated requires that it's called once per pass.)
+  if (opt_type == GnubbyEnumerationTypes.VID_PID) {
+    enumerated(true, []);
+  } else {
+    chrome.hid.getDevices({filters: [{usagePage: 0xf1d0}]},
+        enumerated.bind(null, true));
+  }
+  // Pass 2: vid/pid-based enumeration, for legacy devices. If FIDO devices
+  // are asked for, "implement" this pass by providing it the empty list.
+  if (opt_type == GnubbyEnumerationTypes.FIDO_U2F) {
+    enumerated(false, []);
+  } else {
+    for (var i = 0; i < HidGnubbyDevice.HID_VID_PIDS.length; i++) {
+      var dev = HidGnubbyDevice.HID_VID_PIDS[i];
+      chrome.hid.getDevices({filters: [dev]}, enumerated.bind(null, false));
+    }
   }
 };
 

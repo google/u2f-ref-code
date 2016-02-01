@@ -239,7 +239,7 @@ function sendResponseOnce(sentResponse, closeable, response, sendResponse) {
       console.warn('sendResponse failed: ' + exception);
     }
   } else {
-    console.warn(UTIL_fmt('Tried to reply more than once! Juan, FIX ME'));
+    console.warn(UTIL_fmt('Tried to reply more than once!'));
   }
 }
 
@@ -253,6 +253,8 @@ function sha256HashOfString(string) {
   return s.digest();
 }
 
+var UNUSED_CID_PUBKEY_VALUE = "unused";
+
 /**
  * Normalizes the TLS channel ID value:
  * 1. Converts semantically empty values (undefined, null, 0) to the empty
@@ -264,9 +266,9 @@ function sha256HashOfString(string) {
  */
 function tlsChannelIdValue(opt_tlsChannelId) {
   if (!opt_tlsChannelId) {
-    // Case 1: Always set some value for  TLS channel ID, even if it's the empty
+    // Case 1: Always set some value for TLS channel ID, even if it's the empty
     // string: this browser definitely supports them.
-    return '';
+    return UNUSED_CID_PUBKEY_VALUE;
   }
   if (typeof opt_tlsChannelId === 'string') {
     try {
@@ -275,7 +277,7 @@ function tlsChannelIdValue(opt_tlsChannelId) {
         // Case 1: The string value 'null' parses as the Javascript object null,
         // so return an empty string: the browser definitely supports TLS
         // channel id.
-        return '';
+        return UNUSED_CID_PUBKEY_VALUE;
       }
       // Case 2: return the value as a JS object.
       return /** @type {Object} */ (obj);

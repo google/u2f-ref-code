@@ -398,8 +398,16 @@ UsbGnubbyDevice.WINUSB_VID_PIDS = [
 
 /**
  * @param {function(Array)} cb Enumerate callback
+ * @param {GnubbyEnumerationTypes=} opt_type Which type of enumeration to do.
  */
-UsbGnubbyDevice.enumerate = function(cb) {
+UsbGnubbyDevice.enumerate = function(cb, opt_type) {
+  // UsbGnubbyDevices are all non-FIDO devices, so return an empty list if
+  // FIDO is what's wanted.
+  if (opt_type == GnubbyEnumerationTypes.FIDO_U2F) {
+    cb([]);
+    return;
+  }
+
   var numEnumerated = 0;
   var allDevs = [];
 

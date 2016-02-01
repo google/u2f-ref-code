@@ -64,6 +64,10 @@ ExternalHandler.prototype.run = function(cb) {
 ExternalHandler.prototype.close = function() {
   /** @private {boolean} */
   this.closed_ = true;
+
+  this.helperConfig_.sendMessage(this.helperConfig_.appId, {type: 'close'},
+    function() {});
+
 };
 
 

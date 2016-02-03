@@ -25,13 +25,11 @@ public class AndroidKeyStoreAttestation {
   private static final String KEY_DESCRIPTION_OID = "1.3.6.1.4.1.11129.2.1.17";
 
   // Indexes for data in KeyDescription sequence
-  private static final int DESCRIPTION_LENGTH_MIN = 4;
-  private static final int DESCRIPTION_LENGTH_MAX = 5;
+  private static final int DESCRIPTION_LENGTH = 4;
   private static final int DESCRIPTION_VERSION_INDEX = 0;
   private static final int DESCRIPTION_CHALLENGE_INDEX = 1;
   private static final int DESCRIPTION_SOFTWARE_ENFORCED_INDEX = 2;
   private static final int DESCRIPTION_TEE_ENFORCED_INDEX = 3;
-  private static final int DESCRIPTION_UNIQUE_INDEX = 4;
 
   // Don't expect more than 32 bits for any INTEGER
   private static final int MAX_INT_BITS = 32;
@@ -187,10 +185,9 @@ public class AndroidKeyStoreAttestation {
     }
     DLSequence sequence = (DLSequence) asn1Object;
 
-    if (sequence.size() < DESCRIPTION_LENGTH_MIN || sequence.size() > DESCRIPTION_LENGTH_MAX) {
+    if (sequence.size() != DESCRIPTION_LENGTH) {
       throw new CertificateParsingException("KeyDescription Sequence has " + sequence.size()
-          + " elements.  Expected length between " + DESCRIPTION_LENGTH_MIN + " and "
-          + DESCRIPTION_LENGTH_MAX);
+          + " elements.  Expected " + DESCRIPTION_LENGTH + " elements ");
     }
 
     return sequence;

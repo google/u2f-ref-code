@@ -6,26 +6,6 @@
 
 package com.google.u2f.server.impl;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Object;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEROctetString;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -46,21 +26,27 @@ import com.google.u2f.server.data.EnrollSessionData;
 import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SecurityKeyData.Transports;
 import com.google.u2f.server.data.SignSessionData;
-import com.google.u2f.server.impl.attestation.X509ExtentionParsingUtil;
+import com.google.u2f.server.impl.attestation.u2f.U2fAttestation;
 import com.google.u2f.server.messages.RegisteredKey;
 import com.google.u2f.server.messages.RegistrationRequest;
 import com.google.u2f.server.messages.RegistrationResponse;
 import com.google.u2f.server.messages.SignResponse;
 import com.google.u2f.server.messages.U2fSignRequest;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
+
 public class U2FServerReferenceImpl implements U2FServer {
-
-  // Object Identifier for the attestation certificate transport extension fidoU2FTransports
-  private static final String TRANSPORT_EXTENSION_OID = "1.3.6.1.4.1.45724.2.1.1";
-  // The number of bits in a byte. It is used to know at which index in a BitSet to look for
-  // specific transport values
-  private static final int BITS_IN_A_BYTE = 8;
-
   private static final String TYPE_PARAM = "typ";
   private static final String CHALLENGE_PARAM = "challenge";
   private static final String ORIGIN_PARAM = "origin";
@@ -140,13 +126,11 @@ public class U2FServerReferenceImpl implements U2FServer {
     byte[] signature = registerResponse.getSignature();
     List<Transports> transports = null;
     try {
-      transports = parseTransportsExtension(attestationCertificate);
+      transports = U2fAttestation.Parse(attestationCertificate).getTransports();
     } catch (CertificateParsingException e1) {
       Log.warning("Could not parse transports extension " + e1.getMessage());
     }
 
-//    transports = new LinkedList<Transports>();
-//    transports.add(Transports.NFC);
     Log.info("-- Parsed rawRegistrationResponse --");
     Log.info("  userPublicKey: " + Hex.encodeHexString(userPublicKey));
     Log.info("  keyHandle: " + Hex.encodeHexString(keyHandle));
@@ -294,59 +278,6 @@ public class U2FServerReferenceImpl implements U2FServer {
 
     Log.info("<< processSignResponse");
     return securityKeyData;
-  }
-
-  /**
-   * Parses a transport extension from an attestation certificate and returns
-   * a List of HardwareFeatures supported by the security key. The specification of
-   * the HardwareFeatures in the certificate should match their internal definition in
-   * device_auth.proto
-   *
-   * <p>The expected transport extension value is a BIT STRING containing the enabled
-   * transports:
-   *
-   *  <p>FIDOU2FTransports ::= BIT STRING {
-   *       bluetoothRadio(0), -- Bluetooth Classic
-   *       bluetoothLowEnergyRadio(1),
-   *       uSB(2),
-   *       nFC(3)
-   *     }
-   *
-   *   <p>Note that the BIT STRING must be wrapped in an OCTET STRING.
-   *   An extension that encodes BT, BLE, and NFC then looks as follows:
-   *
-   *   <p>SEQUENCE (2 elem)
-   *      OBJECT IDENTIFIER 1.3.6.1.4.1.45724.2.1.1
-   *      OCTET STRING (1 elem)
-   *        BIT STRING (4 bits) 1101
-   *
-   * @param cert the certificate to parse for extension
-   * @return the supported transports as a List of HardwareFeatures or null if no extension
-   * was found
-   */
-  public static List<Transports> parseTransportsExtension(X509Certificate cert)
-      throws CertificateParsingException{
-    LinkedList<Transports> transportsList = new LinkedList<Transports>();
-    DEROctetString extValue =
-        X509ExtentionParsingUtil.extractExtensionValue(cert, TRANSPORT_EXTENSION_OID);
-
-    // Read out the BitString
-    ASN1Object asn1Object = X509ExtentionParsingUtil.getAsn1Object(extValue.getOctets());
-    if (asn1Object == null || !(asn1Object instanceof DERBitString)) {
-      throw new CertificateParsingException("No BitString found in transports extension");
-    }
-    DERBitString bitString = (DERBitString) asn1Object;
-
-    byte [] values = bitString.getBytes();
-    BitSet bitSet = BitSet.valueOf(values);
-
-    // We might have more defined transports than used by the extension
-    for (int i = 0; i < BITS_IN_A_BYTE; i++) {
-      if (bitSet.get(BITS_IN_A_BYTE - i - 1)) {
-        transportsList.add(Transports.values()[i]);
-      }
-    }
-    return transportsList;
   }
 
   private void verifyBrowserData(JsonElement browserDataAsElement,

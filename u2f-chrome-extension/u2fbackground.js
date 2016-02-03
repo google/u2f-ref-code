@@ -181,7 +181,7 @@ function messageHandlerExternal(request, sender, sendResponse) {
       registerExternalHelper(sender.id);
       if (isBleApp(sender.id)) {
         setBleAppId(sender.id);
-        sendResponse(/** @type {BleAck} */ ({rc: 0}));
+        sendResponse(/** @type {ExternalHelperAck} */ ({rc: 0}));
       }
     }
     return false;  // We won't call sendResponse, Chrome may discard it

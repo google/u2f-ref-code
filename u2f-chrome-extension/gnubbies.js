@@ -18,11 +18,23 @@
 var GnubbyDeviceId;
 
 /**
+ * Ways in which gnubby devices are enumerated.
+ * @const
+ * @enum {number}
+ */
+var GnubbyEnumerationTypes = {
+  ANY: 0,
+  VID_PID: 1,
+  FIDO_U2F: 2
+};
+
+/**
  * @typedef {{
  *   isSharedAccess: boolean,
- *   enumerate: function(function(Array)),
+ *   enumerate: function(function(Array), GnubbyEnumerationTypes=),
  *   deviceToDeviceId: function(*): GnubbyDeviceId,
- *   open: function(Gnubbies, number, *, function(number, GnubbyDevice=))
+ *   open: function(Gnubbies, number, *, function(number, GnubbyDevice=)),
+ *   cancelOpen: (undefined|function(Gnubbies, number, *))
  * }}
  */
 var GnubbyNamespaceImpl;
@@ -43,7 +55,7 @@ function Gnubbies() {
   this.namespaces_ = [];
   /** @private {Object<string, GnubbyNamespaceImpl>} */
   this.impl_ = {};
-  /** @private {Object<string, Object<number, !GnubbyDevice>>} */
+  /** @private {Object<string, Object<number|string, !GnubbyDevice>>} */
   this.openDevs_ = {};
   /** @private {Object<string, Object<number, *>>} */
   this.pendingOpens_ = {};  // clients awaiting an open
@@ -99,10 +111,20 @@ Gnubbies.prototype.closeAll = function() {
 };
 
 /**
+ * @param {string} namespace
+ * @return {function(*)} deviceToDeviceId method associated with given namespace
+ * @private
+ */
+Gnubbies.prototype.getDeviceToDeviceId_ = function(namespace) {
+  return this.impl_[namespace].deviceToDeviceId;
+};
+
+/**
  * @param {function(number, Array<GnubbyDeviceId>)} cb Called back with the
  *     result of enumerating.
+ * @param {GnubbyEnumerationTypes=} opt_type Which type of enumeration to do.
  */
-Gnubbies.prototype.enumerate = function(cb) {
+Gnubbies.prototype.enumerate = function(cb, opt_type) {
   if (!cb) {
     cb = function(rc, indexes) {
       var msg = 'defaultEnumerateCallback(' + rc;
@@ -147,7 +169,7 @@ Gnubbies.prototype.enumerate = function(cb) {
 
     var presentDevs = {};
     var deviceIds = [];
-    var deviceToDeviceId = self.impl_[namespace].deviceToDeviceId;
+    var deviceToDeviceId = self.getDeviceToDeviceId_(namespace);
     for (var i = 0; i < devs.length; ++i) {
       var deviceId = deviceToDeviceId(devs[i]);
       deviceIds.push(deviceId);
@@ -191,7 +213,7 @@ Gnubbies.prototype.enumerate = function(cb) {
     for (var i = 0; i < this.namespaces_.length; i++) {
       var namespace = this.namespaces_[i];
       var enumerator = this.impl_[namespace].enumerate;
-      enumerator(makeEnumerateCb(namespace));
+      enumerator(makeEnumerateCb(namespace), opt_type);
     }
   }
 };
@@ -276,7 +298,7 @@ Gnubbies.prototype.addClient = function(which, who, cb) {
   }
 
   var dev = null;
-  var deviceToDeviceId = this.impl_[which.namespace].deviceToDeviceId;
+  var deviceToDeviceId = this.getDeviceToDeviceId_(which.namespace);
   if (this.devs_[which.namespace]) {
     for (var i = 0; i < this.devs_[which.namespace].length; i++) {
       var device = this.devs_[which.namespace][i];
@@ -330,6 +352,35 @@ Gnubbies.prototype.addClient = function(which, who, cb) {
       var openImpl = this.impl_[which.namespace].open;
       openImpl(this, which.device, dev, openCb);
     }
+  }
+};
+
+/**
+ * Called to cancel add client operation
+ * @param {GnubbyDeviceId} which Which device to cancel open.
+ */
+Gnubbies.prototype.cancelAddClient = function(which) {
+  var dev = null;
+  var deviceToDeviceId = this.getDeviceToDeviceId_(which.namespace);
+  if (this.devs_[which.namespace]) {
+    for (var i = 0; i < this.devs_[which.namespace].length; i++) {
+      var device = this.devs_[which.namespace][i];
+      if (deviceToDeviceId(device).device == which.device) {
+        dev = device;
+        break;
+      }
+    }
+  }
+
+  if (!dev) {
+    return;
+  }
+
+  if (this.pendingOpens_[which.namespace] &&
+      this.pendingOpens_[which.namespace][which.device]) {
+    var cancelOpenImpl = this.impl_[which.namespace].cancelOpen;
+    if (cancelOpenImpl)
+      cancelOpenImpl(this, which.device, dev);
   }
 };
 

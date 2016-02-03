@@ -16,7 +16,7 @@ do not modify/remove the key in ``manifest.json``.
 
 ## Communicating with the extension
 
-The U2F JavaScript API draft describes how websites can talk directly to
+The U2F JavaScript API draft also describes how websites can talk directly to
 the extension via a [MessagePort][messageport], in cases where they do not
 whish to load a script from the extension. How a port to this extension is
 obtained depends on whether the source origin is whitelisted as *externally

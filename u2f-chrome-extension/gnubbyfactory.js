@@ -33,9 +33,13 @@ var FactoryOpenCallback;
  * @param {string=} opt_appIdHash The base64-encoded hash of the app id for
  *     which the gnubby being opened.
  * @param {string=} opt_logMsgUrl The url to post log messages to.
+ * @param {string=} opt_caller Identifier for the caller.
+ * @return {(function ()|undefined)} Some implementations might return function
+ *     that can be used to cancel this pending open operation. Opening device
+ *     might take long time or be resource-hungry.
  */
 GnubbyFactory.prototype.openGnubby =
-    function(which, forEnroll, cb, opt_appIdHash, opt_logMsgUrl) {
+    function(which, forEnroll, cb, opt_appIdHash, opt_logMsgUrl, opt_caller) {
 };
 
 /**

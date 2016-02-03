@@ -46,7 +46,7 @@ public class AndroidKeyStoreAttestationTest extends TestVectors {
         softwareAuthorizationList.getPurpose().contains(Purpose.KM_PURPOSE_VERIFY));
 
     // Check algorithm
-    assertEquals("Incorrect algorithm", Algorithm.KM_ALGORITHM_RSA,
+    assertEquals("Incorrect algorithm", Algorithm.KM_ALGORITHM_EC,
         softwareAuthorizationList.getAlgorithm());
   }
 

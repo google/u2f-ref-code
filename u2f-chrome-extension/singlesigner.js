@@ -76,6 +76,9 @@ function SingleGnubbySigner(gnubbyId, forEnroll, completeCb, timer,
 
   /** @private {!Object<string, number>} */
   this.cachedError_ = [];
+
+  /** @private {(function()|undefined)} */
+  this.openCanceller_;
 }
 
 /** @enum {number} */
@@ -109,6 +112,12 @@ SingleGnubbySigner.prototype.getDeviceId = function() {
  * Closes this signer's gnubby, if it's held.
  */
 SingleGnubbySigner.prototype.close = function() {
+
+  if (this.state_ == SingleGnubbySigner.State.OPENING) {
+    if (this.openCanceller_)
+      this.openCanceller_();
+  }
+
   if (!this.gnubby_) return;
   this.state_ = SingleGnubbySigner.State.CLOSING;
   this.gnubby_.closeWhenIdle(this.closed_.bind(this));
@@ -187,12 +196,13 @@ SingleGnubbySigner.prototype.open_ = function() {
   }
   if (this.state_ == SingleGnubbySigner.State.INIT) {
     this.state_ = SingleGnubbySigner.State.OPENING;
-    DEVICE_FACTORY_REGISTRY.getGnubbyFactory().openGnubby(
+    this.openCanceller_ = DEVICE_FACTORY_REGISTRY.getGnubbyFactory().openGnubby(
         this.gnubbyId_,
         this.forEnroll_,
         this.openCallback_.bind(this),
         appIdHash,
-        this.logMsgUrl_);
+        this.logMsgUrl_,
+        'singlesigner.js:SingleGnubbySigner.prototype.open_');
   }
 };
 
@@ -235,11 +245,13 @@ SingleGnubbySigner.prototype.openCallback_ = function(rc, gnubby) {
         var self = this;
         window.setTimeout(function() {
           if (self.gnubby_) {
-            DEVICE_FACTORY_REGISTRY.getGnubbyFactory().openGnubby(
+            this.openCanceller_ = DEVICE_FACTORY_REGISTRY
+              .getGnubbyFactory().openGnubby(
                 self.gnubbyId_,
                 self.forEnroll_,
                 self.openCallback_.bind(self),
-                self.logMsgUrl_);
+                self.logMsgUrl_,
+                'singlesigner.js:SingleGnubbySigner.prototype.openCallback_');
           }
         }, SingleGnubbySigner.OPEN_DELAY_MILLIS);
       } else {

@@ -136,19 +136,33 @@ Gnubby.prototype.version = function(cb) {
     return;
   }
   var self = this;
+
+  function gotResponse(rc, data) {
+    if (!rc) {
+      self.version_ = data;
+    }
+    cb(rc, data);
+  }
+
   var apdu = new Uint8Array([0x00, Gnubby.U2F_VERSION, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00]);
+      0x00, 0x00]);
   this.apduReply(apdu.buffer, function(rc, data) {
     if (rc == 0x6d00) {
       // Command not implemented. Pretend this is v1.
       var v1 = new Uint8Array(UTIL_StringToBytes(Gnubby.U2F_V1));
       self.version_ = v1.buffer;
       cb(-GnubbyDevice.OK, v1.buffer);
-    } else {
-      if (!rc) {
-        self.version_ = data;
-      }
-      cb(rc, data);
+      return;
     }
+    if (rc == 0x6700) {
+      // Wrong length. Try with non-ISO 7816-4-conforming layout defined in
+      // earlier U2F drafts.
+      apdu = new Uint8Array([0x00, Gnubby.U2F_VERSION, 0x00, 0x00, 0x00,
+          0x00, 0x00, 0x00, 0x00]);
+      self.apduReply(apdu.buffer, gotResponse);
+      return;
+    }
+    // Any other response: handle as final result.
+    gotResponse(rc, data);
   });
 };

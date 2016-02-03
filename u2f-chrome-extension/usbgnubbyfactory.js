@@ -29,12 +29,14 @@ function UsbGnubbyFactory(gnubbies) {
  * @param {string=} opt_appIdHash The base64-encoded hash of the app id for
  *     which the gnubby being opened.
  * @param {string=} opt_logMsgUrl The url to post log messages to.
+ * @param {string=} opt_caller Identifier for the caller.
+ * @return {undefined} no open canceller needed for this type of gnubby
  * @override
  */
 UsbGnubbyFactory.prototype.openGnubby =
-    function(which, forEnroll, cb, opt_appIdHash, opt_logMsgUrl) {
+    function(which, forEnroll, cb, opt_appIdHash, opt_logMsgUrl, opt_caller) {
   var gnubby = new Gnubby();
-  gnubby.open(which, function(rc) {
+  gnubby.open(which, GnubbyEnumerationTypes.ANY, function(rc) {
     if (rc) {
       cb(rc, gnubby);
       return;
@@ -42,7 +44,7 @@ UsbGnubbyFactory.prototype.openGnubby =
     gnubby.sync(function(rc) {
       cb(rc, gnubby);
     });
-  });
+  }, opt_caller);
 };
 
 /**

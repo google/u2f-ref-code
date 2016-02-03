@@ -32,9 +32,6 @@ public class AndroidKeyStoreAttestationTest extends TestVectors {
     assertArrayEquals(
         "Incorrect challenge", "challenge".getBytes(), attestation.getAttestationChallenge());
 
-    // Check unique id
-    assertArrayEquals("Incorrect unique id", "non-unique ID".getBytes(), attestation.getUniqueId());
-
     // Get software authz list
     AuthorizationList softwareAuthorizationList = attestation.getSoftwareAuthorizationList();
     assertNotNull("Not expecting null software authorization list", softwareAuthorizationList);

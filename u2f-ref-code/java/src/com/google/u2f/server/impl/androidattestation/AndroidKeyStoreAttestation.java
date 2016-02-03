@@ -35,23 +35,22 @@ public class AndroidKeyStoreAttestation {
   private static final int DESCRIPTION_UNIQUE_INDEX = 4;
 
   // Don't expect more than 32 bits for any INTEGER
-  private static final int MAX_INTEGER_BITS = 32;
+  private static final int MAX_INT_BITS = 32;
+  private static final int MAX_LONG_BITS = 64;
 
   // Tags for Authorization List
   private static final int AUTHZ_PURPOSE_TAG = 1;
   private static final int AUTHZ_ALGORITHM_TAG = 2;
 
-  private final Integer keymasterVersion;
+  private final int keymasterVersion;
   private final byte[] attestationChallenge;
   private final AuthorizationList softwareAuthorizationList;
-  private final byte[] uniqueId;
 
   private AndroidKeyStoreAttestation(Integer keymasterVersion, byte[] attestationChallenge,
-      AuthorizationList softwareAuthorizationList, byte[] uniqueId) {
+      AuthorizationList softwareAuthorizationList) {
     this.keymasterVersion = keymasterVersion;
     this.attestationChallenge = attestationChallenge;
     this.softwareAuthorizationList = softwareAuthorizationList;
-    this.uniqueId = uniqueId;
   }
 
   /**
@@ -66,66 +65,66 @@ public class AndroidKeyStoreAttestation {
    *
    *   AuthorizationList ::= SEQUENCE {
    *       -- See keymaster_purpose_t for purpose values.
-   *       purpose [1] IMPLICIT SET OF INTEGER OPTIONAL,
+   *       purpose [1] EXPLICIT SET OF INTEGER OPTIONAL,
    *       -- See keymaster_algorithm_t for algorithm values.
-   *       algorithm   [2] IMPLICIT INTEGER OPTIONAL,
+   *       algorithm   [2] EXPLICIT INTEGER OPTIONAL,
    *       -- keySize is measured in bits, not bytes, and the value must be
    *       -- positive and less than than 2^32, though realistic values are
    *       -- much smaller.
-   *       keySize [3] IMPLICIT INTEGER OPTIONAL,
+   *       keySize [3] EXPLICIT INTEGER OPTIONAL,
    *       -- See keymaster_block_mode_t for blockMode values.
-   *       blockMode   [4] IMPLICIT SET OF INTEGER OPTIONAL,
+   *       blockMode   [4] EXPLICIT SET OF INTEGER OPTIONAL,
    *       -- See keymaster_digest_t for digest values.
-   *       digest  [5] IMPLICIT SET OF INTEGER OPTIONAL,
+   *       digest  [5] EXPLICIT SET OF INTEGER OPTIONAL,
    *       -- See keymaster_padding_t for padding values.
-   *       padding [6] IMPLICIT SET OF INTEGER OPTIONAL,
-   *       callerNonce [7] IMPLICIT NULL OPTIONAL,
+   *       padding [6] EXPLICIT SET OF INTEGER OPTIONAL,
+   *       callerNonce [7] EXPLICIT NULL OPTIONAL,
    *       -- minMacLength values must be positive and less than 2^32.
-   *       minMacLength    [8] IMPLICIT INTEGER OPTIONAL,
+   *       minMacLength    [8] EXPLICIT INTEGER OPTIONAL,
    *       -- See keymaster_kdf_t for kdf values.
-   *       kdf [9] IMPLICIT SEQUENCE OF INTEGER OPTIONAL,
+   *       kdf [9] EXPLICIT SEQUENCE OF INTEGER OPTIONAL,
    *       -- See keymaster_ec_curve_t for ecCurve values
-   *       ecCurve [10] IMPLICIT INTEGER OPTIONAL,
+   *       ecCurve [10] EXPLICIT INTEGER OPTIONAL,
    *       -- rsaPublicExponent must be a valid RSA public exponent less
    *       -- than 2^64.
-   *       rsaPublicExponent   [200] IMPLICIT INTEGER OPTIONAL,
-   *       eciesSingleHashMode [201] IMPLICIT NULL OPTIONAL,
-   *       includeUniqueId [202] IMPLICIT NULL OPTIONAL,
+   *       rsaPublicExponent   [200] EXPLICIT INTEGER OPTIONAL,
+   *       eciesSingleHashMode [201] EXPLICIT NULL OPTIONAL,
+   *       includeUniqueId [202] EXPLICIT NULL OPTIONAL,
    *       -- See keymaster_key_blob_usage_requirements for
    *       -- blobUsageRequirement values.
-   *       blobUsageRequirement    [301] IMPLICIT INTEGER OPTIONAL,
-   *       bootloaderOnly  [302] IMPLICIT NULL OPTIONAL,
+   *       blobUsageRequirement    [301] EXPLICIT INTEGER OPTIONAL,
+   *       bootloaderOnly  [302] EXPLICIT NULL OPTIONAL,
    *       -- activeDateTime must be a 64-bit Java date/time value.
-   *       activeDateTime  [400] IMPLICIT INTEGER OPTIONAL
+   *       activeDateTime  [400] EXPLICIT INTEGER OPTIONAL
    *       -- originationExpireDateTime must be a 64-bit Java date/time
    *       -- value.
-   *       originationExpireDateTime   [401] IMPLICIT INTEGER OPTIONAL
+   *       originationExpireDateTime   [401] EXPLICIT INTEGER OPTIONAL
    *       -- usageExpireDateTime must be a 64-bit Java date/time value.
-   *       usageExpireDateTime     [402] IMPLICIT INTEGER OPTIONAL
+   *       usageExpireDateTime     [402] EXPLICIT INTEGER OPTIONAL
    *       -- minSecondsBetweenOps must be non-negative and less than 2^32.
-   *       minSecondsBetweenOps    [403] IMPLICIT INTEGER OPTIONAL,
+   *       minSecondsBetweenOps    [403] EXPLICIT INTEGER OPTIONAL,
    *       -- maxUsesPerBoot must be positive and less than 2^32.
-   *       maxUsesPerBoot  [404] IMPLICIT INTEGER OPTIONAL,
-   *       noAuthRequired  [503] IMPLICIT NULL OPTIONAL,
+   *       maxUsesPerBoot  [404] EXPLICIT INTEGER OPTIONAL,
+   *       noAuthRequired  [503] EXPLICIT NULL OPTIONAL,
    *       -- See hw_authenticator_type_t for userAuthType values.  Note
    *       -- this field is a bitmask; multiple authenticator types may be
    *       -- ORed together.
-   *       userAuthType    [504] IMPLICIT INTEGER OPTIONAL,
+   *       userAuthType    [504] EXPLICIT INTEGER OPTIONAL,
    *       -- authTimeout, if present, must be positive and less than 2^32.
-   *       authTimeout [505] IMPLICIT INTEGER OPTIONAL,
-   *       allApplications [600] IMPLICIT NULL OPTIONAL,
-   *       applicationId   [601] IMPLICIT OCTET_STRING OPTIONAL,
-   *       applicationData [700] IMPLICIT OCTET_STRING OPTIONAL,
+   *       authTimeout [505] EXPLICIT INTEGER OPTIONAL,
+   *       allApplications [600] EXPLICIT NULL OPTIONAL,
+   *       applicationId   [601] EXPLICIT OCTET_STRING OPTIONAL,
+   *       applicationData [700] EXPLICIT OCTET_STRING OPTIONAL,
    *       -- creationDateTime must be a 64-bit Java date/time value.
-   *       creationDateTime    [701] IMPLICIT INTEGER OPTIONAL,
+   *       creationDateTime    [701] EXPLICIT INTEGER OPTIONAL,
    *       -- See keymaster_origin_t for origin values.
-   *       origin  [702] IMPLICIT INTEGER OPTIONAL,
-   *       rollbackResistant   [703] IMPLICIT NULL OPTIONAL,
+   *       origin  [702] EXPLICIT INTEGER OPTIONAL,
+   *       rollbackResistant   [703] EXPLICIT NULL OPTIONAL,
    *       -- rootOfTrust is included only if bootloader is not locked.
-   *       rootOfTrust [704] IMPLICIT RootOfTrust OPTIONAL
-   *       osVersion   [705] IMPLICIT INTEGER OPTIONAL,
-   *       patchLevel  [706] IMPLICIT INTEGER OPTIONAL,
-   *       uniqueId    [707] IMPLICIT NULL OPTIONAL,
+   *       rootOfTrust [704] EXPLICIT RootOfTrust OPTIONAL
+   *       osVersion   [705] EXPLICIT INTEGER OPTIONAL,
+   *       patchLevel  [706] EXPLICIT INTEGER OPTIONAL,
+   *       uniqueId    [707] EXPLICIT NULL OPTIONAL,
    *   }
    *
    *   RootOfTrust ::= SEQUENCE {
@@ -152,15 +151,10 @@ public class AndroidKeyStoreAttestation {
     DLSequence softwareEnforcedSequence = getSoftwareEncodedSequence(keyDescriptionSequence);
     AuthorizationList softwareAuthorizationList =
         extractAuthorizationList(softwareEnforcedSequence);
+    
+    // TODO(aczeskis) Extract the tee authorization list 
 
-    // Get the unique id
-    byte[] uniqueId = null;
-    if (keyDescriptionSequence.size() == DESCRIPTION_LENGTH_MAX) {
-      uniqueId = getUniqueId(keyDescriptionSequence);
-    }
-
-    return new AndroidKeyStoreAttestation(
-        keymasterVersion, challenge, softwareAuthorizationList, uniqueId);
+    return new AndroidKeyStoreAttestation(keymasterVersion, challenge, softwareAuthorizationList);
   }
 
   /**
@@ -175,13 +169,6 @@ public class AndroidKeyStoreAttestation {
    */
   public AuthorizationList getSoftwareAuthorizationList() {
     return softwareAuthorizationList;
-  }
-
-  /**
-   * @return the parsed unique id or {@code null} if none was included
-   */
-  public byte[] getUniqueId() {
-    return uniqueId;
   }
 
   /**
@@ -259,7 +246,7 @@ public class AndroidKeyStoreAttestation {
     }
     ASN1Integer asn1Integer = (ASN1Integer) asn1Encodable;
     BigInteger bigInt = asn1Integer.getPositiveValue();
-    if (bigInt.bitLength() > MAX_INTEGER_BITS) {
+    if (bigInt.bitLength() > MAX_INT_BITS) {
       throw new CertificateParsingException("INTEGER too big");
     }
     return bigInt.intValue();
@@ -304,12 +291,6 @@ public class AndroidKeyStoreAttestation {
   private static byte[] getAttestationChallenge(DLSequence keyDescriptionSequence)
       throws CertificateParsingException {
     ASN1Encodable asn1Encodable = keyDescriptionSequence.getObjectAt(DESCRIPTION_CHALLENGE_INDEX);
-    return getByteArrayFromAsn1Encodable(asn1Encodable);
-  }
-
-  private static byte[] getUniqueId(DLSequence keyDescriptionSequence)
-      throws CertificateParsingException {
-    ASN1Encodable asn1Encodable = keyDescriptionSequence.getObjectAt(DESCRIPTION_UNIQUE_INDEX);
     return getByteArrayFromAsn1Encodable(asn1Encodable);
   }
 

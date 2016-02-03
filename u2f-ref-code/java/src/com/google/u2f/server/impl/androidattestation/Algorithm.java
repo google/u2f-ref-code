@@ -3,7 +3,7 @@ package com.google.u2f.server.impl.androidattestation;
 import java.security.cert.CertificateParsingException;
 
 /**
- * Keysmaster algorithm values as taken from: keymaster_defs.h
+ * Keysmaster algorithm values as taken from: keymaster_defs.h / KeymasterDefs.java
  */
 public enum Algorithm {
   /* Asymmetric algorithms. */

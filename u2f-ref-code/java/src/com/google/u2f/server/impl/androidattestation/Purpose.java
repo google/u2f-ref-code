@@ -1,8 +1,9 @@
 package com.google.u2f.server.impl.androidattestation;
 
 import java.security.cert.CertificateParsingException;
+
 /**
- * Keysmaster purpose values as taken from: keymaster_defs.h
+ * Keysmaster purpose values as taken from: keymaster_defs.h / KeymasterDefs.java
  */
 public enum Purpose {
   KM_PURPOSE_ENCRYPT(0, "encrypt"),

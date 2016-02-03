@@ -127,8 +127,8 @@ public class U2FServerReferenceImpl implements U2FServer {
     List<Transports> transports = null;
     try {
       transports = U2fAttestation.Parse(attestationCertificate).getTransports();
-    } catch (CertificateParsingException e1) {
-      Log.warning("Could not parse transports extension " + e1.getMessage());
+    } catch (CertificateParsingException e) {
+      Log.warning("Could not parse transports extension " + e.getMessage());
     }
 
     Log.info("-- Parsed rawRegistrationResponse --");

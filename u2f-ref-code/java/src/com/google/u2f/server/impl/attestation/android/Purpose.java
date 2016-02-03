@@ -1,4 +1,4 @@
-package com.google.u2f.server.impl.androidattestation;
+package com.google.u2f.server.impl.attestation.android;
 
 import java.security.cert.CertificateParsingException;
 

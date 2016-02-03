@@ -1,17 +1,16 @@
-package com.google.u2f.server.impl.androidattestation;
+package com.google.u2f.server.impl.attestation.android;
+
+import com.google.u2f.server.impl.attestation.X509ExtentionParsingUtil;
 
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DLSequence;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -136,7 +135,8 @@ public class AndroidKeyStoreAttestation {
   public static AndroidKeyStoreAttestation Parse(X509Certificate cert)
       throws CertificateParsingException {
     // Extract the extension from the certificate
-    byte[] extensionValue = extractExtensionValue(cert);
+    DEROctetString extensionValue =
+        X509ExtentionParsingUtil.extractExtensionValue(cert, KEY_DESCRIPTION_OID);
 
     // Get the KeyDescription sequence
     DLSequence keyDescriptionSequence = getKeyDescriptionSequence(extensionValue);
@@ -151,8 +151,8 @@ public class AndroidKeyStoreAttestation {
     DLSequence softwareEnforcedSequence = getSoftwareEncodedSequence(keyDescriptionSequence);
     AuthorizationList softwareAuthorizationList =
         extractAuthorizationList(softwareEnforcedSequence);
-    
-    // TODO(aczeskis) Extract the tee authorization list 
+
+    // TODO(aczeskis) Extract the TEE authorization list
 
     return new AndroidKeyStoreAttestation(keymasterVersion, challenge, softwareAuthorizationList);
   }
@@ -178,43 +178,10 @@ public class AndroidKeyStoreAttestation {
     return attestationChallenge;
   }
 
-  private static byte[] extractExtensionValue(X509Certificate cert)
+  private static DLSequence getKeyDescriptionSequence(DEROctetString octet)
       throws CertificateParsingException {
-    byte[] extensionValue = cert.getExtensionValue(KEY_DESCRIPTION_OID);
-
-    if (extensionValue == null || extensionValue.length == 0) {
-      throw new CertificateParsingException(
-          "Did not find KeyDescription extension with OID " + KEY_DESCRIPTION_OID);
-    }
-
-    return extensionValue;
-  }
-
-  private static DLSequence getKeyDescriptionSequence(byte[] extensionValue)
-      throws CertificateParsingException {
-    ASN1InputStream ais = new ASN1InputStream(extensionValue);
-    ASN1Object asn1Object;
-
-    // Read the key description octet string
-    try {
-      asn1Object = ais.readObject();
-      ais.close();
-    } catch (IOException e) {
-      throw new CertificateParsingException("Not able to read KeyDescription ASN.1 object", e);
-    }
-    if (asn1Object == null || !(asn1Object instanceof DEROctetString)) {
-      throw new CertificateParsingException("Expected KeyDescription Octet String.");
-    }
-    DEROctetString octet = (DEROctetString) asn1Object;
-
     // Read out the Sequence
-    ais = new ASN1InputStream(octet.getOctets());
-    try {
-      asn1Object = ais.readObject();
-      ais.close();
-    } catch (IOException e) {
-      throw new CertificateParsingException("Not able to read KeyDescription Octet String.", e);
-    }
+    ASN1Object asn1Object = X509ExtentionParsingUtil.getAsn1Object(octet.getOctets());
     if (asn1Object == null || !(asn1Object instanceof DLSequence)) {
       throw new CertificateParsingException("Expected KeyDescription Sequence.");
     }

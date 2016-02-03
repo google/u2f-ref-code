@@ -46,6 +46,7 @@ import com.google.u2f.server.data.EnrollSessionData;
 import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SecurityKeyData.Transports;
 import com.google.u2f.server.data.SignSessionData;
+import com.google.u2f.server.impl.attestation.X509ExtentionParsingUtil;
 import com.google.u2f.server.messages.RegisteredKey;
 import com.google.u2f.server.messages.RegistrationRequest;
 import com.google.u2f.server.messages.RegistrationResponse;
@@ -325,36 +326,12 @@ public class U2FServerReferenceImpl implements U2FServer {
    */
   public static List<Transports> parseTransportsExtension(X509Certificate cert)
       throws CertificateParsingException{
-    byte[] extValue = cert.getExtensionValue(TRANSPORT_EXTENSION_OID);
     LinkedList<Transports> transportsList = new LinkedList<Transports>();
-    if (extValue == null) {
-      // No transports extension found.
-      return null;
-    }
-
-    ASN1InputStream ais = new ASN1InputStream(extValue);
-    ASN1Object asn1Object;
-    // Read out the OctetString
-    try {
-      asn1Object = ais.readObject();
-      ais.close();
-    } catch (IOException e) {
-      throw new CertificateParsingException("Not able to read object in transports extenion", e);
-    }
-
-    if (asn1Object == null || !(asn1Object instanceof DEROctetString)) {
-      throw new CertificateParsingException("No Octet String found in transports extension");
-    }
-    DEROctetString octet = (DEROctetString) asn1Object;
+    DEROctetString extValue =
+        X509ExtentionParsingUtil.extractExtensionValue(cert, TRANSPORT_EXTENSION_OID);
 
     // Read out the BitString
-    ais = new  ASN1InputStream(octet.getOctets());
-    try {
-      asn1Object = ais.readObject();
-      ais.close();
-    } catch (IOException e) {
-      throw new CertificateParsingException("Not able to read object in transports extension", e);
-    }
+    ASN1Object asn1Object = X509ExtentionParsingUtil.getAsn1Object(extValue.getOctets());
     if (asn1Object == null || !(asn1Object instanceof DERBitString)) {
       throw new CertificateParsingException("No BitString found in transports extension");
     }

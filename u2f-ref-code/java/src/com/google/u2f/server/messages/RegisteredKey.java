@@ -6,15 +6,12 @@
 
 package com.google.u2f.server.messages;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SecurityKeyData.Transports;
+
+import java.util.List;
+import java.util.Objects;
 
 public class RegisteredKey {
   /**

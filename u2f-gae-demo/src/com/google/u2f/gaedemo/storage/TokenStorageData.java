@@ -6,22 +6,24 @@
 
 package com.google.u2f.gaedemo.storage;
 
-import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.codec.binary.Hex;
-
-import com.google.common.base.Objects;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SecurityKeyData.Transports;
+import com.google.u2f.server.impl.attestation.android.AndroidKeyStoreAttestation;
+
+import org.apache.commons.codec.binary.Hex;
+
+import java.io.ByteArrayInputStream;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 public class TokenStorageData {
 
   private long enrollmentTime;
@@ -53,18 +55,28 @@ public class TokenStorageData {
 
   public SecurityKeyData getSecurityKeyData() {
     X509Certificate x509cert = parseCertificate(attestationCert);
-    return new SecurityKeyData(enrollmentTime, transports, keyHandle,
-        publicKey, x509cert, counter);
+    return new SecurityKeyData(enrollmentTime, transports, keyHandle, publicKey, x509cert, counter);
   }
 
   public JsonObject toJson() {
+    X509Certificate x509cert = getSecurityKeyData().getAttestationCertificate();
     JsonObject json = new JsonObject();
     json.addProperty("enrollment_time", enrollmentTime);
     json.add("transports", getJsonTransports());
     json.addProperty("key_handle", Hex.encodeHexString(keyHandle));
     json.addProperty("public_key", Hex.encodeHexString(publicKey));
-    json.addProperty("issuer",
-        getSecurityKeyData().getAttestationCertificate().getIssuerX500Principal().getName());
+    json.addProperty("issuer", x509cert.getIssuerX500Principal().getName());
+
+    try {
+      AndroidKeyStoreAttestation androidKeyStoreAttestation =
+          AndroidKeyStoreAttestation.Parse(x509cert);
+      if (androidKeyStoreAttestation != null) {
+        json.add("android_attestation", androidKeyStoreAttestation.toJson());
+      }
+    } catch (CertificateParsingException e) {
+      throw new RuntimeException(e);
+    }
+
     return json;
   }
 
@@ -88,10 +100,10 @@ public class TokenStorageData {
   public String toString() {
     return toJson().toString();
   }
-	
+
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         enrollmentTime,
         transports,
         keyHandle,

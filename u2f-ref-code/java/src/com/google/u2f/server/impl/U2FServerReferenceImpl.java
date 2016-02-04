@@ -198,7 +198,8 @@ public class U2FServerReferenceImpl implements U2FServer {
       String keyHandleBase64 = Base64.encodeBase64URLSafeString(keyHandle);
 
       Log.info("<< getRegisteredKey " + accountName);
-      registeredKeys.add(new RegisteredKey(U2FConsts.U2F_V2, keyHandleBase64, transports, appId, sessionId));
+      registeredKeys.add(new RegisteredKey(U2FConsts.U2F_V2, keyHandleBase64, transports, appId,
+          sessionId));
     }
 
     return new U2fSignRequest(challengeBase64, registeredKeys.build());

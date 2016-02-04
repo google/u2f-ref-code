@@ -2,6 +2,7 @@ package com.google.u2f.server.impl.attestation.android;
 
 import com.google.u2f.server.impl.attestation.X509ExtensionParsingUtil;
 
+import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -207,6 +208,28 @@ public class AndroidKeyStoreAttestation {
         && Objects.equals(keymasterVersion, other.keymasterVersion)
         && Objects.equals(softwareAuthorizationList, other.softwareAuthorizationList)
         && Objects.equals(teeAuthorizationList, other.teeAuthorizationList);
+  }
+
+  @Override
+  public String toString() {
+    String stringAttestation = "[keymasterVersion: " + keymasterVersion;
+
+    if (attestationChallenge != null && attestationChallenge.length > 0) {
+      stringAttestation +=
+          ", attestationChallenge: 0x" + Hex.encodeHexString(attestationChallenge).toUpperCase();
+    }
+
+    if (softwareAuthorizationList != null) {
+      stringAttestation += ", softwareEnforced: " + softwareAuthorizationList;
+    }
+
+    if (teeAuthorizationList != null) {
+      stringAttestation += ", teeEnforced: " + teeAuthorizationList;
+    }
+
+    stringAttestation += "]";
+
+    return stringAttestation;
   }
 
   private static DLSequence getKeyDescriptionSequence(DEROctetString octet)

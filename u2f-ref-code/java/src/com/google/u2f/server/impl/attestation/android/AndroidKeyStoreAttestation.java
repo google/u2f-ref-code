@@ -35,12 +35,14 @@ public class AndroidKeyStoreAttestation {
   private final int keymasterVersion;
   private final byte[] attestationChallenge;
   private final AuthorizationList softwareAuthorizationList;
+  private final AuthorizationList teeAuthorizationList;
 
   private AndroidKeyStoreAttestation(Integer keymasterVersion, byte[] attestationChallenge,
-      AuthorizationList softwareAuthorizationList) {
+      AuthorizationList softwareAuthorizationList, AuthorizationList teeAuthorizationList) {
     this.keymasterVersion = keymasterVersion;
     this.attestationChallenge = attestationChallenge;
     this.softwareAuthorizationList = softwareAuthorizationList;
+    this.teeAuthorizationList = teeAuthorizationList;
   }
 
   /**
@@ -147,9 +149,13 @@ public class AndroidKeyStoreAttestation {
     AuthorizationList softwareAuthorizationList =
         extractAuthorizationList(softwareEnforcedSequence);
 
-    // TODO(aczeskis) Extract the TEE authorization list
+    // TODO(aczeskis): uncomment when I get a cert that has correct teeEnforced element
+    // Extract the tee authorization list
+    //DLSequence teeEnforcedSequence = getTeeEncodedSequence(keyDescriptionSequence);
+    //AuthorizationList teeAuthorizationList = extractAuthorizationList(teeEnforcedSequence);
 
-    return new AndroidKeyStoreAttestation(keymasterVersion, challenge, softwareAuthorizationList);
+    return new AndroidKeyStoreAttestation(
+        keymasterVersion, challenge, softwareAuthorizationList, null);
   }
 
   /**
@@ -171,6 +177,13 @@ public class AndroidKeyStoreAttestation {
    */
   public byte[] getAttestationChallenge() {
     return attestationChallenge;
+  }
+
+  /**
+   * @return the parsed TEE authorization list
+   */
+  public AuthorizationList getTeeAuthorizationList() {
+    return teeAuthorizationList;
   }
 
   private static DLSequence getKeyDescriptionSequence(DEROctetString octet)
@@ -196,6 +209,16 @@ public class AndroidKeyStoreAttestation {
         keyDescriptionSequence.getObjectAt(DESCRIPTION_SOFTWARE_ENFORCED_INDEX);
     if (asn1Encodable == null || !(asn1Encodable instanceof DLSequence)) {
       throw new CertificateParsingException("Expected softwareEnforced DLSequence.");
+    }
+    return (DLSequence) asn1Encodable;
+  }
+
+  private static DLSequence getTeeEncodedSequence(DLSequence keyDescriptionSequence)
+      throws CertificateParsingException {
+    ASN1Encodable asn1Encodable =
+        keyDescriptionSequence.getObjectAt(DESCRIPTION_TEE_ENFORCED_INDEX);
+    if (asn1Encodable == null || !(asn1Encodable instanceof DLSequence)) {
+      throw new CertificateParsingException("Expected teeEnforced DLSequence.");
     }
     return (DLSequence) asn1Encodable;
   }

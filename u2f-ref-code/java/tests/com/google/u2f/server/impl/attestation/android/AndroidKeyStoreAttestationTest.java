@@ -32,22 +32,32 @@ public class AndroidKeyStoreAttestationTest extends TestVectors {
     assertArrayEquals(
         "Incorrect challenge", "challenge".getBytes(), attestation.getAttestationChallenge());
 
-    // Get software authz list
+    // Get software authorization list
     AuthorizationList softwareAuthorizationList = attestation.getSoftwareAuthorizationList();
     assertNotNull("Not expecting null software authorization list", softwareAuthorizationList);
 
     // Check purpose
-    assertEquals("Incorrect purpose list size", 2, softwareAuthorizationList.getPurpose().size());
+    assertEquals("Incorrect software authorization list purpose list size", 2,
+        softwareAuthorizationList.getPurpose().size());
     assertTrue(
-        "Purpose list doesn't have SIGN",
+        "Software authorization list purpose list doesn't have SIGN",
         softwareAuthorizationList.getPurpose().contains(Purpose.KM_PURPOSE_SIGN));
     assertTrue(
-        "Purpose list doesn't have VERIFY",
+        "Software authorization list purpose list doesn't have VERIFY",
         softwareAuthorizationList.getPurpose().contains(Purpose.KM_PURPOSE_VERIFY));
 
     // Check algorithm
-    assertEquals("Incorrect algorithm", Algorithm.KM_ALGORITHM_EC,
+    assertEquals("Software authorization list incorrect algorithm", Algorithm.KM_ALGORITHM_EC,
         softwareAuthorizationList.getAlgorithm());
+
+    // TODO(aczeskis): uncomment when I get a cert that has correct teeEnforced element
+    // Get the TEE authorization list
+    //AuthorizationList teeAuthorizationList = attestation.getTeeAuthorizationList();
+    //assertNotNull("Not expecting null TEE authorization list", teeAuthorizationList);
+    //assertEquals(
+    //    "Expecting null TEE authorization list purpose", null, teeAuthorizationList.getPurpose());
+    //assertEquals("Expecting null TEE authorization list algorithm", null,
+    //    teeAuthorizationList.getAlgorithm());
   }
 
   @Test(expected = CertificateParsingException.class)

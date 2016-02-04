@@ -23,6 +23,10 @@ public class AuthorizationList {
     return algorithm;
   }
 
+  public boolean isEmpty() {
+    return (purpose == null || purpose.size() == 0) && algorithm == null;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(purpose, algorithm);
@@ -39,6 +43,23 @@ public class AuthorizationList {
 
     AuthorizationList other = (AuthorizationList) obj;
     return Objects.equals(algorithm, other.algorithm) && Objects.equals(purpose, other.purpose);
+  }
+
+  @Override
+  public String toString() {
+    String stringRepresentation = "[";
+
+    if (purpose != null) {
+      stringRepresentation += "purpose: " + purpose;
+    }
+
+    if (algorithm != null) {
+      stringRepresentation += ", algorithm: " + algorithm;
+    }
+
+    stringRepresentation += "]";
+
+    return stringRepresentation;
   }
 
   public static class Builder {

@@ -50,14 +50,13 @@ public class AndroidKeyStoreAttestationTest extends TestVectors {
     assertEquals("Software authorization list incorrect algorithm", Algorithm.KM_ALGORITHM_EC,
         softwareAuthorizationList.getAlgorithm());
 
-    // TODO(aczeskis): uncomment when I get a cert that has correct teeEnforced element
     // Get the TEE authorization list
-    //AuthorizationList teeAuthorizationList = attestation.getTeeAuthorizationList();
-    //assertNotNull("Not expecting null TEE authorization list", teeAuthorizationList);
-    //assertEquals(
-    //    "Expecting null TEE authorization list purpose", null, teeAuthorizationList.getPurpose());
-    //assertEquals("Expecting null TEE authorization list algorithm", null,
-    //    teeAuthorizationList.getAlgorithm());
+    AuthorizationList teeAuthorizationList = attestation.getTeeAuthorizationList();
+    assertNotNull("Not expecting null TEE authorization list", teeAuthorizationList);
+    assertEquals(
+        "Expecting null TEE authorization list purpose", null, teeAuthorizationList.getPurpose());
+    assertEquals("Expecting null TEE authorization list algorithm", null,
+        teeAuthorizationList.getAlgorithm());
   }
 
   @Test(expected = CertificateParsingException.class)

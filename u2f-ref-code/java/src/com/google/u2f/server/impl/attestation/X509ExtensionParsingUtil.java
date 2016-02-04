@@ -5,6 +5,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DLSequence;
@@ -117,11 +118,11 @@ public class X509ExtensionParsingUtil {
    * Returns a {@link HashMap} whose keys represent the tags and whose values represent the values
    * of a {@link DLSequence}.
    */
-  public static HashMap<Integer, ASN1Primitive> extractTaggedObjects(DLSequence dlSequence)
+  public static HashMap<Integer, ASN1Primitive> extractTaggedObjects(ASN1Sequence asn1Sequence)
       throws CertificateParsingException {
     HashMap<Integer, ASN1Primitive> taggedObjects = new HashMap<Integer, ASN1Primitive>();
 
-    for (ASN1Encodable asn1EncodablePurpose : dlSequence.toArray()) {
+    for (ASN1Encodable asn1EncodablePurpose : asn1Sequence.toArray()) {
       if (asn1EncodablePurpose == null || !(asn1EncodablePurpose instanceof DERTaggedObject)) {
         throw new CertificateParsingException("Expected DERTagged object");
       }

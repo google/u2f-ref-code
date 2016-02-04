@@ -3,15 +3,12 @@ package com.google.u2f.server.impl.attestation.android;
 import com.google.u2f.server.impl.attestation.X509ExtensionParsingUtil;
 
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DLSequence;
 
-import java.math.BigInteger;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -30,10 +27,6 @@ public class AndroidKeyStoreAttestation {
   private static final int DESCRIPTION_CHALLENGE_INDEX = 1;
   private static final int DESCRIPTION_SOFTWARE_ENFORCED_INDEX = 2;
   private static final int DESCRIPTION_TEE_ENFORCED_INDEX = 3;
-
-  // Don't expect more than 32 bits for any INTEGER
-  private static final int MAX_INT_BITS = 32;
-  private static final int MAX_LONG_BITS = 64;
 
   // Tags for Authorization List
   private static final int AUTHZ_PURPOSE_TAG = 1;
@@ -135,7 +128,7 @@ public class AndroidKeyStoreAttestation {
     // Extract the extension from the certificate
     DEROctetString extensionValue =
         X509ExtensionParsingUtil.extractExtensionValue(cert, KEY_DESCRIPTION_OID);
-    
+
     if (extensionValue == null) {
       return null;
     }
@@ -207,65 +200,27 @@ public class AndroidKeyStoreAttestation {
     return (DLSequence) asn1Encodable;
   }
 
-  private static int getIntFromAsn1Encodable(ASN1Encodable asn1Encodable)
-      throws CertificateParsingException {
-    if (asn1Encodable == null || !(asn1Encodable instanceof ASN1Integer)) {
-      throw new CertificateParsingException("Expected INTEGER type.");
-    }
-    ASN1Integer asn1Integer = (ASN1Integer) asn1Encodable;
-    BigInteger bigInt = asn1Integer.getPositiveValue();
-    if (bigInt.bitLength() > MAX_INT_BITS) {
-      throw new CertificateParsingException("INTEGER too big");
-    }
-    return bigInt.intValue();
-  }
-
-  private static byte[] getByteArrayFromAsn1Encodable(ASN1Encodable asn1Encodable)
-      throws CertificateParsingException {
-    if (asn1Encodable == null || !(asn1Encodable instanceof DEROctetString)) {
-      throw new CertificateParsingException("Expected DEROctetString");
-    }
-    DEROctetString derOctectString = (DEROctetString) asn1Encodable;
-    return derOctectString.getOctets();
-  }
-
-  private static int checkValidTag(int tag) {
-    // TODO(aczeskis): implement
-    return tag;
-  }
-
-  private static HashMap<Integer, ASN1Primitive> extractTaggedObjects(DLSequence dlSequence)
-      throws CertificateParsingException {
-    HashMap<Integer, ASN1Primitive> taggedObjects = new HashMap<Integer, ASN1Primitive>();
-
-    for (ASN1Encodable asn1EncodablePurpose : dlSequence.toArray()) {
-      if (asn1EncodablePurpose == null || !(asn1EncodablePurpose instanceof DERTaggedObject)) {
-        throw new CertificateParsingException("Expected DERTagged object");
-      }
-      DERTaggedObject derTaggedObject = (DERTaggedObject) asn1EncodablePurpose;
-      taggedObjects.put(
-          Integer.valueOf(checkValidTag(derTaggedObject.getTagNo())), derTaggedObject.getObject());
-    }
-
-    return taggedObjects;
-  }
-
   private static int getKeymasterVersion(DLSequence keyDescriptionSequence)
       throws CertificateParsingException {
     ASN1Encodable asn1Encodable = keyDescriptionSequence.getObjectAt(DESCRIPTION_VERSION_INDEX);
-    return getIntFromAsn1Encodable(asn1Encodable);
+    return X509ExtensionParsingUtil.getInt(asn1Encodable);
   }
 
   private static byte[] getAttestationChallenge(DLSequence keyDescriptionSequence)
       throws CertificateParsingException {
     ASN1Encodable asn1Encodable = keyDescriptionSequence.getObjectAt(DESCRIPTION_CHALLENGE_INDEX);
-    return getByteArrayFromAsn1Encodable(asn1Encodable);
+    return X509ExtensionParsingUtil.getByteArray(asn1Encodable);
   }
 
   private static List<Purpose> getPurpose(
       HashMap<Integer, ASN1Primitive> softwareEnforcedTaggedObjects)
       throws CertificateParsingException {
     ASN1Primitive asn1Primitive = softwareEnforcedTaggedObjects.get(AUTHZ_PURPOSE_TAG);
+    if (asn1Primitive == null) {
+      // No purpose found
+      return null;
+    }
+
     if (!(asn1Primitive instanceof DERSet)) {
       throw new CertificateParsingException("Expected DERSet");
     }
@@ -273,7 +228,7 @@ public class AndroidKeyStoreAttestation {
     DERSet set = (DERSet) asn1Primitive;
     List<Purpose> purpose = new ArrayList<Purpose>();
     for (ASN1Encodable asn1Encodable : set.toArray()) {
-      purpose.add(Purpose.fromValue(getIntFromAsn1Encodable(asn1Encodable)));
+      purpose.add(Purpose.fromValue(X509ExtensionParsingUtil.getInt(asn1Encodable)));
     }
 
     return purpose;
@@ -283,13 +238,17 @@ public class AndroidKeyStoreAttestation {
       HashMap<Integer, ASN1Primitive> softwareEnforcedTaggedObjects)
       throws CertificateParsingException {
     ASN1Primitive asn1Primitive = softwareEnforcedTaggedObjects.get(AUTHZ_ALGORITHM_TAG);
-    return Algorithm.fromValue(getIntFromAsn1Encodable(asn1Primitive));
+    if (asn1Primitive == null) {
+      // No algorithm found
+      return null;
+    }
+    return Algorithm.fromValue(X509ExtensionParsingUtil.getInt(asn1Primitive));
   }
 
   private static AuthorizationList extractAuthorizationList(DLSequence authorizationSequence)
       throws CertificateParsingException {
     HashMap<Integer, ASN1Primitive> softwareEnforcedTaggedObjects =
-        extractTaggedObjects(authorizationSequence);
+        X509ExtensionParsingUtil.extractTaggedObjects(authorizationSequence);
 
     return new AuthorizationList.Builder()
         .setPurpose(getPurpose(softwareEnforcedTaggedObjects))

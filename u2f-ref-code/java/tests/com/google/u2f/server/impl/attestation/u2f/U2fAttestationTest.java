@@ -34,6 +34,9 @@ public class U2fAttestationTest extends TestVectors {
     U2fAttestation.Parse(TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION);
   }
 
+  // There is no Transports Extension in the attestation cert 
+  // and the current behavior is to throw (the ServerImplementation code catches).
+  // TODO(aczeskis): change behavior of ServerImplementation and update test
   @Test(expected = CertificateParsingException.class)
   public void testValidCertNoTransports() throws Exception {
     U2fAttestation.Parse(TRUSTED_CERTIFICATE_2);

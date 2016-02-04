@@ -14,6 +14,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Parses and contains an Android KeyStore attestation.
@@ -151,8 +152,8 @@ public class AndroidKeyStoreAttestation {
 
     // TODO(aczeskis): uncomment when I get a cert that has correct teeEnforced element
     // Extract the tee authorization list
-    //DLSequence teeEnforcedSequence = getTeeEncodedSequence(keyDescriptionSequence);
-    //AuthorizationList teeAuthorizationList = extractAuthorizationList(teeEnforcedSequence);
+    // DLSequence teeEnforcedSequence = getTeeEncodedSequence(keyDescriptionSequence);
+    // AuthorizationList teeAuthorizationList = extractAuthorizationList(teeEnforcedSequence);
 
     return new AndroidKeyStoreAttestation(
         keymasterVersion, challenge, softwareAuthorizationList, null);
@@ -184,6 +185,28 @@ public class AndroidKeyStoreAttestation {
    */
   public AuthorizationList getTeeAuthorizationList() {
     return teeAuthorizationList;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        attestationChallenge, keymasterVersion, softwareAuthorizationList, teeAuthorizationList);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+
+    AndroidKeyStoreAttestation other = (AndroidKeyStoreAttestation) obj;
+    return Objects.equals(attestationChallenge, other.attestationChallenge)
+        && Objects.equals(keymasterVersion, other.keymasterVersion)
+        && Objects.equals(softwareAuthorizationList, other.softwareAuthorizationList)
+        && Objects.equals(teeAuthorizationList, other.teeAuthorizationList);
   }
 
   private static DLSequence getKeyDescriptionSequence(DEROctetString octet)

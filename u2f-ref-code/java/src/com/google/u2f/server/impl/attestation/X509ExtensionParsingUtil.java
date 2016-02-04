@@ -11,13 +11,14 @@ import java.security.cert.X509Certificate;
 /**
  * A set of utilities for parsing X509 Extensions
  */
-public class X509ExtentionParsingUtil {
+public class X509ExtensionParsingUtil {
   public static DEROctetString extractExtensionValue(X509Certificate cert, String Oid)
       throws CertificateParsingException {
     byte[] extensionValue = cert.getExtensionValue(Oid);
 
     if (extensionValue == null || extensionValue.length == 0) {
-      throw new CertificateParsingException("Did not find extension with OID " + Oid);
+      // Did not find extension
+      return null;
     }
 
     ASN1Object asn1Object  = getAsn1Object(extensionValue);

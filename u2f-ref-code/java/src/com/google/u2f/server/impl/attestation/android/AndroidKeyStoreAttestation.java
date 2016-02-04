@@ -1,6 +1,6 @@
 package com.google.u2f.server.impl.attestation.android;
 
-import com.google.u2f.server.impl.attestation.X509ExtentionParsingUtil;
+import com.google.u2f.server.impl.attestation.X509ExtensionParsingUtil;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -134,7 +134,11 @@ public class AndroidKeyStoreAttestation {
       throws CertificateParsingException {
     // Extract the extension from the certificate
     DEROctetString extensionValue =
-        X509ExtentionParsingUtil.extractExtensionValue(cert, KEY_DESCRIPTION_OID);
+        X509ExtensionParsingUtil.extractExtensionValue(cert, KEY_DESCRIPTION_OID);
+    
+    if (extensionValue == null) {
+      return null;
+    }
 
     // Get the KeyDescription sequence
     DLSequence keyDescriptionSequence = getKeyDescriptionSequence(extensionValue);
@@ -179,7 +183,7 @@ public class AndroidKeyStoreAttestation {
   private static DLSequence getKeyDescriptionSequence(DEROctetString octet)
       throws CertificateParsingException {
     // Read out the Sequence
-    ASN1Object asn1Object = X509ExtentionParsingUtil.getAsn1Object(octet.getOctets());
+    ASN1Object asn1Object = X509ExtensionParsingUtil.getAsn1Object(octet.getOctets());
     if (asn1Object == null || !(asn1Object instanceof DLSequence)) {
       throw new CertificateParsingException("Expected KeyDescription Sequence.");
     }

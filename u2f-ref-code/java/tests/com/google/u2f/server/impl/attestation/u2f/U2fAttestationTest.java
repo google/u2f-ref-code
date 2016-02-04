@@ -25,6 +25,7 @@ public class U2fAttestationTest extends TestVectors {
 
     assertNotNull(attestation);
     List<Transports> transports = attestation.getTransports();
+    assertNotNull(transports);
     assertEquals(1, transports.size());
     assertTrue(transports.contains(Transports.BLUETOOTH_BREDR));
   }
@@ -34,12 +35,11 @@ public class U2fAttestationTest extends TestVectors {
     U2fAttestation.Parse(TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION);
   }
 
-  // There is no Transports Extension in the attestation cert 
-  // and the current behavior is to throw (the ServerImplementation code catches).
-  // TODO(aczeskis): change behavior of ServerImplementation and update test
-  @Test(expected = CertificateParsingException.class)
+  @Test
   public void testValidCertNoTransports() throws Exception {
-    U2fAttestation.Parse(TRUSTED_CERTIFICATE_2);
+    U2fAttestation attestation = U2fAttestation.Parse(TRUSTED_CERTIFICATE_2);
+    assertNotNull(attestation);
+    assertTrue(attestation.getTransports() == null);
   }
 
   @Test
@@ -48,6 +48,7 @@ public class U2fAttestationTest extends TestVectors {
 
     assertNotNull(attestation);
     List<Transports> transports = attestation.getTransports();
+    assertNotNull(transports);
     assertEquals(3, transports.size());
     assertTrue(transports.contains(Transports.BLUETOOTH_BREDR));
     assertTrue(transports.contains(Transports.BLUETOOTH_LOW_ENERGY));

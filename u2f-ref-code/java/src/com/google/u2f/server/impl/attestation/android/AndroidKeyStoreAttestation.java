@@ -5,6 +5,7 @@ import com.google.u2f.server.impl.attestation.X509ExtensionParsingUtil;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DLSequence;
@@ -14,6 +15,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Parses and contains an Android KeyStore attestation.
@@ -145,17 +147,16 @@ public class AndroidKeyStoreAttestation {
     byte[] challenge = getAttestationChallenge(keyDescriptionSequence);
 
     // Extract the software authorization list
-    DLSequence softwareEnforcedSequence = getSoftwareEncodedSequence(keyDescriptionSequence);
+    ASN1Sequence softwareEnforcedSequence = getSoftwareEncodedSequence(keyDescriptionSequence);
     AuthorizationList softwareAuthorizationList =
         extractAuthorizationList(softwareEnforcedSequence);
 
-    // TODO(aczeskis): uncomment when I get a cert that has correct teeEnforced element
     // Extract the tee authorization list
-    //DLSequence teeEnforcedSequence = getTeeEncodedSequence(keyDescriptionSequence);
-    //AuthorizationList teeAuthorizationList = extractAuthorizationList(teeEnforcedSequence);
+    ASN1Sequence teeEnforcedSequence = getTeeEncodedSequence(keyDescriptionSequence);
+    AuthorizationList teeAuthorizationList = extractAuthorizationList(teeEnforcedSequence);
 
     return new AndroidKeyStoreAttestation(
-        keymasterVersion, challenge, softwareAuthorizationList, null);
+        keymasterVersion, challenge, softwareAuthorizationList, teeAuthorizationList);
   }
 
   /**
@@ -186,6 +187,28 @@ public class AndroidKeyStoreAttestation {
     return teeAuthorizationList;
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        attestationChallenge, keymasterVersion, softwareAuthorizationList, teeAuthorizationList);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+
+    AndroidKeyStoreAttestation other = (AndroidKeyStoreAttestation) obj;
+    return Objects.equals(attestationChallenge, other.attestationChallenge)
+        && Objects.equals(keymasterVersion, other.keymasterVersion)
+        && Objects.equals(softwareAuthorizationList, other.softwareAuthorizationList)
+        && Objects.equals(teeAuthorizationList, other.teeAuthorizationList);
+  }
+
   private static DLSequence getKeyDescriptionSequence(DEROctetString octet)
       throws CertificateParsingException {
     // Read out the Sequence
@@ -213,14 +236,14 @@ public class AndroidKeyStoreAttestation {
     return (DLSequence) asn1Encodable;
   }
 
-  private static DLSequence getTeeEncodedSequence(DLSequence keyDescriptionSequence)
+  private static ASN1Sequence getTeeEncodedSequence(DLSequence keyDescriptionSequence)
       throws CertificateParsingException {
     ASN1Encodable asn1Encodable =
         keyDescriptionSequence.getObjectAt(DESCRIPTION_TEE_ENFORCED_INDEX);
-    if (asn1Encodable == null || !(asn1Encodable instanceof DLSequence)) {
-      throw new CertificateParsingException("Expected teeEnforced DLSequence.");
+    if (asn1Encodable == null || !(asn1Encodable instanceof ASN1Sequence)) {
+      throw new CertificateParsingException("Expected teeEnforced ASN1Sequence.");
     }
-    return (DLSequence) asn1Encodable;
+    return (ASN1Sequence) asn1Encodable;
   }
 
   private static int getKeymasterVersion(DLSequence keyDescriptionSequence)
@@ -268,7 +291,7 @@ public class AndroidKeyStoreAttestation {
     return Algorithm.fromValue(X509ExtensionParsingUtil.getInt(asn1Primitive));
   }
 
-  private static AuthorizationList extractAuthorizationList(DLSequence authorizationSequence)
+  private static AuthorizationList extractAuthorizationList(ASN1Sequence authorizationSequence)
       throws CertificateParsingException {
     HashMap<Integer, ASN1Primitive> softwareEnforcedTaggedObjects =
         X509ExtensionParsingUtil.extractTaggedObjects(authorizationSequence);

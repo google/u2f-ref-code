@@ -1,8 +1,7 @@
 package com.google.u2f.server.impl.attestation.android;
 
-import com.google.common.base.Objects;
-
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Authorization List that describes a Keymaster key
@@ -26,7 +25,7 @@ public class AuthorizationList {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(purpose, algorithm);
+    return Objects.hash(purpose, algorithm);
   }
 
   @Override
@@ -39,7 +38,7 @@ public class AuthorizationList {
       return false;
 
     AuthorizationList other = (AuthorizationList) obj;
-    return Objects.equal(algorithm, other.algorithm) && Objects.equal(purpose, other.purpose);
+    return Objects.equals(algorithm, other.algorithm) && Objects.equals(purpose, other.purpose);
   }
 
   public static class Builder {

@@ -23,10 +23,6 @@ public class AuthorizationList {
     return algorithm;
   }
 
-  public boolean isEmpty() {
-    return (purpose == null || purpose.size() == 0) && algorithm == null;
-  }
-
   @Override
   public int hashCode() {
     return Objects.hash(purpose, algorithm);

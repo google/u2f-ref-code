@@ -54,6 +54,7 @@ public class U2FServerReferenceImpl implements U2FServer {
   // TODO: use these for channel id checks in verifyBrowserData
   @SuppressWarnings("unused")
   private static final String CHANNEL_ID_PARAM = "cid_pubkey";
+
   @SuppressWarnings("unused")
   private static final String UNUSED_CHANNEL_ID = "";
 
@@ -64,8 +65,8 @@ public class U2FServerReferenceImpl implements U2FServer {
   private final Crypto cryto;
   private final Set<String> allowedOrigins;
 
-  public U2FServerReferenceImpl(ChallengeGenerator challengeGenerator,
-      DataStore dataStore, Crypto cryto, Set<String> origins) {
+  public U2FServerReferenceImpl(ChallengeGenerator challengeGenerator, DataStore dataStore,
+      Crypto cryto, Set<String> origins) {
     this.challengeGenerator = challengeGenerator;
     this.dataStore = dataStore;
     this.cryto = cryto;
@@ -93,8 +94,8 @@ public class U2FServerReferenceImpl implements U2FServer {
   }
 
   @Override
-  public SecurityKeyData processRegistrationResponse(RegistrationResponse registrationResponse,
-      long currentTimeInMillis) throws U2FException {
+  public SecurityKeyData processRegistrationResponse(
+      RegistrationResponse registrationResponse, long currentTimeInMillis) throws U2FException {
     Log.info(">> processRegistrationResponse");
 
     String sessionId = registrationResponse.getSessionId();
@@ -146,15 +147,16 @@ public class U2FServerReferenceImpl implements U2FServer {
 
     byte[] appIdSha256 = cryto.computeSha256(appId.getBytes());
     byte[] clientDataSha256 = cryto.computeSha256(clientData.getBytes());
-    byte[] signedBytes = RawMessageCodec.encodeRegistrationSignedBytes(appIdSha256, clientDataSha256,
-        keyHandle, userPublicKey);
+    byte[] signedBytes = RawMessageCodec.encodeRegistrationSignedBytes(
+        appIdSha256, clientDataSha256, keyHandle, userPublicKey);
 
     Set<X509Certificate> trustedCertificates = dataStore.getTrustedCertificates();
     if (!trustedCertificates.contains(attestationCertificate)) {
       Log.warning("attestion cert is not trusted");
     }
 
-    verifyBrowserData(new JsonParser().parse(clientData), "navigator.id.finishEnrollment", sessionData);
+    verifyBrowserData(
+        new JsonParser().parse(clientData), "navigator.id.finishEnrollment", sessionData);
 
     Log.info("Verifying signature of bytes " + Hex.encodeHexString(signedBytes));
     if (!cryto.verifySignature(attestationCertificate, signedBytes, signature)) {
@@ -184,9 +186,8 @@ public class U2FServerReferenceImpl implements U2FServer {
     ImmutableList.Builder<RegisteredKey> registeredKeys = ImmutableList.builder();
     Log.info("  challenge: " + Hex.encodeHexString(challenge));
     for (SecurityKeyData securityKeyData : securityKeyDataList) {
-
-      SignSessionData sessionData = new SignSessionData(accountName, appId,
-          challenge, securityKeyData.getPublicKey());
+      SignSessionData sessionData =
+          new SignSessionData(accountName, appId, challenge, securityKeyData.getPublicKey());
       String sessionId = dataStore.storeSessionData(sessionData);
 
       byte[] keyHandle = securityKeyData.getKeyHandle();
@@ -198,8 +199,8 @@ public class U2FServerReferenceImpl implements U2FServer {
       String keyHandleBase64 = Base64.encodeBase64URLSafeString(keyHandle);
 
       Log.info("<< getRegisteredKey " + accountName);
-      registeredKeys.add(new RegisteredKey(U2FConsts.U2F_V2, keyHandleBase64, transports, appId,
-          sessionId));
+      registeredKeys.add(
+          new RegisteredKey(U2FConsts.U2F_V2, keyHandleBase64, transports, appId, sessionId));
     }
 
     return new U2fSignRequest(challengeBase64, registeredKeys.build());
@@ -244,9 +245,11 @@ public class U2FServerReferenceImpl implements U2FServer {
     Log.info("  browserData: " + browserData);
     Log.info("  rawSignData: " + Hex.encodeHexString(rawSignData));
 
-    verifyBrowserData(new JsonParser().parse(browserData), "navigator.id.getAssertion", sessionData);
+    verifyBrowserData(
+        new JsonParser().parse(browserData), "navigator.id.getAssertion", sessionData);
 
-    AuthenticateResponse authenticateResponse = RawMessageCodec.decodeAuthenticateResponse(rawSignData);
+    AuthenticateResponse authenticateResponse =
+        RawMessageCodec.decodeAuthenticateResponse(rawSignData);
     byte userPresence = authenticateResponse.getUserPresence();
     int counter = authenticateResponse.getCounter();
     byte[] signature = authenticateResponse.getSignature();
@@ -256,7 +259,7 @@ public class U2FServerReferenceImpl implements U2FServer {
     Log.info("  counter: " + counter);
     Log.info("  signature: " + Hex.encodeHexString(signature));
 
-    if ((userPresence & UserPresenceVerifier.USER_PRESENT_FLAG) == 0 ) {
+    if ((userPresence & UserPresenceVerifier.USER_PRESENT_FLAG) == 0) {
       throw new U2FException("User presence invalid during authentication");
     }
 
@@ -266,24 +269,24 @@ public class U2FServerReferenceImpl implements U2FServer {
 
     byte[] appIdSha256 = cryto.computeSha256(appId.getBytes());
     byte[] browserDataSha256 = cryto.computeSha256(browserData.getBytes());
-    byte[] signedBytes = RawMessageCodec.encodeAuthenticateSignedBytes(appIdSha256, userPresence,
-        counter, browserDataSha256);
+    byte[] signedBytes = RawMessageCodec.encodeAuthenticateSignedBytes(
+        appIdSha256, userPresence, counter, browserDataSha256);
 
     Log.info("Verifying signature of bytes " + Hex.encodeHexString(signedBytes));
-    if (!cryto.verifySignature(cryto.decodePublicKey(securityKeyData.getPublicKey()), signedBytes,
-        signature)) {
+    if (!cryto.verifySignature(
+            cryto.decodePublicKey(securityKeyData.getPublicKey()), signedBytes, signature)) {
       throw new U2FException("Signature is invalid");
     }
 
-    dataStore.updateSecurityKeyCounter(sessionData.getAccountName(), securityKeyData.getPublicKey(), counter);
+    dataStore.updateSecurityKeyCounter(
+        sessionData.getAccountName(), securityKeyData.getPublicKey(), counter);
 
     Log.info("<< processSignResponse");
     return securityKeyData;
   }
 
-  private void verifyBrowserData(JsonElement browserDataAsElement,
-      String messageType, EnrollSessionData sessionData) throws U2FException {
-
+  private void verifyBrowserData(JsonElement browserDataAsElement, String messageType,
+      EnrollSessionData sessionData) throws U2FException {
     if (!browserDataAsElement.isJsonObject()) {
       throw new U2FException("browserdata has wrong format");
     }
@@ -322,9 +325,8 @@ public class U2FServerReferenceImpl implements U2FServer {
 
   private void verifyOrigin(String origin) throws U2FException {
     if (!allowedOrigins.contains(canonicalizeOrigin(origin))) {
-      throw new U2FException(origin +
-          " is not a recognized home origin for this backend" +
-          Joiner.on(", ").join(allowedOrigins));
+      throw new U2FException(origin + " is not a recognized home origin for this backend"
+          + Joiner.on(", ").join(allowedOrigins));
     }
   }
 
@@ -334,8 +336,7 @@ public class U2FServerReferenceImpl implements U2FServer {
   }
 
   @Override
-  public void removeSecurityKey(String accountName, byte[] publicKey)
-      throws U2FException {
+  public void removeSecurityKey(String accountName, byte[] publicKey) throws U2FException {
     dataStore.removeSecuityKey(accountName, publicKey);
   }
 

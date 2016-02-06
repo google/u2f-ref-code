@@ -24,8 +24,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-public class TokenStorageData {
 
+public class TokenStorageData {
   private long enrollmentTime;
   private List<Transports> transports;
   private byte[] keyHandle;
@@ -34,7 +34,7 @@ public class TokenStorageData {
   private int counter;
 
   // used by the storage layer
-  public TokenStorageData() { }
+  public TokenStorageData() {}
 
   public TokenStorageData(SecurityKeyData tokenData) {
     this.enrollmentTime = tokenData.getEnrollmentTime();
@@ -90,7 +90,7 @@ public class TokenStorageData {
       return null;
     }
     JsonArray jsonTransports = new JsonArray();
-    for (Transports transport: transports) {
+    for (Transports transport : transports) {
       jsonTransports.add(new JsonPrimitive(transport.toString()));
     }
     return jsonTransports;
@@ -103,13 +103,7 @@ public class TokenStorageData {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        enrollmentTime,
-        transports,
-        keyHandle,
-        publicKey,
-        attestationCert,
-        counter);
+    return Objects.hash(enrollmentTime, transports, keyHandle, publicKey, attestationCert, counter);
   }
 
   @Override
@@ -119,8 +113,7 @@ public class TokenStorageData {
     TokenStorageData that = (TokenStorageData) obj;
     return (this.enrollmentTime == that.enrollmentTime)
         && SecurityKeyData.containSameTransports(this.transports, that.transports)
-        && (this.counter == that.counter)
-        && Arrays.equals(this.keyHandle, that.keyHandle)
+        && (this.counter == that.counter) && Arrays.equals(this.keyHandle, that.keyHandle)
         && Arrays.equals(this.publicKey, that.publicKey)
         && Arrays.equals(this.attestationCert, that.attestationCert);
   }

@@ -9,6 +9,7 @@ package com.google.u2f;
 import static com.google.u2f.TestUtils.computeSha256;
 import static com.google.u2f.TestUtils.parseCertificate;
 import static com.google.u2f.TestUtils.parseCertificateBase64;
+import static com.google.u2f.TestUtils.parseCertificateChainBase64;
 import static com.google.u2f.TestUtils.parseHex;
 import static com.google.u2f.TestUtils.parsePrivateKey;
 import static com.google.u2f.TestUtils.parsePublicKey;
@@ -315,7 +316,14 @@ public class TestVectors {
   protected static final X509Certificate ANDROID_KEYSTORE_ATTESTATION_CERT_NO_VERSION =
       parseCertificateBase64(ANDROID_KEYSTORE_ATTESTATION_CERT_NO_VERSION_BASE64);
 
-  private static final String ANDROID_KEYSTORE_ATTESTATION_CERT_BASE64 =
+  /**
+   * Contains a chain where:
+   *   cert[0] = attestation certificate describing some new key
+   *   cert[1] = batch certificate
+   *
+   * Note that cert[1] is signed by another cert that should be known to RPs.
+   */
+  private static final String ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN_BASE64 =
       "MIIBjTCCATKgAwIBAgICJxAwCgYIKoZIzj0EAwIwHDEaMBgGA1UEAwwRQW5kcm9pZCBLZXltYXN0"
       + "ZXIwIBcNNzAwMTAxMDAwMDAwWhgPMjEwNjAyMDcwNjI4MTVaMBoxGDAWBgNVBAMMD0EgS2V5bWFz"
       + "dGVyIEtleTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJiTI/rSw9N1NYV3FGxgeJSj1NWyyb61"
@@ -323,9 +331,21 @@ public class TestVectors {
       + "AREEUjBQAgECBAljaGFsbGVuZ2UwPqEIMQYCAQICAQOiAwIBA6MEAgIBAKUFMQMCAQS/g3gDAgEB"
       + "v4N5BAICASy/hT0IAgYBUqi8MmC/hT4DAgEAMAAwCgYIKoZIzj0EAwIDSQAwRgIhANnmsSeWsnVH"
       + "aF5zII50tkiA7fRhIMNeZZBcPvSV2BN5AiEAwUZm63OxMZEHTIFL50ASKVN/sCLs8+gMY6uEVZRy"
-      + "61Q=";
-  protected static final X509Certificate ANDROID_KEYSTORE_ATTESTATION_CERT =
-      parseCertificateBase64(ANDROID_KEYSTORE_ATTESTATION_CERT_BASE64);
+      + "61QwggK2MIICH6ADAgECAgIQADANBgkqhkiG9w0BAQsFADBjMQswCQYDVQQGEwJVUzETMBEGA1UE"
+      + "CAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNTW91bnRhaW4gVmlldzEVMBMGA1UECgwMR29vZ2xlLCBJ"
+      + "bmMuMRAwDgYDVQQLDAdBbmRyb2lkMB4XDTE2MDEwNDEyNDA1M1oXDTM1MTIzMDEyNDA1M1owdjEL"
+      + "MAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAoMDEdvb2dsZSwgSW5jLjEQ"
+      + "MA4GA1UECwwHQW5kcm9pZDEpMCcGA1UEAwwgQW5kcm9pZCBTb2Z0d2FyZSBBdHRlc3RhdGlvbiBL"
+      + "ZXkwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMCDI9xWiBu4MCBp9bCFYcbuvn8F4vWoQgSK"
+      + "votHvnb+rvJc8psq+jIAFBYBQpmJoV/PxoFes2NYPC/S8gvkmDKD3YFLFtfhhUF65Uq8KWo6bbXA"
+      + "BAg7aMVWwfAjOZFkGYZNULdNQK7KSEx3NWyJWgwnWr+sSZ1dfSNi8pxeAuhxAgMBAAGjZjBkMB0G"
+      + "A1UdDgQWBBTUDBAb+M1jufc5UrUOE1ym15mThjAfBgNVHSMEGDAWgBQp+vGszE3STJZAJ3W2sOky"
+      + "5Qf+LjASBgNVHRMBAf8ECDAGAQH/AgEAMA4GA1UdDwEB/wQEAwIChDANBgkqhkiG9w0BAQsFAAOB"
+      + "gQCeLUhfjGcz3BqFrZnXUCPqFOxDsOGd6sIjRh5ytRncYCLkpWgxbAtVxOacoi2fOk+TazGLFngW"
+      + "DYjL2YvMgJ2E8MIn42s48f3R5xdyMVk1fZbzxX+rnY+WYSZPsr6Buw1JBCKKzp/39UIuJUT6IQcS"
+      + "WoO1Va0YgvhAFJucIGMEfw==";
+  protected static final X509Certificate[] ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN =
+      parseCertificateChainBase64(ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN_BASE64);
 
   protected static final byte[] REGISTRATION_DATA_2 =
       parseHex("0504478E16BBDBBB741A660A000314A8B6BD63095196ED704C52EEBC0FA02A61"

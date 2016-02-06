@@ -49,7 +49,12 @@ public class AndroidKeyStoreAttestation {
   }
 
   /**
-   * Parses the key description extension.  Expected format is:
+   * Parses the key description extension.  Note that this method only parses the description
+   * extension in the leaf cert.  It *does not* validate the certificate (or any chain).
+   *
+   * TODO(aczeskis): Add chain validation and remove/clarify the above comment.
+   *
+   * Expected format of the description extension is:
    *   KeyDescription ::= SEQUENCE {
    *       keymasterVersion     INTEGER,
    *       attestationChallenge OCTET_STRING,

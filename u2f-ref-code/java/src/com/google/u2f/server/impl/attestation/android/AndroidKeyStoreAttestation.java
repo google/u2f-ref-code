@@ -6,11 +6,10 @@ import com.google.u2f.server.impl.attestation.X509ExtensionParsingUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.DLSequence;
+import org.bouncycastle.asn1.ASN1Set;
 
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -132,7 +131,7 @@ public class AndroidKeyStoreAttestation {
   public static AndroidKeyStoreAttestation Parse(X509Certificate cert)
       throws CertificateParsingException {
     // Extract the extension from the certificate
-    DEROctetString extensionValue =
+    ASN1OctetString extensionValue =
         X509ExtensionParsingUtil.extractExtensionValue(cert, KEY_DESCRIPTION_OID);
 
     if (extensionValue == null) {
@@ -140,7 +139,7 @@ public class AndroidKeyStoreAttestation {
     }
 
     // Get the KeyDescription sequence
-    DLSequence keyDescriptionSequence = getKeyDescriptionSequence(extensionValue);
+    ASN1Sequence keyDescriptionSequence = getKeyDescriptionSequence(extensionValue);
 
     // Extract version
     Integer keymasterVersion = getKeymasterVersion(keyDescriptionSequence);
@@ -245,14 +244,14 @@ public class AndroidKeyStoreAttestation {
     return json;
   }
 
-  private static DLSequence getKeyDescriptionSequence(DEROctetString octet)
+  private static ASN1Sequence getKeyDescriptionSequence(ASN1OctetString octet)
       throws CertificateParsingException {
     // Read out the Sequence
     ASN1Object asn1Object = X509ExtensionParsingUtil.getAsn1Object(octet.getOctets());
-    if (asn1Object == null || !(asn1Object instanceof DLSequence)) {
+    if (asn1Object == null || !(asn1Object instanceof ASN1Sequence)) {
       throw new CertificateParsingException("Expected KeyDescription Sequence.");
     }
-    DLSequence sequence = (DLSequence) asn1Object;
+    ASN1Sequence sequence = (ASN1Sequence) asn1Object;
 
     if (sequence.size() != DESCRIPTION_LENGTH) {
       throw new CertificateParsingException("KeyDescription Sequence has " + sequence.size()
@@ -262,17 +261,17 @@ public class AndroidKeyStoreAttestation {
     return sequence;
   }
 
-  private static DLSequence getSoftwareEncodedSequence(DLSequence keyDescriptionSequence)
+  private static ASN1Sequence getSoftwareEncodedSequence(ASN1Sequence keyDescriptionSequence)
       throws CertificateParsingException {
     ASN1Encodable asn1Encodable =
         keyDescriptionSequence.getObjectAt(DESCRIPTION_SOFTWARE_ENFORCED_INDEX);
-    if (asn1Encodable == null || !(asn1Encodable instanceof DLSequence)) {
-      throw new CertificateParsingException("Expected softwareEnforced DLSequence.");
+    if (asn1Encodable == null || !(asn1Encodable instanceof ASN1Sequence)) {
+      throw new CertificateParsingException("Expected softwareEnforced ASN1Sequence.");
     }
-    return (DLSequence) asn1Encodable;
+    return (ASN1Sequence) asn1Encodable;
   }
 
-  private static ASN1Sequence getTeeEncodedSequence(DLSequence keyDescriptionSequence)
+  private static ASN1Sequence getTeeEncodedSequence(ASN1Sequence keyDescriptionSequence)
       throws CertificateParsingException {
     ASN1Encodable asn1Encodable =
         keyDescriptionSequence.getObjectAt(DESCRIPTION_TEE_ENFORCED_INDEX);
@@ -282,13 +281,13 @@ public class AndroidKeyStoreAttestation {
     return (ASN1Sequence) asn1Encodable;
   }
 
-  private static int getKeymasterVersion(DLSequence keyDescriptionSequence)
+  private static int getKeymasterVersion(ASN1Sequence keyDescriptionSequence)
       throws CertificateParsingException {
     ASN1Encodable asn1Encodable = keyDescriptionSequence.getObjectAt(DESCRIPTION_VERSION_INDEX);
     return X509ExtensionParsingUtil.getInt(asn1Encodable);
   }
 
-  private static byte[] getAttestationChallenge(DLSequence keyDescriptionSequence)
+  private static byte[] getAttestationChallenge(ASN1Sequence keyDescriptionSequence)
       throws CertificateParsingException {
     ASN1Encodable asn1Encodable = keyDescriptionSequence.getObjectAt(DESCRIPTION_CHALLENGE_INDEX);
     return X509ExtensionParsingUtil.getByteArray(asn1Encodable);
@@ -303,11 +302,11 @@ public class AndroidKeyStoreAttestation {
       return null;
     }
 
-    if (!(asn1Primitive instanceof DERSet)) {
-      throw new CertificateParsingException("Expected DERSet");
+    if (!(asn1Primitive instanceof ASN1Set)) {
+      throw new CertificateParsingException("Expected ASN1Set");
     }
 
-    DERSet set = (DERSet) asn1Primitive;
+    ASN1Set set = (ASN1Set) asn1Primitive;
     List<Purpose> purpose = new ArrayList<Purpose>();
     for (ASN1Encodable asn1Encodable : set.toArray()) {
       purpose.add(Purpose.fromValue(X509ExtensionParsingUtil.getInt(asn1Encodable)));

@@ -4,10 +4,10 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DLSequence;
 
 import java.io.IOException;
@@ -25,15 +25,15 @@ public class X509ExtensionParsingUtil {
   private static final int MAX_LONG_BITS = 64;
 
   /**
-   * Extract a {@link DEROctetString} that represents the value of a given extension
+   * Extract a {@link ASN1OctetString} that represents the value of a given extension
    *
    * @param cert is X509 certificate out of which an extension should be extracted
    * @param Oid is the Object IDentifier for the extension
-   * @return a {@link DEROctetString} that represents an extension or {@code null} if no such
+   * @return a {@link ASN1OctetString} that represents an extension or {@code null} if no such
    * extension is found.
    * @throws CertificateParsingException if a parsing error occurs
    */
-  public static DEROctetString extractExtensionValue(X509Certificate cert, String Oid)
+  public static ASN1OctetString extractExtensionValue(X509Certificate cert, String Oid)
       throws CertificateParsingException {
     byte[] extensionValue = cert.getExtensionValue(Oid);
 
@@ -43,11 +43,11 @@ public class X509ExtensionParsingUtil {
     }
 
     ASN1Object asn1Object = getAsn1Object(extensionValue);
-    if (asn1Object == null || !(asn1Object instanceof DEROctetString)) {
-      throw new CertificateParsingException("Expected DEROctetString.");
+    if (asn1Object == null || !(asn1Object instanceof ASN1OctetString)) {
+      throw new CertificateParsingException("Expected ASN1OctetString.");
     }
 
-    return (DEROctetString) asn1Object;
+    return (ASN1OctetString) asn1Object;
   }
 
   /**
@@ -107,10 +107,10 @@ public class X509ExtensionParsingUtil {
    */
   public static byte[] getByteArray(ASN1Encodable asn1Encodable)
       throws CertificateParsingException {
-    if (asn1Encodable == null || !(asn1Encodable instanceof DEROctetString)) {
-      throw new CertificateParsingException("Expected DEROctetString");
+    if (asn1Encodable == null || !(asn1Encodable instanceof ASN1OctetString)) {
+      throw new CertificateParsingException("Expected ASN1OctetString");
     }
-    DEROctetString derOctectString = (DEROctetString) asn1Encodable;
+    ASN1OctetString derOctectString = (ASN1OctetString) asn1Encodable;
     return derOctectString.getOctets();
   }
 
@@ -123,11 +123,11 @@ public class X509ExtensionParsingUtil {
     HashMap<Integer, ASN1Primitive> taggedObjects = new HashMap<Integer, ASN1Primitive>();
 
     for (ASN1Encodable asn1EncodablePurpose : asn1Sequence.toArray()) {
-      if (asn1EncodablePurpose == null || !(asn1EncodablePurpose instanceof DERTaggedObject)) {
+      if (asn1EncodablePurpose == null || !(asn1EncodablePurpose instanceof ASN1TaggedObject)) {
         throw new CertificateParsingException("Expected DERTagged object");
       }
-      DERTaggedObject derTaggedObject = (DERTaggedObject) asn1EncodablePurpose;
-      taggedObjects.put(Integer.valueOf(derTaggedObject.getTagNo()), derTaggedObject.getObject());
+      ASN1TaggedObject asn1TaggedObject = (ASN1TaggedObject) asn1EncodablePurpose;
+      taggedObjects.put(Integer.valueOf(asn1TaggedObject.getTagNo()), asn1TaggedObject.getObject());
     }
 
     return taggedObjects;

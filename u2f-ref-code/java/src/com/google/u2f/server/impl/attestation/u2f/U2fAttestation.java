@@ -4,8 +4,8 @@ import com.google.u2f.server.data.SecurityKeyData.Transports;
 import com.google.u2f.server.impl.attestation.X509ExtensionParsingUtil;
 
 import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEROctetString;
 
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -53,9 +53,9 @@ public class U2fAttestation {
    * @throws CertificateParsingException
    */
   public static U2fAttestation Parse(X509Certificate cert) throws CertificateParsingException {
-    DEROctetString extValue =
+    ASN1OctetString extValue =
         X509ExtensionParsingUtil.extractExtensionValue(cert, TRANSPORT_EXTENSION_OID);
-    
+
     if (extValue == null) {
       // No Transport extension was found
       return new U2fAttestation(null);

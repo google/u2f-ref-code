@@ -1,5 +1,6 @@
 package com.google.u2f.server.impl.attestation.android;
 
+import com.google.gson.JsonObject;
 import com.google.u2f.server.impl.attestation.X509ExtensionParsingUtil;
 
 import org.apache.commons.codec.binary.Hex;
@@ -212,24 +213,36 @@ public class AndroidKeyStoreAttestation {
 
   @Override
   public String toString() {
-    String stringAttestation = "[keymasterVersion: " + keymasterVersion;
+    StringBuilder attestation = new StringBuilder();
+    attestation.append("[\n  keymasterVersion: " + keymasterVersion);
 
     if (attestationChallenge != null && attestationChallenge.length > 0) {
-      stringAttestation +=
-          ", attestationChallenge: 0x" + Hex.encodeHexString(attestationChallenge).toUpperCase();
+      attestation.append("\n  attestationChallenge: 0x");
+      attestation.append(Hex.encodeHexString(attestationChallenge));
     }
 
     if (softwareAuthorizationList != null) {
-      stringAttestation += ", softwareEnforced: " + softwareAuthorizationList;
+      attestation.append("\n  softwareEnforced: ");
+      attestation.append(softwareAuthorizationList.toString().replaceAll("\n", "\n  "));
     }
 
     if (teeAuthorizationList != null) {
-      stringAttestation += ", teeEnforced: " + teeAuthorizationList;
+      attestation.append("\n  teeEnforced: ");
+      attestation.append(teeAuthorizationList.toString().replaceAll("\n", "\n  "));
     }
 
-    stringAttestation += "]";
+    attestation.append("\n]");
 
-    return stringAttestation;
+    return attestation.toString();
+  }
+
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    json.addProperty("keymaster_version", keymasterVersion);
+    json.addProperty("attestation_challenge", Hex.encodeHexString(attestationChallenge));
+    json.add("software_encoded", softwareAuthorizationList.toJson());
+    json.add("tee_encoded", teeAuthorizationList.toJson());
+    return json;
   }
 
   private static DLSequence getKeyDescriptionSequence(DEROctetString octet)

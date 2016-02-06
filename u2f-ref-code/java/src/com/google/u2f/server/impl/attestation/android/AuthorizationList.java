@@ -1,5 +1,7 @@
 package com.google.u2f.server.impl.attestation.android;
 
+import com.google.gson.JsonObject;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -43,19 +45,33 @@ public class AuthorizationList {
 
   @Override
   public String toString() {
-    String stringRepresentation = "[";
+    StringBuilder stringRepresentation = new StringBuilder();
+    stringRepresentation.append("[");
 
     if (purpose != null) {
-      stringRepresentation += "purpose: " + purpose;
+      stringRepresentation.append("\n  purpose: ");
+      stringRepresentation.append(purpose);
     }
 
     if (algorithm != null) {
-      stringRepresentation += ", algorithm: " + algorithm;
+      stringRepresentation.append("\n  algorithm: ");
+      stringRepresentation.append(algorithm);
     }
 
-    stringRepresentation += "]";
+    stringRepresentation.append("\n]");
 
-    return stringRepresentation;
+    return stringRepresentation.toString();
+  }
+
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    if (purpose != null) {
+      json.addProperty("purpose", purpose.toString());
+    }
+    if (algorithm != null) {
+      json.addProperty("algorithm", algorithm.toString());
+    }
+    return json;
   }
 
   public static class Builder {

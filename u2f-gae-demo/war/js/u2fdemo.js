@@ -23,10 +23,20 @@ function tokenToDom(token) {
   card.querySelector('.card').setAttribute("id", token.public_key);
   card.querySelector('.issuer').textContent = token.issuer;
   card.querySelector('.enrollmentTimeValue').textContent = timeString;
-  if (token.transports == null || token.transports === undefined) {
-	  card.querySelector('.transportsValue').textContent = "None specified";
-  } else {
-	  card.querySelector('.transportsValue').textContent = token.transports;
+  if (token.transports) {
+    card.querySelector('.transportsValue').textContent = token.transports;
+  }
+  if (token.android_attestation) {
+    card.querySelector('.androidAttestationLabel').style.display = "inline";
+    card.querySelector('.androidAttestation').style.display = "inline";
+    card.querySelector('.androidAttestation > .keymasterVersion').textContent
+        = token.android_attestation.keymaster_version;
+    card.querySelector('.androidAttestation > .challenge').textContent
+        = token.android_attestation.attestation_challenge;
+    card.querySelector('.androidAttestation > .softwareEnforced').textContent
+      = JSON.stringify(token.android_attestation.software_encoded, null, 2);
+    card.querySelector('.androidAttestation > .teeEnforced').textContent
+      = JSON.stringify(token.android_attestation.tee_encoded, null, 2);
   }
   card.querySelector('.keyHandle').textContent = token.key_handle;
   card.querySelector('.publicKey').textContent = token.public_key;

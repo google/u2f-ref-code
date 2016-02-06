@@ -174,10 +174,14 @@ h1 {
 	padding: 25px;
 }
 
-.cardLabel {
+.cardLabel, .androidAttestationLabel {
   color: #5F5F5F;
 	margin-top: 10px;
 	font-size: 90%;
+}
+
+.androidAttestationLabel {
+  display: none;
 }
 
 .issuer {
@@ -190,10 +194,15 @@ h1 {
   margin-bottom: 5px;
 }
 
-.keyHandle, .publicKey {
+.keyHandle, .publicKey, .androidAttestation {
 	font-family: monospace;
 	word-wrap: break-word;
 	color: #9E9E9E;
+}
+
+.androidAttestation {
+  padding-left: 10px;
+  display: none;
 }
 
 #errormessage {

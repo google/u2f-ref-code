@@ -6,13 +6,12 @@
 
 package com.google.u2f.server.data;
 
+import org.apache.commons.codec.binary.Base64;
+
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.codec.binary.Base64;
-
-import com.google.common.base.Objects;
+import java.util.Objects;
 
 public class SecurityKeyData {
   public enum Transports {
@@ -97,12 +96,13 @@ public class SecurityKeyData {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         enrollmentTime,
         transports,
         keyHandle,
         publicKey,
-        attestationCert);
+        attestationCert,
+        counter);
   }
 
   @Override
@@ -115,7 +115,8 @@ public class SecurityKeyData {
         && (this.enrollmentTime == that.enrollmentTime)
         && containSameTransports(this.transports, that.transports)
         && Arrays.equals(this.publicKey, that.publicKey)
-        && Objects.equal(this.attestationCert, that.attestationCert);
+        && Objects.equals(this.attestationCert, that.attestationCert)
+        && Objects.equals(counter, counter);
   }
 
   /**

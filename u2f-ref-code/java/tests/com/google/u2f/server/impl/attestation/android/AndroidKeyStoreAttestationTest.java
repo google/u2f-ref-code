@@ -21,7 +21,7 @@ public class AndroidKeyStoreAttestationTest extends TestVectors {
   @Test
   public void testValidCert() throws Exception {
     AndroidKeyStoreAttestation attestation =
-        AndroidKeyStoreAttestation.Parse(ANDROID_KEYSTORE_ATTESTATION_CERT);
+        AndroidKeyStoreAttestation.Parse(ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN[0]);
 
     assertNotNull("Not expecting null attestation", attestation);
 

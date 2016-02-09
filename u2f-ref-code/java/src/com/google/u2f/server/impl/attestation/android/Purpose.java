@@ -24,6 +24,16 @@ public enum Purpose {
     throw new CertificateParsingException("Invalid purpose value: " + value);
   }
 
+  public static Purpose fromString(String string) throws CertificateParsingException {
+    for (Purpose purpose : Purpose.values()) {
+      if (purpose.toString().equals(string)) {
+        return purpose;
+      }
+    }
+
+    throw new CertificateParsingException("Invalid purpose value: " + string);
+  }
+
   private Purpose(int value, String description) {
     this.value = value;
     this.description = description;

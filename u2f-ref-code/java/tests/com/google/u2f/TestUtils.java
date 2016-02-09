@@ -6,6 +6,17 @@
 
 package com.google.u2f;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
+import org.bouncycastle.asn1.sec.SECNamedCurves;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.jce.spec.ECPrivateKeySpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.math.ec.ECPoint;
+
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -14,21 +25,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.asn1.sec.SECNamedCurves;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.spec.ECPrivateKeySpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.math.ec.ECPoint;
+import java.util.Collection;
 
 public class TestUtils {
 
@@ -63,6 +65,17 @@ public class TestUtils {
 
   public static X509Certificate parseCertificateBase64(String encodedDerCertificate) {
     return parseCertificate(parseBase64(encodedDerCertificate));
+  }
+
+  public static X509Certificate[] parseCertificateChainBase64(String encodedDerCertificates) {
+    try {
+      Collection<? extends Certificate> certCollection =
+          CertificateFactory.getInstance("X.509").generateCertificates(
+              new ByteArrayInputStream(parseBase64(encodedDerCertificates)));
+      return certCollection.toArray(new X509Certificate[0]);
+    } catch (CertificateException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static PrivateKey parsePrivateKey(String keyBytesHex) {

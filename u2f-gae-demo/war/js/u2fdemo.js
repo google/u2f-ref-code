@@ -29,13 +29,13 @@ function tokenToDom(token) {
   if (token.android_attestation) {
     card.querySelector('.androidAttestationLabel').style.display = "inline";
     card.querySelector('.androidAttestation').style.display = "inline";
-    card.querySelector('.androidAttestation > .keymasterVersion').textContent
+    card.querySelector('.keymasterVersion').textContent
         = token.android_attestation.keymaster_version;
-    card.querySelector('.androidAttestation > .challenge').textContent
+    card.querySelector('.challenge').textContent
         = token.android_attestation.attestation_challenge;
-    card.querySelector('.androidAttestation > .softwareEnforced').textContent
+    card.querySelector('.softwareEnforced').textContent
       = JSON.stringify(token.android_attestation.software_encoded, null, 2);
-    card.querySelector('.androidAttestation > .teeEnforced').textContent
+    card.querySelector('.teeEnforced').textContent
       = JSON.stringify(token.android_attestation.tee_encoded, null, 2);
   }
   card.querySelector('.keyHandle').textContent = token.key_handle;

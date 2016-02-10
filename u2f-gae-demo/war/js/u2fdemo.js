@@ -31,7 +31,7 @@ function tokenToDom(token) {
     card.querySelector('.keymasterVersion').textContent
         = token.android_attestation.keymaster_version;
     card.querySelector('.challenge').textContent
-        = token.android_attestation.attestation_challenge;
+        = "0x" + token.android_attestation.attestation_challenge;
 
     card.querySelector('.softwareEnforced .algorithm').textContent
         = token.android_attestation.software_encoded.algorithm;

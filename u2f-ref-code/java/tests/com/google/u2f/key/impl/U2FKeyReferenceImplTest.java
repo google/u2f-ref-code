@@ -13,12 +13,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.security.Signature;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
 import com.google.u2f.TestVectors;
 import com.google.u2f.key.DataStore;
 import com.google.u2f.key.KeyHandleGenerator;
@@ -29,6 +23,12 @@ import com.google.u2f.key.messages.AuthenticateRequest;
 import com.google.u2f.key.messages.AuthenticateResponse;
 import com.google.u2f.key.messages.RegisterRequest;
 import com.google.u2f.key.messages.RegisterResponse;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
+import java.security.Signature;
 
 public class U2FKeyReferenceImplTest extends TestVectors {
 
@@ -74,10 +74,10 @@ public class U2FKeyReferenceImplTest extends TestVectors {
 
     verify(mockDataStore).storeKeyPair(KEY_HANDLE, USER_KEY_PAIR_ENROLL);
     assertArrayEquals(USER_PUBLIC_KEY_ENROLL_HEX, registerResponse.getUserPublicKey());
-    assertEquals(VENDOR_CERTIFICATE, registerResponse.getAttestationCertificate());
+    assertArrayEquals(VENDOR_CERTIFICATE, registerResponse.getAttestationCertificateChain());
     assertArrayEquals(KEY_HANDLE, registerResponse.getKeyHandle());
     Signature ecdsaSignature = Signature.getInstance("SHA256withECDSA");
-    ecdsaSignature.initVerify(VENDOR_CERTIFICATE.getPublicKey());
+    ecdsaSignature.initVerify(VENDOR_CERTIFICATE[0].getPublicKey());
     ecdsaSignature.update(EXPECTED_REGISTER_SIGNED_BYTES);
     assertTrue(ecdsaSignature.verify(registerResponse.getSignature()));
   }

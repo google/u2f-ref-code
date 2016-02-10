@@ -13,15 +13,15 @@ import java.util.Objects;
 public class RegisterResponse extends U2FResponse {
   private final byte[] userPublicKey;
   private final byte[] keyHandle;
-  private final X509Certificate attestationCertificate;
+  private final X509Certificate[] attestationCertificateChain;
   private final byte[] signature;
 
   public RegisterResponse(byte[] userPublicKey, byte[] keyHandle,
-      X509Certificate attestationCertificate, byte[] signature) {
+      X509Certificate[] attestationCertificateChain, byte[] signature) {
     super();
     this.userPublicKey = userPublicKey;
     this.keyHandle = keyHandle;
-    this.attestationCertificate = attestationCertificate;
+    this.attestationCertificateChain = attestationCertificateChain;
     this.signature = signature;
   }
 
@@ -43,10 +43,10 @@ public class RegisterResponse extends U2FResponse {
   }
 
   /**
-   * This is a X.509 certificate.
+   * This is a X.509 certificate chain.
    */
-  public X509Certificate getAttestationCertificate() {
-    return attestationCertificate;
+  public X509Certificate[] getAttestationCertificateChain() {
+    return attestationCertificateChain;
   }
 
   /** This is a ECDSA signature (on P-256) */
@@ -56,7 +56,7 @@ public class RegisterResponse extends U2FResponse {
 
   @Override
   public int hashCode() {
-    return Objects.hash(userPublicKey, keyHandle, attestationCertificate, signature);
+    return Objects.hash(userPublicKey, keyHandle, attestationCertificateChain, signature);
   }
 
   @Override
@@ -71,6 +71,6 @@ public class RegisterResponse extends U2FResponse {
     return Arrays.equals(userPublicKey, other.userPublicKey)
         && Arrays.equals(keyHandle, other.keyHandle)
         && Arrays.equals(signature, other.signature)
-        && Objects.equals(attestationCertificate, other.attestationCertificate);
+        && Objects.equals(attestationCertificateChain, other.attestationCertificateChain);
   }
 }

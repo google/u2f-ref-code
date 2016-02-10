@@ -28,30 +28,55 @@ function tokenToDom(token) {
   }
   if (token.android_attestation) {
     card.querySelector('.androidAttestationLabel').style.display = "inline";
+    
+    card.querySelector('.chainVerified').textContent = token.android_attestation.chain_validated;
+    
     card.querySelector('.keymasterVersion').textContent
         = token.android_attestation.keymaster_version;
     card.querySelector('.challenge').textContent
-        = token.android_attestation.attestation_challenge;
+        = "0x" + token.android_attestation.attestation_challenge;
 
+    var showSoftwareEnforced = false;
     if (token.android_attestation.software_encoded.algorithm) {
       card.querySelector('.softwareEnforced .algorithm').textContent
           = token.android_attestation.software_encoded.algorithm;
+      showSoftwareEnforced = true;
     }
     if (token.android_attestation.software_encoded.purpose) {
       card.querySelector('.softwareEnforced .purpose').textContent
           = token.android_attestation.software_encoded.purpose.join(', ');
+      showSoftwareEnforced = true;
     }
     if (token.android_attestation.software_encoded.keysize) {
       card.querySelector('.softwareEnforced .keysize').textContent
           = token.android_attestation.software_encoded.keysize;
+      showSoftwareEnforced = true;
     }
     if (token.android_attestation.software_encoded.blockmode) {
       card.querySelector('.softwareEnforced .blockmode').textContent
           = token.android_attestation.software_encoded.blockmode.join(', ');
+      showSoftwareEnforced = true;
+    }
+    if (!showSoftwareEnforced) {
+      card.querySelector('.softwareEnforced').style.display = "none";
     }
 
-    card.querySelector('.teeEnforced').textContent
-      = JSON.stringify(token.android_attestation.tee_encoded, null, 2);
+    if (token.android_attestation.tee_encoded.algorithm) {
+      card.querySelector('.teeEnforced .algorithm').textContent
+          = token.android_attestation.tee_encoded.algorithm;
+    }
+    if (token.android_attestation.tee_encoded.purpose) {
+      card.querySelector('.teeEnforced .purpose').textContent
+          = token.android_attestation.tee_encoded.purpose.join(', ');
+    }
+    if (token.android_attestation.tee_encoded.keysize) {
+      card.querySelector('.teeEnforced .keysize').textContent
+          = token.android_attestation.tee_encoded.keysize;
+    }
+    if (token.android_attestation.tee_encoded.blockmode) {
+      card.querySelector('.teeEnforced .blockmode').textContent
+          = token.android_attestation.tee_encoded.blockmode.join(', ');
+    }
   }
   card.querySelector('.keyHandle').textContent = token.key_handle;
   card.querySelector('.publicKey').textContent = token.public_key;

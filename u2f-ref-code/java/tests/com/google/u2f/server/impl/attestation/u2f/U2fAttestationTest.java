@@ -21,7 +21,7 @@ import java.util.List;
 public class U2fAttestationTest extends TestVectors {
   @Test
   public void testValidCertOneTransport() throws Exception {
-    U2fAttestation attestation = U2fAttestation.Parse(TRUSTED_CERTIFICATE_ONE_TRANSPORT);
+    U2fAttestation attestation = U2fAttestation.Parse(TRUSTED_CERTIFICATE_ONE_TRANSPORT[0]);
 
     assertNotNull(attestation);
     List<Transports> transports = attestation.getTransports();
@@ -32,19 +32,19 @@ public class U2fAttestationTest extends TestVectors {
 
   @Test(expected = CertificateParsingException.class)
   public void testMalformedCert() throws Exception {
-    U2fAttestation.Parse(TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION);
+    U2fAttestation.Parse(TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION[0]);
   }
 
   @Test
   public void testValidCertNoTransports() throws Exception {
-    U2fAttestation attestation = U2fAttestation.Parse(TRUSTED_CERTIFICATE_2);
+    U2fAttestation attestation = U2fAttestation.Parse(TRUSTED_CERTIFICATE_2[0]);
     assertNotNull(attestation);
     assertTrue(attestation.getTransports() == null);
   }
 
   @Test
   public void testValidCertMultipleTransports() throws Exception {
-    U2fAttestation attestation = U2fAttestation.Parse(TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS);
+    U2fAttestation attestation = U2fAttestation.Parse(TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS[0]);
 
     assertNotNull(attestation);
     List<Transports> transports = attestation.getTransports();

@@ -6,13 +6,6 @@
 
 package com.google.u2f.key.impl;
 
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
-import java.util.logging.Logger;
-
-import org.apache.commons.codec.binary.Hex;
-
 import com.google.u2f.U2FException;
 import com.google.u2f.codec.RawMessageCodec;
 import com.google.u2f.key.Crypto;
@@ -26,10 +19,17 @@ import com.google.u2f.key.messages.AuthenticateResponse;
 import com.google.u2f.key.messages.RegisterRequest;
 import com.google.u2f.key.messages.RegisterResponse;
 
+import org.apache.commons.codec.binary.Hex;
+
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.util.logging.Logger;
+
 public class U2FKeyReferenceImpl implements U2FKey {
   private static final Logger Log = Logger.getLogger(U2FKeyReferenceImpl.class.getName());
 
-  private final X509Certificate vendorCertificate;
+  private final X509Certificate[] vendorCertificateChain;
   private final PrivateKey certificatePrivateKey;
   private final KeyPairGenerator keyPairGenerator;
   private final KeyHandleGenerator keyHandleGenerator;
@@ -37,10 +37,10 @@ public class U2FKeyReferenceImpl implements U2FKey {
   private final UserPresenceVerifier userPresenceVerifier;
   private final Crypto crypto;
 
-  public U2FKeyReferenceImpl(X509Certificate vendorCertificate, PrivateKey certificatePrivateKey,
+  public U2FKeyReferenceImpl(X509Certificate[] vendorCertificateChain, PrivateKey certificatePrivateKey,
       KeyPairGenerator keyPairGenerator, KeyHandleGenerator keyHandleGenerator,
       DataStore dataStore, UserPresenceVerifier userPresenceVerifier, Crypto crypto) {
-    this.vendorCertificate = vendorCertificate;
+    this.vendorCertificateChain = vendorCertificateChain;
     this.certificatePrivateKey = certificatePrivateKey;
     this.keyPairGenerator = keyPairGenerator;
     this.keyHandleGenerator = keyHandleGenerator;
@@ -81,12 +81,12 @@ public class U2FKeyReferenceImpl implements U2FKey {
     Log.info(" -- Outputs --");
     Log.info("  userPublicKey: " + Hex.encodeHexString(userPublicKey));
     Log.info("  keyHandle: " + Hex.encodeHexString(keyHandle));
-    Log.info("  vendorCertificate: " + vendorCertificate);
+    Log.info("  vendorCertificate: " + vendorCertificateChain);
     Log.info("  signature: " + Hex.encodeHexString(signature));
 
     Log.info("<< register");
 
-    return new RegisterResponse(userPublicKey, keyHandle, vendorCertificate, signature);
+    return new RegisterResponse(userPublicKey, keyHandle, vendorCertificateChain, signature);
   }
 
   @Override

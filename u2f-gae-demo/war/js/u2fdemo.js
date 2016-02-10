@@ -33,8 +33,14 @@ function tokenToDom(token) {
         = token.android_attestation.keymaster_version;
     card.querySelector('.challenge').textContent
         = token.android_attestation.attestation_challenge;
-    card.querySelector('.softwareEnforced').textContent
-      = JSON.stringify(token.android_attestation.software_encoded, null, 2);
+
+    card.querySelector('.softwareEnforced .algorithm').textContent
+        = token.android_attestation.software_encoded.algorithm;
+    if (token.android_attestation.software_encoded.purpose) {
+      card.querySelector('.softwareEnforced .purpose').textContent
+          = token.android_attestation.software_encoded.purpose.join(', ');
+    }
+
     card.querySelector('.teeEnforced').textContent
       = JSON.stringify(token.android_attestation.tee_encoded, null, 2);
   }

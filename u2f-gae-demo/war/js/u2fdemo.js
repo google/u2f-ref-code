@@ -28,7 +28,6 @@ function tokenToDom(token) {
   }
   if (token.android_attestation) {
     card.querySelector('.androidAttestationLabel').style.display = "inline";
-    card.querySelector('.androidAttestation').style.display = "inline";
     card.querySelector('.keymasterVersion').textContent
         = token.android_attestation.keymaster_version;
     card.querySelector('.challenge').textContent
@@ -52,6 +51,17 @@ function tokenToDom(token) {
     .click(function() {
       sendRemoveTokenRequest(token.public_key);
      });
+
+  $(card.querySelector('.toggleAttestationButton'))
+    .click(function() {
+      var currentText = $("#" + token.public_key + " .toggleAttestationButton").html();
+      if (currentText == 'show') {
+        $("#" + token.public_key + " .toggleAttestationButton").html('hide')
+      } else {
+        $("#" + token.public_key + " .toggleAttestationButton").html('show')
+      }
+      $("#" + token.public_key + " .androidAttestation").slideToggle(800);
+    });
 
   return card;
 }

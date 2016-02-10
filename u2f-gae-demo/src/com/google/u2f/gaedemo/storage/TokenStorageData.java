@@ -12,16 +12,18 @@ import com.google.gson.JsonPrimitive;
 import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SecurityKeyData.Transports;
 import com.google.u2f.server.impl.attestation.android.AndroidKeyStoreAttestation;
+import com.google.u2f.tools.X509Util;
 
 import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateEncodingException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,11 +42,7 @@ public class TokenStorageData {
     this.enrollmentTime = tokenData.getEnrollmentTime();
     this.keyHandle = tokenData.getKeyHandle();
     this.publicKey = tokenData.getPublicKey();
-    try {
-      this.attestationCert = tokenData.getAttestationCertificate().getEncoded();
-    } catch (CertificateEncodingException e) {
-      throw new RuntimeException();
-    }
+    this.attestationCert = X509Util.encodeCertArray(tokenData.getAttestationCertificateChain());
     this.transports = tokenData.getTransports();
     this.counter = tokenData.getCounter();
   }
@@ -54,22 +52,24 @@ public class TokenStorageData {
   }
 
   public SecurityKeyData getSecurityKeyData() {
-    X509Certificate x509cert = parseCertificate(attestationCert);
-    return new SecurityKeyData(enrollmentTime, transports, keyHandle, publicKey, x509cert, counter);
+    X509Certificate[] x509certChain = parseCertificateChain(attestationCert);
+    return new SecurityKeyData(
+        enrollmentTime, transports, keyHandle, publicKey, x509certChain, counter);
   }
 
   public JsonObject toJson() {
-    X509Certificate x509cert = getSecurityKeyData().getAttestationCertificate();
+    X509Certificate[] x509certChain = getSecurityKeyData().getAttestationCertificateChain();
     JsonObject json = new JsonObject();
     json.addProperty("enrollment_time", enrollmentTime);
     json.add("transports", getJsonTransports());
     json.addProperty("key_handle", Hex.encodeHexString(keyHandle));
     json.addProperty("public_key", Hex.encodeHexString(publicKey));
-    json.addProperty("issuer", x509cert.getIssuerX500Principal().getName());
+    json.addProperty("issuer", x509certChain[0].getIssuerX500Principal().getName());
 
     try {
+      // TODO(aczeskis): use the actual root ca cert when it's available
       AndroidKeyStoreAttestation androidKeyStoreAttestation =
-          AndroidKeyStoreAttestation.Parse(x509cert);
+          AndroidKeyStoreAttestation.Parse(x509certChain, null);
       if (androidKeyStoreAttestation != null) {
         json.add("android_attestation", androidKeyStoreAttestation.toJson());
       }
@@ -118,10 +118,12 @@ public class TokenStorageData {
         && Arrays.equals(this.attestationCert, that.attestationCert);
   }
 
-  private static X509Certificate parseCertificate(byte[] encodedDerCertificate) {
+  private static X509Certificate[] parseCertificateChain(byte[] encodedDerCertificates) {
     try {
-      return (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(
-          new ByteArrayInputStream(encodedDerCertificate));
+      Collection<? extends Certificate> certCollection =
+          CertificateFactory.getInstance("X.509").generateCertificates(
+              new ByteArrayInputStream(encodedDerCertificates));
+      return certCollection.toArray(new X509Certificate[0]);
     } catch (CertificateException e) {
       throw new RuntimeException(e);
     }

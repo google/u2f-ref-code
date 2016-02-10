@@ -36,14 +36,14 @@ public class SecurityKeyData {
   private final List<Transports> transports;
   private final byte[] keyHandle;
   private final byte[] publicKey;
-  private final X509Certificate attestationCert;
+  private final X509Certificate[] attestationCertChain;
   private int counter;
 
   public SecurityKeyData(
       long enrollmentTime,
       byte[] keyHandle,
       byte[] publicKey,
-      X509Certificate attestationCert,
+      X509Certificate[] attestationCert,
       int counter) {
     this(enrollmentTime, null /* transports */, keyHandle, publicKey, attestationCert, counter);
   }
@@ -53,13 +53,13 @@ public class SecurityKeyData {
       List<Transports> transports,
       byte[] keyHandle,
       byte[] publicKey,
-      X509Certificate attestationCert,
+      X509Certificate[] attestationCertChain,
       int counter) {
     this.enrollmentTime = enrollmentTime;
     this.transports = transports;
     this.keyHandle = keyHandle;
     this.publicKey = publicKey;
-    this.attestationCert = attestationCert;
+    this.attestationCertChain = attestationCertChain;
     this.counter = counter;
   }
 
@@ -82,8 +82,8 @@ public class SecurityKeyData {
     return publicKey;
   }
 
-  public X509Certificate getAttestationCertificate() {
-    return attestationCert;
+  public X509Certificate[] getAttestationCertificateChain() {
+    return attestationCertChain;
   }
 
   public int getCounter() {
@@ -101,7 +101,7 @@ public class SecurityKeyData {
         transports,
         keyHandle,
         publicKey,
-        attestationCert,
+        attestationCertChain,
         counter);
   }
 
@@ -115,7 +115,7 @@ public class SecurityKeyData {
         && (this.enrollmentTime == that.enrollmentTime)
         && containSameTransports(this.transports, that.transports)
         && Arrays.equals(this.publicKey, that.publicKey)
-        && Objects.equals(this.attestationCert, that.attestationCert)
+        && Arrays.equals(this.attestationCertChain, that.attestationCertChain)
         && Objects.equals(counter, counter);
   }
 
@@ -149,7 +149,8 @@ public class SecurityKeyData {
       .append(counter)
       .append("\n")
       .append("attestation certificate:\n")
-      .append(attestationCert.toString())
+      .append(attestationCertChain.toString())
+      .append("\n")
       .append("transports: ")
       .append(transports)
       .append("\n")

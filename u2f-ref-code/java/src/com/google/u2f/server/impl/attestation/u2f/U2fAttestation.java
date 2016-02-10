@@ -24,10 +24,13 @@ public class U2fAttestation {
   private final List<Transports> transports;
 
   /**
-   * Parses a transport extension from an attestation certificate and returns
+   * Parses a transport extension from an attestation certificate chain and returns
    * a List of HardwareFeatures supported by the security key. The specification of
    * the HardwareFeatures in the certificate should match their internal definition in
    * device_auth.proto
+   *
+   * <p>Note that the transport extension is required to be in the leaf cert of the chain.  The
+   * leaf is considered to be in certChain[0].
    *
    * <p>The expected transport extension value is a BIT STRING containing the enabled
    * transports:
@@ -47,14 +50,15 @@ public class U2fAttestation {
    *      OCTET STRING (1 elem)
    *        BIT STRING (4 bits) 1101
    *
-   * @param cert the certificate to parse for extension
+   * @param certChain the certificate to parse for extension
    * @return the supported transports as a List of HardwareFeatures or null if no extension
    * was found
    * @throws CertificateParsingException
    */
-  public static U2fAttestation Parse(X509Certificate cert) throws CertificateParsingException {
+  public static U2fAttestation Parse(X509Certificate[] certChain)
+      throws CertificateParsingException {
     ASN1OctetString extValue =
-        X509ExtensionParsingUtil.extractExtensionValue(cert, TRANSPORT_EXTENSION_OID);
+        X509ExtensionParsingUtil.extractExtensionValue(certChain[0], TRANSPORT_EXTENSION_OID);
 
     if (extValue == null) {
       // No Transport extension was found

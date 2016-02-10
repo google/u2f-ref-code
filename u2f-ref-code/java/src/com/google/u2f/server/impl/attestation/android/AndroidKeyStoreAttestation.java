@@ -1,7 +1,9 @@
 package com.google.u2f.server.impl.attestation.android;
 
 import com.google.gson.JsonObject;
+import com.google.u2f.U2FException;
 import com.google.u2f.server.impl.attestation.X509ExtensionParsingUtil;
+import com.google.u2f.tools.X509Util;
 
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -41,20 +43,23 @@ public class AndroidKeyStoreAttestation {
   private final byte[] attestationChallenge;
   private final AuthorizationList softwareAuthorizationList;
   private final AuthorizationList teeAuthorizationList;
+  private final boolean chainValidated;
+
 
   private AndroidKeyStoreAttestation(Integer keymasterVersion, byte[] attestationChallenge,
-      AuthorizationList softwareAuthorizationList, AuthorizationList teeAuthorizationList) {
+      AuthorizationList softwareAuthorizationList, AuthorizationList teeAuthorizationList,
+      boolean chainValidated) {
     this.keymasterVersion = keymasterVersion;
     this.attestationChallenge = attestationChallenge;
     this.softwareAuthorizationList = softwareAuthorizationList;
     this.teeAuthorizationList = teeAuthorizationList;
+    this.chainValidated = chainValidated;
   }
 
   /**
-   * Parses the key description extension.  Note that this method only parses the description
-   * extension in the leaf cert.  It *does not* validate the certificate (or any chain).
-   *
-   * TODO(aczeskis): Add chain validation and remove/clarify the above comment.
+   * Parses the key description extension out of the leaf node of an AndroidKeyStore attestation
+   * X509 certificate chain.  Note the leaf certificate is considered to be the 0th element in the
+   * certificate array.  The chain is validated up to the root ca certificate;
    *
    * Expected format of the description extension is:
    *   KeyDescription ::= SEQUENCE {
@@ -135,11 +140,15 @@ public class AndroidKeyStoreAttestation {
    *       patchMonthYear  INTEGER,
    *   }
    */
-  public static AndroidKeyStoreAttestation Parse(X509Certificate cert)
-      throws CertificateParsingException {
-    // Extract the extension from the certificate
+  public static AndroidKeyStoreAttestation Parse(
+      X509Certificate[] certChain, X509Certificate[] caCerts) throws CertificateParsingException {
+    if (certChain == null || certChain.length < 1) {
+      throw new CertificateParsingException("Certificate chain must have at least one cert");
+    }
+
+    // Extract the extension from the leaf certificate
     ASN1OctetString extensionValue =
-        X509ExtensionParsingUtil.extractExtensionValue(cert, KEY_DESCRIPTION_OID);
+        X509ExtensionParsingUtil.extractExtensionValue(certChain[0], KEY_DESCRIPTION_OID);
 
     if (extensionValue == null) {
       return null;
@@ -163,8 +172,16 @@ public class AndroidKeyStoreAttestation {
     ASN1Sequence teeEnforcedSequence = getTeeEncodedSequence(keyDescriptionSequence);
     AuthorizationList teeAuthorizationList = extractAuthorizationList(teeEnforcedSequence);
 
-    return new AndroidKeyStoreAttestation(
-        keymasterVersion, challenge, softwareAuthorizationList, teeAuthorizationList);
+    boolean chainVerified;
+
+    try {
+      chainVerified = X509Util.verifyCertChain(certChain, caCerts);
+    } catch (U2FException e) {
+      throw new CertificateParsingException(e);
+    }
+
+    return new AndroidKeyStoreAttestation(keymasterVersion, challenge, softwareAuthorizationList,
+        teeAuthorizationList, chainVerified);
   }
 
   /**
@@ -195,10 +212,17 @@ public class AndroidKeyStoreAttestation {
     return teeAuthorizationList;
   }
 
+  /**
+   * @return whether the attestation chain could be validated back to a known-valid root
+   */
+  public boolean isChainValidated() {
+    return chainValidated;
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(
-        attestationChallenge, keymasterVersion, softwareAuthorizationList, teeAuthorizationList);
+    return Objects.hash(attestationChallenge, keymasterVersion, softwareAuthorizationList,
+        teeAuthorizationList, chainValidated);
   }
 
   @Override
@@ -214,7 +238,8 @@ public class AndroidKeyStoreAttestation {
     return Objects.equals(attestationChallenge, other.attestationChallenge)
         && Objects.equals(keymasterVersion, other.keymasterVersion)
         && Objects.equals(softwareAuthorizationList, other.softwareAuthorizationList)
-        && Objects.equals(teeAuthorizationList, other.teeAuthorizationList);
+        && Objects.equals(teeAuthorizationList, other.teeAuthorizationList)
+        && chainValidated == other.chainValidated;
   }
 
   @Override
@@ -237,6 +262,9 @@ public class AndroidKeyStoreAttestation {
       attestation.append(teeAuthorizationList.toString().replaceAll("\n", "\n  "));
     }
 
+    attestation.append("\n  chainValidated: ");
+    attestation.append(chainValidated);
+
     attestation.append("\n]");
 
     return attestation.toString();
@@ -248,6 +276,7 @@ public class AndroidKeyStoreAttestation {
     json.addProperty("attestation_challenge", Hex.encodeHexString(attestationChallenge));
     json.add("software_encoded", softwareAuthorizationList.toJson());
     json.add("tee_encoded", teeAuthorizationList.toJson());
+    json.addProperty("chain_validated", chainValidated);
     return json;
   }
 

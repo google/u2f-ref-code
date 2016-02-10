@@ -28,10 +28,13 @@ function tokenToDom(token) {
   }
   if (token.android_attestation) {
     card.querySelector('.androidAttestationLabel').style.display = "inline";
+    
+    card.querySelector('.chainVerified').textContent = token.android_attestation.chain_validated;
+    
     card.querySelector('.keymasterVersion').textContent
         = token.android_attestation.keymaster_version;
     card.querySelector('.challenge').textContent
-        = token.android_attestation.attestation_challenge;
+        = "0x" + token.android_attestation.attestation_challenge;
 
     if (token.android_attestation.software_encoded.algorithm) {
       card.querySelector('.softwareEnforced .algorithm').textContent

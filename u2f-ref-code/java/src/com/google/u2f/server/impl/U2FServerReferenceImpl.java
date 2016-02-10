@@ -32,13 +32,13 @@ import com.google.u2f.server.messages.RegistrationRequest;
 import com.google.u2f.server.messages.RegistrationResponse;
 import com.google.u2f.server.messages.SignResponse;
 import com.google.u2f.server.messages.U2fSignRequest;
+import com.google.u2f.tools.X509Util;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -123,11 +123,11 @@ public class U2FServerReferenceImpl implements U2FServer {
 
     byte[] userPublicKey = registerResponse.getUserPublicKey();
     byte[] keyHandle = registerResponse.getKeyHandle();
-    X509Certificate attestationCertificate = registerResponse.getAttestationCertificate();
+    X509Certificate[] attestationCertificateChain = registerResponse.getAttestationCertificateChain();
     byte[] signature = registerResponse.getSignature();
     List<Transports> transports = null;
     try {
-      transports = U2fAttestation.Parse(attestationCertificate).getTransports();
+      transports = U2fAttestation.Parse(attestationCertificateChain).getTransports();
     } catch (CertificateParsingException e) {
       Log.warning("Could not parse transports extension " + e.getMessage());
     }
@@ -135,14 +135,10 @@ public class U2FServerReferenceImpl implements U2FServer {
     Log.info("-- Parsed rawRegistrationResponse --");
     Log.info("  userPublicKey: " + Hex.encodeHexString(userPublicKey));
     Log.info("  keyHandle: " + Hex.encodeHexString(keyHandle));
-    Log.info("  attestationCertificate: " + attestationCertificate.toString());
+    Log.info("  attestationCertificate: " + attestationCertificateChain.toString());
     Log.info("  transports: " + transports);
-    try {
-      Log.info("  attestationCertificate bytes: "
-          + Hex.encodeHexString(attestationCertificate.getEncoded()));
-    } catch (CertificateEncodingException e) {
-      throw new U2FException("Cannot encode certificate", e);
-    }
+    Log.info("  attestationCertificate bytes: "
+        + Hex.encodeHexString(X509Util.encodeCertArray(attestationCertificateChain)));
     Log.info("  signature: " + Hex.encodeHexString(signature));
 
     byte[] appIdSha256 = cryto.computeSha256(appId.getBytes());
@@ -151,7 +147,7 @@ public class U2FServerReferenceImpl implements U2FServer {
         appIdSha256, clientDataSha256, keyHandle, userPublicKey);
 
     Set<X509Certificate> trustedCertificates = dataStore.getTrustedCertificates();
-    if (!trustedCertificates.contains(attestationCertificate)) {
+    if (!trustedCertificates.contains(attestationCertificateChain)) {
       Log.warning("attestion cert is not trusted");
     }
 
@@ -159,7 +155,7 @@ public class U2FServerReferenceImpl implements U2FServer {
         new JsonParser().parse(clientData), "navigator.id.finishEnrollment", sessionData);
 
     Log.info("Verifying signature of bytes " + Hex.encodeHexString(signedBytes));
-    if (!cryto.verifySignature(attestationCertificate, signedBytes, signature)) {
+    if (!cryto.verifySignature(attestationCertificateChain[0], signedBytes, signature)) {
       throw new U2FException("Signature is invalid");
     }
 
@@ -167,7 +163,7 @@ public class U2FServerReferenceImpl implements U2FServer {
     // We don't actually know what the counter value of the real device is - but it will
     // be something bigger (or equal) to 0, so subsequent signatures will check out ok.
     SecurityKeyData securityKeyData = new SecurityKeyData(currentTimeInMillis, transports,
-        keyHandle, userPublicKey, attestationCertificate, /* initial counter value */ 0);
+        keyHandle, userPublicKey, attestationCertificateChain, /* initial counter value */ 0);
     dataStore.addSecurityKeyData(sessionData.getAccountName(), securityKeyData);
 
     Log.info("<< processRegistrationResponse");

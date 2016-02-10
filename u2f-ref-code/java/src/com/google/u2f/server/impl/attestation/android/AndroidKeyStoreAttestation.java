@@ -34,6 +34,8 @@ public class AndroidKeyStoreAttestation {
   // Tags for Authorization List
   private static final int AUTHZ_PURPOSE_TAG = 1;
   private static final int AUTHZ_ALGORITHM_TAG = 2;
+  private static final int AUTHZ_KEY_SIZE_TAG = 3;
+  private static final int AUTHZ_BLOCK_MODE_TAG = 4;
 
   private final int keymasterVersion;
   private final byte[] attestationChallenge;
@@ -298,12 +300,48 @@ public class AndroidKeyStoreAttestation {
     return X509ExtensionParsingUtil.getByteArray(asn1Encodable);
   }
 
-  private static List<Purpose> getPurpose(
+  private static List<Purpose> getPurpose(HashMap<Integer, ASN1Primitive> taggedObjects)
+      throws CertificateParsingException {
+    return getListFromTaggedObjectSet(taggedObjects, AUTHZ_PURPOSE_TAG, Purpose.class);
+  }
+
+  private static Algorithm getAlgorithm(HashMap<Integer, ASN1Primitive> taggedObjects)
+      throws CertificateParsingException {
+    ASN1Primitive asn1Primitive = taggedObjects.get(AUTHZ_ALGORITHM_TAG);
+    if (asn1Primitive == null) {
+      // No algorithm found
+      return null;
+    }
+    return Algorithm.fromValue(X509ExtensionParsingUtil.getInt(asn1Primitive));
+  }
+
+  private static Integer getKeySize(HashMap<Integer, ASN1Primitive> taggedObjects)
+      throws CertificateParsingException {
+    ASN1Primitive asn1Primitive = taggedObjects.get(AUTHZ_KEY_SIZE_TAG);
+    if (asn1Primitive == null) {
+      // No key size found
+      return null;
+    }
+    return X509ExtensionParsingUtil.getInt(asn1Primitive);
+  }
+
+  private static List<BlockMode> getBlockMode(
       HashMap<Integer, ASN1Primitive> softwareEnforcedTaggedObjects)
       throws CertificateParsingException {
-    ASN1Primitive asn1Primitive = softwareEnforcedTaggedObjects.get(AUTHZ_PURPOSE_TAG);
+    return getListFromTaggedObjectSet(
+        softwareEnforcedTaggedObjects, AUTHZ_BLOCK_MODE_TAG, BlockMode.class);
+  }
+
+  // TODO(aczeskis): There is a cleaner way of doing this in Java 8.  In Java 8, we can make Purpose
+  // & BlockMode implement an interface (so the function could call .fromInt() on the
+  // parameterized type).  Unfortunately, Java 7 does not allow interfaces to have static methods!
+  // This decision was fixed in Java 8.
+  private static <T> List<T> getListFromTaggedObjectSet(
+      HashMap<Integer, ASN1Primitive> taggedObjects, int tag, Class<T> type)
+      throws CertificateParsingException {
+    ASN1Primitive asn1Primitive = taggedObjects.get(tag);
     if (asn1Primitive == null) {
-      // No purpose found
+      // No tagged object mode found
       return null;
     }
 
@@ -312,33 +350,36 @@ public class AndroidKeyStoreAttestation {
     }
 
     ASN1Set set = (ASN1Set) asn1Primitive;
-    List<Purpose> purpose = new ArrayList<Purpose>();
+    List<T> list = new ArrayList<T>();
     for (ASN1Encodable asn1Encodable : set.toArray()) {
-      purpose.add(Purpose.fromValue(X509ExtensionParsingUtil.getInt(asn1Encodable)));
+      list.add(buildTypeFromInt(X509ExtensionParsingUtil.getInt(asn1Encodable), type));
     }
 
-    return purpose;
+    return list;
   }
 
-  private static Algorithm getAlgorithm(
-      HashMap<Integer, ASN1Primitive> softwareEnforcedTaggedObjects)
+  @SuppressWarnings("unchecked")
+  private static <T> T buildTypeFromInt(int value, Class<T> type)
       throws CertificateParsingException {
-    ASN1Primitive asn1Primitive = softwareEnforcedTaggedObjects.get(AUTHZ_ALGORITHM_TAG);
-    if (asn1Primitive == null) {
-      // No algorithm found
-      return null;
+    if (type == Purpose.class) {
+      return (T) Purpose.fromValue(value);
+    } else if (type == BlockMode.class) {
+      return (T) BlockMode.fromValue(value);
+    } else {
+      throw new CertificateParsingException("Cannot build type " + type.getSimpleName());
     }
-    return Algorithm.fromValue(X509ExtensionParsingUtil.getInt(asn1Primitive));
   }
 
   private static AuthorizationList extractAuthorizationList(ASN1Sequence authorizationSequence)
       throws CertificateParsingException {
-    HashMap<Integer, ASN1Primitive> softwareEnforcedTaggedObjects =
+    HashMap<Integer, ASN1Primitive> taggedObjects =
         X509ExtensionParsingUtil.extractTaggedObjects(authorizationSequence);
 
     return new AuthorizationList.Builder()
-        .setPurpose(getPurpose(softwareEnforcedTaggedObjects))
-        .setAlgorithm(getAlgorithm(softwareEnforcedTaggedObjects))
+        .setPurpose(getPurpose(taggedObjects))
+        .setAlgorithm(getAlgorithm(taggedObjects))
+        .setKeySize(getKeySize(taggedObjects))
+        .setBlockMode(getBlockMode(taggedObjects))
         .build();
   }
 }

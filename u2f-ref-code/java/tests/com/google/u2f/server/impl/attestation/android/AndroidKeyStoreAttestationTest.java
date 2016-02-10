@@ -38,23 +38,31 @@ public class AndroidKeyStoreAttestationTest extends TestVectors {
 
     // Check purpose
     assertEquals("Incorrect software authorization list purpose list size", 2,
-        softwareAuthorizationList.getPurpose().size());
+        softwareAuthorizationList.getPurposeList().size());
     assertTrue(
         "Software authorization list purpose list doesn't have SIGN",
-        softwareAuthorizationList.getPurpose().contains(Purpose.KM_PURPOSE_SIGN));
+        softwareAuthorizationList.getPurposeList().contains(Purpose.KM_PURPOSE_SIGN));
     assertTrue(
         "Software authorization list purpose list doesn't have VERIFY",
-        softwareAuthorizationList.getPurpose().contains(Purpose.KM_PURPOSE_VERIFY));
+        softwareAuthorizationList.getPurposeList().contains(Purpose.KM_PURPOSE_VERIFY));
 
     // Check algorithm
     assertEquals("Software authorization list incorrect algorithm", Algorithm.KM_ALGORITHM_EC,
         softwareAuthorizationList.getAlgorithm());
 
+    // Check key size
+    assertEquals("Software authorization list incorrect keysize", 256,
+        softwareAuthorizationList.getKeySize().intValue());
+
+    // Block mode
+    assertEquals("Not expecting software authorization list block mode", null,
+        softwareAuthorizationList.getBlockModeList());
+
     // Get the TEE authorization list
     AuthorizationList teeAuthorizationList = attestation.getTeeAuthorizationList();
     assertNotNull("Not expecting null TEE authorization list", teeAuthorizationList);
     assertEquals(
-        "Expecting null TEE authorization list purpose", null, teeAuthorizationList.getPurpose());
+        "Expecting null TEE authorization list purpose", null, teeAuthorizationList.getPurposeList());
     assertEquals("Expecting null TEE authorization list algorithm", null,
         teeAuthorizationList.getAlgorithm());
   }

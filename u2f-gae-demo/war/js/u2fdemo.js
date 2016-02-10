@@ -34,11 +34,21 @@ function tokenToDom(token) {
     card.querySelector('.challenge').textContent
         = token.android_attestation.attestation_challenge;
 
-    card.querySelector('.softwareEnforced .algorithm').textContent
-        = token.android_attestation.software_encoded.algorithm;
+    if (token.android_attestation.software_encoded.algorithm) {
+      card.querySelector('.softwareEnforced .algorithm').textContent
+          = token.android_attestation.software_encoded.algorithm;
+    }
     if (token.android_attestation.software_encoded.purpose) {
       card.querySelector('.softwareEnforced .purpose').textContent
           = token.android_attestation.software_encoded.purpose.join(', ');
+    }
+    if (token.android_attestation.software_encoded.keysize) {
+      card.querySelector('.softwareEnforced .keysize').textContent
+          = token.android_attestation.software_encoded.keysize;
+    }
+    if (token.android_attestation.software_encoded.blockmode) {
+      card.querySelector('.softwareEnforced .blockmode').textContent
+          = token.android_attestation.software_encoded.blockmode.join(', ');
     }
 
     card.querySelector('.teeEnforced').textContent

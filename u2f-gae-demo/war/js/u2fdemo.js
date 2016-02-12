@@ -28,7 +28,6 @@ function tokenToDom(token) {
   }
   if (token.android_attestation) {
     card.querySelector('.androidAttestationLabel').style.display = "inline";
-    
     card.querySelector('.chainVerified').textContent = token.android_attestation.chain_validated;
     
     card.querySelector('.keymasterVersion').textContent

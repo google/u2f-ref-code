@@ -20,7 +20,7 @@ implementation. A physical U2F device will generate similar statements.
 
 ## A sample web app that uses U2F
 
-This is a sample application built on the Google Appengine web platform which
+This is a sample application built on the Google App Engine web platform which
 demonstrates a possible UX for  user interaction with U2F in a web page.  The
 sample application is deployed and available live at
 https://crxjs-dot-u2fdemo.appspot.com/. The underlying U2F capability is provided by the
@@ -57,3 +57,55 @@ in ``com.google.u2f.tools.httpserver.UtfHttpServer.java`` and runs on port
 8080. Run this class as a regular Java application (right click, select *Run
 As* and *Java Application*). Note that you need to have the U2F extension
 installed in Chrome in order for the demo app to talk to your U2F token.
+
+### U2F-GAE-Demo
+
+The u2f-gae-demo project is a sample application built on the Google App Engine
+web platform which demonstrates a possible UX for user interaction with U2F in a
+web page.
+
+As above, after importing the project into Eclipse you might have to adjust JDK
+versions, App Engine SDK version, etc. Once everything compiles, you can run the
+App Engine server locally and point Google Chrome at http://localhost:8888/. The
+built-in support for U2F in Google Chrome only works on HTTPS sites.  To test
+the app on `http://localhost:8888`, which uses HTTP, you need to do one of the
+following:
+
+#### Option 1: Use the extension from the webstore
+* Install the u2f extension [available from the Chrome store][webstore].
+* Navigate to `chrome://extensions` and enable `Developer Mode` by clicking a
+  checkbox in the top right corner.
+* Find the `FIDO U2F (Universal 2nd Factor)` extension.
+* Click on "background page". This will open a Developer Tools window, including
+  a Console.
+* In the console, type:
+
+        `HTTP_ORIGINS_ALLOWED = true;`
+* Now, configure the appspot server to call the U2F extension by setting the
+  extension id in
+  [u2f-api.js](https://github.com/google/u2f-ref-code/blob/master/u2f-gae-demo/war/js/u2f-api.js)
+  to ```kmendfapggjehodndflmmgagdbamhnfd```:
+```
+  u2f.EXTENSION_ID = 'kmendfapggjehodndflmmgagdbamhnfd';
+```
+  Remember to reset this value before deploying.
+* Then, point your browser at `http://localhost:8888/`.
+
+#### Option 2: Use the built-in chrome support
+* Quit all instances of Google Chrome.
+* Restart Google Chrome with the `--show-component-extension-options`
+  command-line flag.
+* Navigate to `chrome://extensions` and enable `Developer Mode` by clicking a
+  checkbox in the top right corner.
+* Find the `CryptoTokenExtension` extension.
+* Click on "background page". This will open a Developer Tools window, including
+  a Console.
+
+* In the console, type:
+
+        `HTTP_ORIGINS_ALLOWED = true;`
+* Then, point your browser at http://localhost:8888/
+
+You can deploy this App Engine app to your own domain by changing the application
+name in `u2f-gae-demo/war/WEB-INF/appengine-web.xml`.
+

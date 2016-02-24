@@ -115,10 +115,11 @@ void test_LongEcho() {
   const size_t TESTSIZE = 1024;
   uint8_t challenge[TESTSIZE];
   uint8_t response[TESTSIZE];
-  uint64_t t = 0; U2Fob_deltaTime(&t);
   uint8_t cmd = U2FHID_PING;
 
   for (size_t i = 0; i < sizeof(challenge); ++i) challenge[i] = rand();
+
+  uint64_t t = 0; U2Fob_deltaTime(&t);
 
   CHECK_EQ(0, U2Fob_send(device, cmd, challenge, sizeof(challenge)));
 
@@ -136,10 +137,10 @@ void test_LongEcho() {
 
   // Expected transfer times for 2ms bInterval.
   // We do not want fobs to be too slow or too agressive.
-  CHECK_GE(sent, .02);
-  CHECK_LE(sent, .05);
-  CHECK_GE(received, .02);
-  CHECK_LE(received, .05);
+  CHECK_GE(sent, .020);
+  CHECK_LE(sent, .075);
+  CHECK_GE(received, .020);
+  CHECK_LE(received, .075);
 }
 
 // Execute WINK, if implemented.

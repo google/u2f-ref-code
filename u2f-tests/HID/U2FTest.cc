@@ -33,6 +33,7 @@ using namespace std;
 int arg_Verbose = 0;  // default
 bool arg_Pause = false;  // default
 bool arg_Abort = true;  // default
+bool arg_enum = false; // default
 
 static
 void pause(const string& prompt) {
@@ -318,6 +319,10 @@ int main(int argc, char* argv[]) {
       // Fob does not have button
       arg_hasButton = false;
     }
+	if (!strncmp(argv[argc], "-e", 2)) {
+		//Fob enumerate FIDO when button is pushed
+		arg_enum = true;
+	}
   }
 
   srand((unsigned int) time(NULL));
@@ -334,18 +339,19 @@ int main(int argc, char* argv[]) {
   PASS(test_BadCLA());
 
   // Fob with button should need touch.
-  if (arg_hasButton) PASS(test_Enroll(0x6985));
+  if (arg_hasButton && !arg_enum) PASS(test_Enroll(0x6985));
 
   WaitForUserPresence(device, arg_hasButton);
 
   PASS(test_Enroll(0x9000));
 
   // Fob with button should have consumed touch.
-  if (arg_hasButton) PASS(test_Sign(0x6985));
+  if (arg_hasButton && !arg_enum) PASS(test_Sign(0x6985));
 
   // Sign with check only should not produce signature.
-  PASS(test_Sign(0x6985, true));
+  if (!arg_enum) PASS(test_Sign(0x6985, true));
 
+  if (arg_enum) WaitForUserPresence(device, arg_hasButton);
   // Sign with wrong hk.
   regRsp.keyHandleCertSig[0] ^= 0x55;
   PASS(test_Sign(0x6a80));
@@ -363,7 +369,7 @@ int main(int argc, char* argv[]) {
 
   uint32_t ctr1;
   PASS(ctr1 = test_Sign(0x9000));
-  PASS(test_Sign(0x6985));
+  if (!arg_enum) PASS(test_Sign(0x6985));
 
   WaitForUserPresence(device, arg_hasButton);
 

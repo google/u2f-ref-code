@@ -80,7 +80,7 @@ following:
   a Console.
 * In the console, type:
 
-        `HTTP_ORIGINS_ALLOWED = true;`
+        HTTP_ORIGINS_ALLOWED = true;
 * Now, configure the appspot server to call the U2F extension by setting the
   extension id in
   [u2f-api.js](https://github.com/google/u2f-ref-code/blob/master/u2f-gae-demo/war/js/u2f-api.js)
@@ -103,7 +103,7 @@ following:
 
 * In the console, type:
 
-        `HTTP_ORIGINS_ALLOWED = true;`
+        HTTP_ORIGINS_ALLOWED = true;
 * Then, point your browser at http://localhost:8888/
 
 You can deploy this App Engine app to your own domain by changing the application

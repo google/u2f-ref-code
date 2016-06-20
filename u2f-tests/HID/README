@@ -6,6 +6,9 @@ U2FTest to check compliance at the application layer.
 DEPENDENCIES:
 git clone https://github.com/signal11/hidapi
 git clone https://android.googlesource.com/platform/system/core
+pushd core
+git checkout lollipop-release
+popd
 
 linux: sudo apt-get install libudev-dev
 

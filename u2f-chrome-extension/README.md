@@ -257,5 +257,5 @@ appIds.
 extension reloads. In particular all private keys will disappear on a browser
 restart.
 
-**Do not use the software token tok register keys on real accounts, as there are
+**Do not use the software token to register keys on real accounts, as there are
 no guarantees on the secrecy of the private keys.**

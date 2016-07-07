@@ -24,32 +24,30 @@ public class U2fAttestation {
   private final List<Transports> transports;
 
   /**
-   * Parses a transport extension from an attestation certificate and returns
-   * a List of HardwareFeatures supported by the security key. The specification of
-   * the HardwareFeatures in the certificate should match their internal definition in
-   * device_auth.proto
+   * Parses a transport extension from an attestation certificate and returns a List of
+   * HardwareFeatures supported by the security key.
    *
    * <p>The expected transport extension value is a BIT STRING containing the enabled
    * transports:
    *
-   *  <p>FIDOU2FTransports ::= BIT STRING {
-   *       bluetoothRadio(0), -- Bluetooth Classic
-   *       bluetoothLowEnergyRadio(1),
-   *       uSB(2),
-   *       nFC(3)
-   *     }
+   * <p>FIDOU2FTransports ::= BIT STRING {
+   *      bluetoothRadio(0), -- Bluetooth Classic
+   *      bluetoothLowEnergyRadio(1),
+   *      uSB(2),
+   *      nFC(3)
+   *    }
    *
-   *   <p>Note that the BIT STRING must be wrapped in an OCTET STRING.
-   *   An extension that encodes BT, BLE, and NFC then looks as follows:
+   * <p>Note that the BIT STRING must be wrapped in an OCTET STRING. An extension that encodes BT,
+   * BLE, and NFC then looks as follows:
    *
-   *   <p>SEQUENCE (2 elem)
-   *      OBJECT IDENTIFIER 1.3.6.1.4.1.45724.2.1.1
-   *      OCTET STRING (1 elem)
-   *        BIT STRING (4 bits) 1101
+   * <p>SEQUENCE (2 elem)
+   *    OBJECT IDENTIFIER 1.3.6.1.4.1.45724.2.1.1
+   *    OCTET STRING (1 elem)
+   *      BIT STRING (4 bits) 1101
    *
    * @param cert the certificate to parse for extension
-   * @return the supported transports as a List of HardwareFeatures or null if no extension
-   * was found
+   * @return the supported transports as a List of HardwareFeatures or null if no extension was
+   * found
    * @throws CertificateParsingException
    */
   public static U2fAttestation Parse(X509Certificate cert) throws CertificateParsingException {

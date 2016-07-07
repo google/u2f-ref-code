@@ -2,6 +2,7 @@ package com.google.u2f.server.impl.attestation.android;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -20,8 +21,8 @@ import java.security.cert.CertificateParsingException;
 public class AndroidKeyStoreAttestationTest extends TestVectors {
   @Test
   public void testValidCert() throws Exception {
-    AndroidKeyStoreAttestation attestation =
-        AndroidKeyStoreAttestation.Parse(ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN[0]);
+    AndroidKeyStoreAttestation attestation = AndroidKeyStoreAttestation.Parse(
+        ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN, ANDROID_KEYSTORE_ATTESTATION_TEST_CA);
 
     assertNotNull("Not expecting null attestation", attestation);
 
@@ -61,14 +62,27 @@ public class AndroidKeyStoreAttestationTest extends TestVectors {
     // Get the TEE authorization list
     AuthorizationList teeAuthorizationList = attestation.getTeeAuthorizationList();
     assertNotNull("Not expecting null TEE authorization list", teeAuthorizationList);
-    assertEquals(
-        "Expecting null TEE authorization list purpose", null, teeAuthorizationList.getPurposeList());
+    assertEquals("Expecting null TEE authorization list purpose", null,
+        teeAuthorizationList.getPurposeList());
     assertEquals("Expecting null TEE authorization list algorithm", null,
         teeAuthorizationList.getAlgorithm());
+
+    // Validate chain verification
+    assertTrue("Expecting cert chain to be validated", attestation.isChainValidated());
+  }
+
+  @Test
+  public void testFailedValidation() throws Exception {
+    AndroidKeyStoreAttestation attestation = AndroidKeyStoreAttestation.Parse(
+        ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN, ANDROID_KEYSTORE_ATTESTATION_FAKE_CA);
+
+    // Validate chain verification
+    assertFalse("Was not expecting cert chain to be valid", attestation.isChainValidated());
   }
 
   @Test(expected = CertificateParsingException.class)
   public void testInvalidCertNotEnoughInDescriptionTest() throws Exception {
-    AndroidKeyStoreAttestation.Parse(ANDROID_KEYSTORE_ATTESTATION_CERT_NO_VERSION);
+    AndroidKeyStoreAttestation.Parse(
+        ANDROID_KEYSTORE_ATTESTATION_CERT_NO_VERSION, ANDROID_KEYSTORE_ATTESTATION_TEST_CA);
   }
 }

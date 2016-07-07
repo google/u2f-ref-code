@@ -6,20 +6,20 @@
 
 package com.google.u2f.codec;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-
 import com.google.u2f.U2FException;
 import com.google.u2f.key.messages.AuthenticateRequest;
 import com.google.u2f.key.messages.AuthenticateResponse;
 import com.google.u2f.key.messages.RegisterRequest;
 import com.google.u2f.key.messages.RegisterResponse;
+import com.google.u2f.tools.X509Util;
+
+import org.bouncycastle.util.Arrays;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.security.cert.X509Certificate;
 
 /**
  * Raw message formats, as per FIDO U2F: Raw Message Formats - Draft 4
@@ -61,15 +61,11 @@ public class RawMessageCodec {
       throws U2FException {
     byte[] userPublicKey = registerResponse.getUserPublicKey();
     byte[] keyHandle = registerResponse.getKeyHandle();
-    X509Certificate attestationCertificate = registerResponse.getAttestationCertificate();
+    X509Certificate[] attestationCertificateChain = registerResponse.getAttestationCertificateChain();
     byte[] signature = registerResponse.getSignature();
 
     byte[] attestationCertificateBytes;
-    try {
-      attestationCertificateBytes = attestationCertificate.getEncoded();
-    } catch (CertificateEncodingException e) {
-      throw new U2FException("Error when encoding attestation certificate.", e);
-    }
+    attestationCertificateBytes = X509Util.encodeCertArray(attestationCertificateChain);
 
     if (keyHandle.length > 255) {
       throw new U2FException("keyHandle length cannot be longer than 255 bytes!");
@@ -95,10 +91,14 @@ public class RawMessageCodec {
       inputStream.readFully(userPublicKey);
       byte[] keyHandle = new byte[inputStream.readUnsignedByte()];
       inputStream.readFully(keyHandle);
-      X509Certificate attestationCertificate = (X509Certificate) CertificateFactory.getInstance(
-          "X.509").generateCertificate(inputStream);
-      byte[] signature = new byte[inputStream.available()];
-      inputStream.readFully(signature);
+
+      // We don't know the length of the signature or cert chain, so we tread carefully
+      byte[] certsAndSig = new byte[inputStream.available()];
+      inputStream.readFully(certsAndSig);
+
+      X509Certificate[] attestationCertificateChain = X509Util.parseCertificateChain(certsAndSig);
+      byte[] signature = Arrays.copyOfRange(certsAndSig,
+          X509Util.encodeCertArray(attestationCertificateChain).length, certsAndSig.length);
 
       if (inputStream.available() != 0) {
         throw new U2FException("Message ends with unexpected data");
@@ -110,11 +110,9 @@ public class RawMessageCodec {
             REGISTRATION_RESERVED_BYTE_VALUE, reservedByte));
       }
 
-      return new RegisterResponse(userPublicKey, keyHandle, attestationCertificate, signature);
+      return new RegisterResponse(userPublicKey, keyHandle, attestationCertificateChain, signature);
     } catch (IOException e) {
       throw new U2FException("Error when parsing raw RegistrationResponse", e);
-    } catch (CertificateException e) {
-      throw new U2FException("Error when parsing attestation certificate", e);
     }
   }
 

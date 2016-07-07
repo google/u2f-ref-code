@@ -7,9 +7,8 @@
 package com.google.u2f;
 
 import static com.google.u2f.TestUtils.computeSha256;
-import static com.google.u2f.TestUtils.parseCertificate;
-import static com.google.u2f.TestUtils.parseCertificateBase64;
 import static com.google.u2f.TestUtils.parseCertificateChainBase64;
+import static com.google.u2f.TestUtils.parseCertificateChainHex;
 import static com.google.u2f.TestUtils.parseHex;
 import static com.google.u2f.TestUtils.parsePrivateKey;
 import static com.google.u2f.TestUtils.parsePublicKey;
@@ -56,8 +55,8 @@ public class TestVectors {
       + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
       + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
       + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df";
-  protected static final X509Certificate VENDOR_CERTIFICATE =
-      parseCertificate(VENDOR_CERTIFICATE_HEX);
+  protected static final X509Certificate[] VENDOR_CERTIFICATE =
+      parseCertificateChainHex(VENDOR_CERTIFICATE_HEX);
   protected static final PrivateKey VENDOR_CERTIFICATE_PRIVATE_KEY =
       parsePrivateKey("f3fccc0d00d8031954f90864d43c247f4bf5f0665c6b50cc17749a27d1cf7664");
   protected static final String CHANNEL_ID_STRING =
@@ -260,8 +259,8 @@ public class TestVectors {
       + "3046022100b4caea5dc60fbf9f004ed84fc4f18522981c1c303155c08274e889"
       + "f3f10c5b23022100faafb4f10b92f4754e3b08b5af353f78485bc903ece7ea91"
       + "1264fc1673b6598f";
-  protected static final X509Certificate TRUSTED_CERTIFICATE_2 =
-      parseCertificate(TRUSTED_CERTIFICATE_2_HEX);
+  protected static final X509Certificate[] TRUSTED_CERTIFICATE_2 =
+      parseCertificateChainHex(TRUSTED_CERTIFICATE_2_HEX);
 
   // Has Bluetooth Radio transport
   private static final String TRUSTED_CERTIFICATE_ONE_TRANSPORT_BASE64 =
@@ -274,8 +273,8 @@ public class TestVectors {
       + "HrZkwwgDR+UFYmwdXRXPoxcwFTATBgsrBgEEAYLlHAIBAQQEAwIHgDAKBggqhkjO"
       + "PQQDAgNIADBFAiAhBuNou+L8n4aZGCa5ClHGlLkPt8AZReepUx5LZTFaxQIhAKqO"
       + "daBx5kUAA3YVDH+u8bilfLS9QXKcKNm5vsdE67RJ";
-  protected static final X509Certificate TRUSTED_CERTIFICATE_ONE_TRANSPORT =
-      parseCertificateBase64(TRUSTED_CERTIFICATE_ONE_TRANSPORT_BASE64);
+  protected static final X509Certificate[] TRUSTED_CERTIFICATE_ONE_TRANSPORT =
+      parseCertificateChainBase64(TRUSTED_CERTIFICATE_ONE_TRANSPORT_BASE64);
 
   // Has Bluetooth Radio, Bluetooth Low Energy, and NFC transports
   private static final String TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS_BASE64 =
@@ -288,8 +287,8 @@ public class TestVectors {
       + "HrZkwwgDR+UFYmwdXRXPoxcwFTATBgsrBgEEAYLlHAIBAQQEAwIE0DAKBggqhkjO"
       + "PQQDAgNHADBEAiBYtS8gXcl3LhvvkVlzYJgpD/tYUHae/Rw3z8lxQSeeXwIgDE2R"
       + "yWxFfRpgeg0WsLVHu7Ll4oZUkBEuS5RgezrcrRg=";
-  protected static final X509Certificate TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS =
-      parseCertificateBase64(TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS_BASE64);
+  protected static final X509Certificate[] TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS =
+      parseCertificateChainBase64(TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS_BASE64);
 
   private static final String TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION_BASE64 =
       "MIIBmDCCAT6gAwIBAgIJASJCAAJVliZXMAoGCCqGSM49BAMCMEUxCzAJBgNVBAYT"
@@ -301,8 +300,8 @@ public class TestVectors {
       + "HrZkwwgDR+UFYmwdXRXPoxUwEzARBgsrBgEEAYLlHAIBAQQCqoAwCgYIKoZIzj0E"
       + "AwIDSAAwRQIhAJB/ll8z2FeYKznZ9MIsy0pjNZ/BCq8IqBmXwOBLc9ybAiBPRdVW"
       + "ri6nGl/fpka1FlhNrahJVKXYudJ72wQeibIWtg==";
-  protected static final X509Certificate TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION =
-      parseCertificateBase64(TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION_BASE64);
+  protected static final X509Certificate[] TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION =
+      parseCertificateChainBase64(TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION_BASE64);
 
   private static final String ANDROID_KEYSTORE_ATTESTATION_CERT_NO_VERSION_BASE64 =
       "MIIBlzCCAQCgAwIBAgICJxAwDQYJKoZIhvcNAQELBQAwHDEaMBgGA1UEAwwRQW5kcm9pZCBLZXlt"
@@ -313,15 +312,15 @@ public class TestVectors {
       + "DZvsYbkgWAPv7QRa+cxLrFxrmv7M3HxYL7UdbpXP5/5sOp3hkhBdtAwlUW9tgGLdjheFFcz0lUSP"
       + "uK5et199s1ifeNzV4fePlBAGvzKFci6adJgGDMXDodM49jhIEF1KC4xlbwBWR/brl4vZa4h1EZ9H"
       + "ghyoJ3PFFZC8xYOB";
-  protected static final X509Certificate ANDROID_KEYSTORE_ATTESTATION_CERT_NO_VERSION =
-      parseCertificateBase64(ANDROID_KEYSTORE_ATTESTATION_CERT_NO_VERSION_BASE64);
+  protected static final X509Certificate[] ANDROID_KEYSTORE_ATTESTATION_CERT_NO_VERSION =
+      parseCertificateChainBase64(ANDROID_KEYSTORE_ATTESTATION_CERT_NO_VERSION_BASE64);
 
   /**
    * Contains a chain where:
    *   cert[0] = attestation certificate describing some new key
    *   cert[1] = batch certificate
    *
-   * Note that cert[1] is signed by another cert that should be known to RPs.
+   * Note that cert[1] is signed by ANDROID_KEYSTORE_ATTESTATION_TEST_CA
    */
   private static final String ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN_BASE64 =
       "MIIBjTCCATKgAwIBAgICJxAwCgYIKoZIzj0EAwIwHDEaMBgGA1UEAwwRQW5kcm9pZCBLZXltYXN0"
@@ -331,21 +330,50 @@ public class TestVectors {
       + "AREEUjBQAgECBAljaGFsbGVuZ2UwPqEIMQYCAQICAQOiAwIBA6MEAgIBAKUFMQMCAQS/g3gDAgEB"
       + "v4N5BAICASy/hT0IAgYBUqi8MmC/hT4DAgEAMAAwCgYIKoZIzj0EAwIDSQAwRgIhANnmsSeWsnVH"
       + "aF5zII50tkiA7fRhIMNeZZBcPvSV2BN5AiEAwUZm63OxMZEHTIFL50ASKVN/sCLs8+gMY6uEVZRy"
-      + "61QwggK2MIICH6ADAgECAgIQADANBgkqhkiG9w0BAQsFADBjMQswCQYDVQQGEwJVUzETMBEGA1UE"
-      + "CAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNTW91bnRhaW4gVmlldzEVMBMGA1UECgwMR29vZ2xlLCBJ"
-      + "bmMuMRAwDgYDVQQLDAdBbmRyb2lkMB4XDTE2MDEwNDEyNDA1M1oXDTM1MTIzMDEyNDA1M1owdjEL"
-      + "MAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAoMDEdvb2dsZSwgSW5jLjEQ"
-      + "MA4GA1UECwwHQW5kcm9pZDEpMCcGA1UEAwwgQW5kcm9pZCBTb2Z0d2FyZSBBdHRlc3RhdGlvbiBL"
-      + "ZXkwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMCDI9xWiBu4MCBp9bCFYcbuvn8F4vWoQgSK"
-      + "votHvnb+rvJc8psq+jIAFBYBQpmJoV/PxoFes2NYPC/S8gvkmDKD3YFLFtfhhUF65Uq8KWo6bbXA"
-      + "BAg7aMVWwfAjOZFkGYZNULdNQK7KSEx3NWyJWgwnWr+sSZ1dfSNi8pxeAuhxAgMBAAGjZjBkMB0G"
-      + "A1UdDgQWBBTUDBAb+M1jufc5UrUOE1ym15mThjAfBgNVHSMEGDAWgBQp+vGszE3STJZAJ3W2sOky"
-      + "5Qf+LjASBgNVHRMBAf8ECDAGAQH/AgEAMA4GA1UdDwEB/wQEAwIChDANBgkqhkiG9w0BAQsFAAOB"
-      + "gQCeLUhfjGcz3BqFrZnXUCPqFOxDsOGd6sIjRh5ytRncYCLkpWgxbAtVxOacoi2fOk+TazGLFngW"
-      + "DYjL2YvMgJ2E8MIn42s48f3R5xdyMVk1fZbzxX+rnY+WYSZPsr6Buw1JBCKKzp/39UIuJUT6IQcS"
-      + "WoO1Va0YgvhAFJucIGMEfw==";
+      + "61QwggJ4MIICHqADAgECAgIQATAKBggqhkjOPQQDAjCBmDELMAkGA1UEBhMCVVMxEzARBgNVBAgM"
+      + "CkNhbGlmb3JuaWExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxFTATBgNVBAoMDEdvb2dsZSwgSW5j"
+      + "LjEQMA4GA1UECwwHQW5kcm9pZDEzMDEGA1UEAwwqQW5kcm9pZCBLZXlzdG9yZSBTb2Z0d2FyZSBB"
+      + "dHRlc3RhdGlvbiBSb290MB4XDTE2MDExMTAwNDYwOVoXDTI2MDEwODAwNDYwOVowgYgxCzAJBgNV"
+      + "BAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRUwEwYDVQQKDAxHb29nbGUsIEluYy4xEDAOBgNV"
+      + "BAsMB0FuZHJvaWQxOzA5BgNVBAMMMkFuZHJvaWQgS2V5c3RvcmUgU29mdHdhcmUgQXR0ZXN0YXRp"
+      + "b24gSW50ZXJtZWRpYXRlMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE6555+EJjWazLKpFMiYbM"
+      + "cK2QZpOCqXMmE/6sy/ghJ0whdJdKKv6luU1/ZtTgZRBmNbxTt6CjpnFYPts+Ea4QFKNmMGQwHQYD"
+      + "VR0OBBYEFD/8rNYasTqegSC41SUcxWW7HpGpMB8GA1UdIwQYMBaAFMit6XdMRcOjzw0WEOR5Qzoh"
+      + "WjDPMBIGA1UdEwEB/wQIMAYBAf8CAQAwDgYDVR0PAQH/BAQDAgKEMAoGCCqGSM49BAMCA0gAMEUC"
+      + "IEuKm3vugrzAM4euL8CJmLTdw42rJypFn2kMx8OS1A+OAiEA7toBXbb0MunUhDtiTJQE7zp8zL1e"
+      + "+yK75/65dz9ZP/s=";
   protected static final X509Certificate[] ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN =
       parseCertificateChainBase64(ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN_BASE64);
+
+  protected static final String ANDROID_KEYSTORE_ATTESTATION_TEST_CA_BASE64 =
+      "MIICizCCAjKgAwIBAgIJAKIFntEOQ1tXMAoGCCqGSM49BAMCMIGYMQswCQYDVQQGEwJVUzETMBEG"
+      + "A1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNTW91bnRhaW4gVmlldzEVMBMGA1UECgwMR29vZ2xl"
+      + "LCBJbmMuMRAwDgYDVQQLDAdBbmRyb2lkMTMwMQYDVQQDDCpBbmRyb2lkIEtleXN0b3JlIFNvZnR3"
+      + "YXJlIEF0dGVzdGF0aW9uIFJvb3QwHhcNMTYwMTExMDA0MzUwWhcNMzYwMTA2MDA0MzUwWjCBmDEL"
+      + "MAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcx"
+      + "FTATBgNVBAoMDEdvb2dsZSwgSW5jLjEQMA4GA1UECwwHQW5kcm9pZDEzMDEGA1UEAwwqQW5kcm9p"
+      + "ZCBLZXlzdG9yZSBTb2Z0d2FyZSBBdHRlc3RhdGlvbiBSb290MFkwEwYHKoZIzj0CAQYIKoZIzj0D"
+      + "AQcDQgAE7l1ex+HA220Dpn7mthvsTWpdamguD/9/SQ59dx9EIm29sa/6FsvHrcV30lacqrewLVQB"
+      + "XT5DKyqO107sSHVBpKNjMGEwHQYDVR0OBBYEFMit6XdMRcOjzw0WEOR5QzohWjDPMB8GA1UdIwQY"
+      + "MBaAFMit6XdMRcOjzw0WEOR5QzohWjDPMA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQDAgKE"
+      + "MAoGCCqGSM49BAMCA0cAMEQCIDUho++LNEYenNVg8x1YiSBq3KNlQfYNns6KGYxmSGB7AiBNC/NR"
+      + "2TB8fVvaNTQdqEcbY6WFZTytTySn502vQX3xvw==";
+  protected static final X509Certificate[] ANDROID_KEYSTORE_ATTESTATION_TEST_CA =
+      parseCertificateChainBase64(ANDROID_KEYSTORE_ATTESTATION_TEST_CA_BASE64);
+
+  protected static final String ANDROID_KEYSTORE_ATTESTATION_FAKE_CA_BASE64 =
+      "MIICLjCCAdSgAwIBAgIJAOy0gtR7yj0ZMAkGByqGSM49BAEwRzELMAkGA1UEBhMCVVMxCzAJBgNVBA"
+      + "gTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgSW5jMB4XDTE2MD"
+      + "IxMTA1MjIzNloXDTE3MDIxMDA1MjIzNlowRzELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFA"
+      + "YDVQQHEw1Nb3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgSW5jMFkwEwYHKoZIzj0CAQYIKo"
+      + "ZIzj0DAQcDQgAEtqYoiLLVZnCSJOgP/M8umnZdC6i20hQd7dLVGBJBQ/BV5seh8tlBbCAbtpSJ6k"
+      + "od/xNxprMeyUXtWegSIVUsvaOBqTCBpjAdBgNVHQ4EFgQUUTPXfnwGnBIl7vEz3iW5ot/9szQwdw"
+      + "YDVR0jBHAwboAUUTPXfnwGnBIl7vEz3iW5ot/9szShS6RJMEcxCzAJBgNVBAYTAlVTMQswCQYDVQ"
+      + "QIEwJDQTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzETMBEGA1UEChMKR29vZ2xlIEluY4IJAOy0gt"
+      + "R7yj0ZMAwGA1UdEwQFMAMBAf8wCQYHKoZIzj0EAQNJADBGAiEA7sO6f/w77X75MxuFmardbtmLFu"
+      + "KxGFuyYOy0iUu8se4CIQCUfD3LMpa2wVH6aMHME6T17KOgTOk6zHa5l2I5bQkTOg==";
+  protected static final X509Certificate[] ANDROID_KEYSTORE_ATTESTATION_FAKE_CA =
+      parseCertificateChainBase64(ANDROID_KEYSTORE_ATTESTATION_FAKE_CA_BASE64);
 
   protected static final byte[] REGISTRATION_DATA_2 =
       parseHex("0504478E16BBDBBB741A660A000314A8B6BD63095196ED704C52EEBC0FA02A61"

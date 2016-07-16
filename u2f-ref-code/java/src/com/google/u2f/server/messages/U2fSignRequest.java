@@ -29,13 +29,13 @@ public class U2fSignRequest {
     return registeredKeys;
   }
 
-  public JsonArray getRegisteredKeysAsJson() {
+  public JsonArray getRegisteredKeysAsJson(String defaultAppId) {
     if (registeredKeys == null) {
       return null;
     }
     JsonArray result = new JsonArray();
     for (RegisteredKey registeredKey : registeredKeys) {
-      result.add(registeredKey.getJson());
+      result.add(registeredKey.getJson(defaultAppId));
     }
     return result;
   }

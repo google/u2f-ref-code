@@ -97,4 +97,6 @@ public class U2FKeyReferenceImplTest extends TestVectors {
     ecdsaSignature.update(EXPECTED_AUTHENTICATE_SIGNED_BYTES);
     assertTrue(ecdsaSignature.verify(authenticateResponse.getSignature()));
   }
+  
+  // TransferAccess: Probably need to test the transferAccessResponse class.
 }

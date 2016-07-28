@@ -246,6 +246,9 @@ public class U2FServerReferenceImplTest extends TestVectors {
         BROWSER_DATA_SIGN_BASE64, SESSION_ID);
 
     u2fServer.processSignResponse(signResponse);
+    // TransferAccess: It doesn't look like there are any tests here... There should be assertions, no?
+    
+    
     // TransferAccess: Should probably also test with different values for TRANSFER_ACCESS_RESPONSE_DATA_BASE64
   }
 
@@ -265,6 +268,11 @@ public class U2FServerReferenceImplTest extends TestVectors {
       assertTrue(e.getMessage().contains("is not a recognized home origin"));
     }
   }  
+  
+  /*
+   * TransferAccess:
+   * End TransferAccess tests
+   */
 
   // @Test
   // TODO: put test back in once we have signature sample on a correct browserdata json

@@ -29,11 +29,11 @@ var js_api_version;
 // The Chrome packaged app extension ID.
 // Uncomment this if you want to deploy a server instance that uses
 // the package Chrome app and does not require installing the U2F Chrome extension.
-// u2f.EXTENSION_ID = 'kmendfapggjehodndflmmgagdbamhnfd';
+ u2f.EXTENSION_ID = 'kmendfapggjehodndflmmgagdbamhnfd';
 // The U2F Chrome extension ID.
 // Uncomment this if you want to deploy a server instance that uses
 // the U2F Chrome extension to authenticate.
-u2f.EXTENSION_ID = 'pfboblefjcgdjicmnffhdgionmgcdmne';
+// u2f.EXTENSION_ID = 'pfboblefjcgdjicmnffhdgionmgcdmne';
 
 
 /**

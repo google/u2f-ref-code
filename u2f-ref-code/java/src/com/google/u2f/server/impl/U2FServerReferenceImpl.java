@@ -248,6 +248,12 @@ public class U2FServerReferenceImpl implements U2FServer {
     verifyBrowserData(
         new JsonParser().parse(browserData), "navigator.id.getAssertion", sessionData);
 
+    /*
+     *  TransferAccess: Should load in the control byte from rawSignData and then 
+     *  make a decision about what to do. Call either processAuthentication() or
+     *  processTransferAccess(), which need to be written as sub-classes.
+     *  TODO: probably need to think about the error cases and how to catch exceptions
+     */ 
     AuthenticateResponse authenticateResponse =
         RawMessageCodec.decodeAuthenticateResponse(rawSignData);
     byte userPresence = authenticateResponse.getUserPresence();

@@ -246,6 +246,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
         BROWSER_DATA_SIGN_BASE64, SESSION_ID);
 
     u2fServer.processSignResponse(signResponse);
+    // TransferAccess: Should probably also test with different values for TRANSFER_ACCESS_RESPONSE_DATA_BASE64
   }
 
   @Test

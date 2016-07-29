@@ -6,7 +6,9 @@
 
 package com.google.u2f.server.messages;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.data.SecurityKeyData.Transports;
 
@@ -107,24 +109,17 @@ public class RegisteredKey {
     result.addProperty("version", version);
     result.addProperty("keyHandle", keyHandle);
     result.addProperty("sessionId", sessionId);
-    String transportsString = getTransportsAsString();
-    if (transportsString != null) {
-      result.addProperty("transports", transportsString);
+    if (this.transports != null) {
+      result.add("transports", getTransportsAsJsonArray());
     }
     return result;
   }
 
-  private String getTransportsAsString() {
-    if (this.transports == null) {
-      return null;
+  private JsonArray getTransportsAsJsonArray() {
+    JsonArray transportsArray = new JsonArray();
+    for (Transports transport : this.transports) {
+      transportsArray.add(new JsonPrimitive(transport.toString()));
     }
-    StringBuilder stringBuilder = new StringBuilder();
-    for (int i = 0; i < transports.size(); i++) {
-      stringBuilder.append(transports.get(i));
-      if (i < transports.size() - 1) {
-        stringBuilder.append(",");
-      }
-    }
-    return stringBuilder.toString();
+    return transportsArray;
   }
 }

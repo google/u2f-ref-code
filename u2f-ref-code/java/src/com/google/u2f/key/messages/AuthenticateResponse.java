@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class AuthenticateResponse extends U2FResponse {
-  private final byte userPresence;
+  private final byte userPresence;  // TrasnferAccess: Should we rename to controlByte or leave as is?
   private final int counter;
   private final byte[] signature;
 

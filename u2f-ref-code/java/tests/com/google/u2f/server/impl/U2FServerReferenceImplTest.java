@@ -230,6 +230,49 @@ public class U2FServerReferenceImplTest extends TestVectors {
       assertTrue(e.getMessage().contains("is not a recognized home origin"));
     }
   }
+  
+  /* 
+   * TransferAccess: 
+   * Run the testProcessSignResponse with TransferAccess messages
+   * instead of traditional sign responses
+   */
+  @Test
+  public void testProcessSignResponse_withTransferAccess() throws U2FException {
+    when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
+        new SignSessionData(ACCOUNT_NAME, APP_ID_SIGN, SERVER_CHALLENGE_SIGN, USER_PUBLIC_KEY_SIGN_HEX));
+    u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
+        mockDataStore, cryto, TRUSTED_DOMAINS);
+    SignResponse signResponse = new SignResponse(KEY_HANDLE_BASE64, TRANSFER_ACCESS_RESPONSE_DATA_BASE64,
+        BROWSER_DATA_SIGN_BASE64, SESSION_ID);
+
+    u2fServer.processSignResponse(signResponse);
+    // TransferAccess: It doesn't look like there are any tests here... There should be assertions, no?
+    
+    
+    // TransferAccess: Should probably also test with different values for TRANSFER_ACCESS_RESPONSE_DATA_BASE64
+  }
+
+  @Test
+  public void testProcessSignResponse_withTransferAccess_badOrigin() throws U2FException {
+    when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
+        new SignSessionData(ACCOUNT_NAME, APP_ID_SIGN, SERVER_CHALLENGE_SIGN, USER_PUBLIC_KEY_SIGN_HEX));
+    u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
+        mockDataStore, cryto, ImmutableSet.of("some-other-domain.com"));
+    SignResponse signResponse = new SignResponse(KEY_HANDLE_BASE64, TRANSFER_ACCESS_RESPONSE_DATA_BASE64,
+        BROWSER_DATA_SIGN_BASE64, SESSION_ID);
+
+    try {
+      u2fServer.processSignResponse(signResponse);
+      fail("expected exception, but didn't get it");
+    } catch(U2FException e) {
+      assertTrue(e.getMessage().contains("is not a recognized home origin"));
+    }
+  }  
+  
+  /*
+   * TransferAccess:
+   * End TransferAccess tests
+   */
 
   // @Test
   // TODO: put test back in once we have signature sample on a correct browserdata json

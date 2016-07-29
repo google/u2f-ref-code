@@ -202,3 +202,60 @@ var sign_helper_reply = {
   }
 };
 ```
+
+## Testing servers without a physical token
+
+For testing server implementations without a physical token, the file
+[`softtokenhelper.js`](softtokenhelper.js) implements the bottom half of the
+extension in software, and replaces the code interfacing with USB tokens.
+
+The software token does not emulate user presence tests (touches). It will
+answer any request immediately.
+
+### Setting up the software token
+
+The software token uses the [End-to-end crypto
+library](https://github.com/google/end-to-end). To build the library follow
+these steps:
+
+1. Download and build end-to-end:
+```
+$ git clone https://github.com/google/end-to-end.git
+$ cd end-to-end
+$ ./do.sh install_deps
+$ ./do.sh build_library
+```
+
+2. Copy the file `end-to-end/build/library/end-to-end.debug.js` into the extension
+   directory (this directory).
+
+3. Add the files `softtokenhelper.js` and `end-to-end.debug.js` to the `scripts`
+   section of [`manifest.json`](manifest.json).
+
+4. In `u2fbackground.js`, replace the line
+```
+REQUEST_HELPER.addHelper(new UsbHelper());
+```
+with
+```
+var profile = new SoftTokenProfile();
+REQUEST_HELPER.addHelper(new SoftTokenHelper(profile));
+
+```
+
+5. Reload the extension.
+
+### Using the software token for manual testing
+
+First inspect the extension's background page, and observe the console. Visit
+(e.g.) https://crxjs-dot-u2fdemo.appspot.com and register a new key. The log
+output will indicate the operations on the software key. You can then inspect
+the global variable `softtoken_profile` for the generated keys, counters and
+appIds.
+
+**NOTE**: The contents of `softtoken_profile` is **not persisted** across
+extension reloads. In particular all private keys will disappear on a browser
+restart.
+
+**Do not use the software token to register keys on real accounts, as there are
+no guarantees on the secrecy of the private keys.**

@@ -6,11 +6,9 @@ package com.google.u2f.server;
  * to allow the server to process many different types of messages.
  */
 public class ControlByteData {
-  // User Presence - true if user is present, false otherwise.
   private final boolean userPresence;
-  // TransferAccesss - true if this is a TransferAccessResponse, false otherwise
   private final boolean isTransferAccessMessage;
-
+  
   public ControlByteData(boolean userPresence, boolean isTransferAccessMessage) {
     this.userPresence = userPresence;
     this.isTransferAccessMessage = isTransferAccessMessage;

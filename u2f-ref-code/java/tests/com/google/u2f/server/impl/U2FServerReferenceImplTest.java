@@ -230,12 +230,26 @@ public class U2FServerReferenceImplTest extends TestVectors {
       assertTrue(e.getMessage().contains("is not a recognized home origin"));
     }
   }
+
+  // @Test
+  // TODO: put test back in once we have signature sample on a correct browserdata json
+  // (currently, this test uses an enrollment browserdata during a signature)
+  public void testProcessSignResponse2() throws U2FException {
+    when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
+        new SignSessionData(ACCOUNT_NAME, APP_ID_2, SERVER_CHALLENGE_SIGN, USER_PUBLIC_KEY_2));
+    when(mockDataStore.getSecurityKeyData(ACCOUNT_NAME)).thenReturn(
+        ImmutableList.of(new SecurityKeyData(0l, KEY_HANDLE_2, USER_PUBLIC_KEY_2, VENDOR_CERTIFICATE, 0)));
+    u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
+        mockDataStore, cryto, TRUSTED_DOMAINS);
+    SignResponse signResponse = new SignResponse(KEY_HANDLE_2_BASE64, SIGN_DATA_2_BASE64,
+        BROWSER_DATA_2_BASE64, SESSION_ID);
+
+    u2fServer.processSignResponse(signResponse);
+  }
   
-  /* 
-   * TransferAccess: 
-   * Run the testProcessSignResponse with TransferAccess messages
-   * instead of traditional sign responses
-   */
+  // TODO (alextaka):
+  // Run the testProcessSignResponse with TransferAccess messages
+  // instead of traditional sign responses
   @Test
   public void testProcessSignResponse_withTransferAccess() throws U2FException {
     when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
@@ -273,20 +287,14 @@ public class U2FServerReferenceImplTest extends TestVectors {
    * TransferAccess:
    * End TransferAccess tests
    */
-
-  // @Test
-  // TODO: put test back in once we have signature sample on a correct browserdata json
-  // (currently, this test uses an enrollment browserdata during a signature)
-  public void testProcessSignResponse2() throws U2FException {
-    when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
-        new SignSessionData(ACCOUNT_NAME, APP_ID_2, SERVER_CHALLENGE_SIGN, USER_PUBLIC_KEY_2));
-    when(mockDataStore.getSecurityKeyData(ACCOUNT_NAME)).thenReturn(
-        ImmutableList.of(new SecurityKeyData(0l, KEY_HANDLE_2, USER_PUBLIC_KEY_2, VENDOR_CERTIFICATE, 0)));
-    u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
-        mockDataStore, cryto, TRUSTED_DOMAINS);
-    SignResponse signResponse = new SignResponse(KEY_HANDLE_2_BASE64, SIGN_DATA_2_BASE64,
-        BROWSER_DATA_2_BASE64, SESSION_ID);
-
-    u2fServer.processSignResponse(signResponse);
-  }
+  
+  /* 
+   * TransferAccess: 
+   * Test additional methods that parse controlBytes
+   */
+  
+  /* 
+   * TransferAccess:
+   * End parseControlByte tests
+   */
 }

@@ -200,7 +200,8 @@ public class RawMessageCodec {
    *  This assumes that the logic has already been done, and we are really getting a
    *  TransferAccessResponse in the input data.
    */
-  public static TransferAccessResponse decodeTransferAccessResponse(byte[] data) throws U2FException {
+  public static TransferAccessResponse decodeTransferAccessResponse(byte[] data) 
+      throws U2FException {
 	try {
 	  DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(data));
 	  byte controlByte = inputStream.readByte();
@@ -233,12 +234,11 @@ public class RawMessageCodec {
               "Incorrect value of reserved byte. Expected: %d. Was: %d",
               REGISTRATION_RESERVED_BYTE_VALUE, reservedByte));
         }
-
 	  
 	  return new TransferAccessResponse(controlByte, userPublicKey, transferAccessMessages, 
 			  keyHandle, attestationCertificate, counter, signature);
 	} catch	(IOException e) {
-	  throw new U2FException("Error when parsing rawSignData", e);
+	  throw new U2FException("Error when parsing raw Transfer Access", e);
 	} catch (CertificateException e) {
       throw new U2FException("Error when parsing attestation certificate", e);
     }

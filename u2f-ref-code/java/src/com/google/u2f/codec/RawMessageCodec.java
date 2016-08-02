@@ -53,7 +53,7 @@ public class RawMessageCodec {
 
       return new RegisterRequest(appIdSha256, challengeSha256);
     } catch (IOException e) {
-      throw new U2FException("Error when parsing raw RegistrationResponse", e);
+      throw new U2FException("Error when parsing raw RegisterRequest", e);
     }
   }
 
@@ -112,7 +112,7 @@ public class RawMessageCodec {
 
       return new RegisterResponse(userPublicKey, keyHandle, attestationCertificate, signature);
     } catch (IOException e) {
-      throw new U2FException("Error when parsing raw RegistrationResponse", e);
+      throw new U2FException("Error when parsing raw RegisterResponse", e);
     } catch (CertificateException e) {
       throw new U2FException("Error when parsing attestation certificate", e);
     }
@@ -156,7 +156,7 @@ public class RawMessageCodec {
 
       return new AuthenticateRequest(controlByte, challengeSha256, appIdSha256, keyHandle);
     } catch (IOException e) {
-      throw new U2FException("Error when parsing raw RegistrationResponse", e);
+      throw new U2FException("Error when parsing raw AuthenticateRequest", e);
     }
   }
 
@@ -188,7 +188,7 @@ public class RawMessageCodec {
 
       return new AuthenticateResponse(userPresence, counter, signature);
     } catch (IOException e) {
-      throw new U2FException("Error when parsing rawSignData", e);
+      throw new U2FException("Error when parsing raw AuthenticateResponse", e);
     }
   }
 

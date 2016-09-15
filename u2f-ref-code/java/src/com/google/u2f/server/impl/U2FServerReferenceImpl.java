@@ -62,14 +62,14 @@ public class U2FServerReferenceImpl implements U2FServer {
 
   private final ChallengeGenerator challengeGenerator;
   private final DataStore dataStore;
-  private final Crypto cryto;
+  private final Crypto crypto;
   private final Set<String> allowedOrigins;
 
   public U2FServerReferenceImpl(ChallengeGenerator challengeGenerator, DataStore dataStore,
-      Crypto cryto, Set<String> origins) {
+      Crypto crypto, Set<String> origins) {
     this.challengeGenerator = challengeGenerator;
     this.dataStore = dataStore;
-    this.cryto = cryto;
+    this.crypto = crypto;
     this.allowedOrigins = canonicalizeOrigins(origins);
   }
 
@@ -145,8 +145,8 @@ public class U2FServerReferenceImpl implements U2FServer {
     }
     Log.info("  signature: " + Hex.encodeHexString(signature));
 
-    byte[] appIdSha256 = cryto.computeSha256(appId.getBytes());
-    byte[] clientDataSha256 = cryto.computeSha256(clientData.getBytes());
+    byte[] appIdSha256 = crypto.computeSha256(appId.getBytes());
+    byte[] clientDataSha256 = crypto.computeSha256(clientData.getBytes());
     byte[] signedBytes = RawMessageCodec.encodeRegistrationSignedBytes(
         appIdSha256, clientDataSha256, keyHandle, userPublicKey);
 
@@ -159,7 +159,7 @@ public class U2FServerReferenceImpl implements U2FServer {
         new JsonParser().parse(clientData), "navigator.id.finishEnrollment", sessionData);
 
     Log.info("Verifying signature of bytes " + Hex.encodeHexString(signedBytes));
-    if (!cryto.verifySignature(attestationCertificate, signedBytes, signature)) {
+    if (!crypto.verifySignature(attestationCertificate, signedBytes, signature)) {
       throw new U2FException("Signature is invalid");
     }
 
@@ -267,14 +267,14 @@ public class U2FServerReferenceImpl implements U2FServer {
       throw new U2FException("Counter value smaller than expected!");
     }
 
-    byte[] appIdSha256 = cryto.computeSha256(appId.getBytes());
-    byte[] browserDataSha256 = cryto.computeSha256(browserData.getBytes());
+    byte[] appIdSha256 = crypto.computeSha256(appId.getBytes());
+    byte[] browserDataSha256 = crypto.computeSha256(browserData.getBytes());
     byte[] signedBytes = RawMessageCodec.encodeAuthenticateSignedBytes(
         appIdSha256, userPresence, counter, browserDataSha256);
 
     Log.info("Verifying signature of bytes " + Hex.encodeHexString(signedBytes));
-    if (!cryto.verifySignature(
-            cryto.decodePublicKey(securityKeyData.getPublicKey()), signedBytes, signature)) {
+    if (!crypto.verifySignature(
+            crypto.decodePublicKey(securityKeyData.getPublicKey()), signedBytes, signature)) {
       throw new U2FException("Signature is invalid");
     }
 

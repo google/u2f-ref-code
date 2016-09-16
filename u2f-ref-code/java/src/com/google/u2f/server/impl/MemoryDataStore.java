@@ -74,7 +74,7 @@ public class MemoryDataStore implements DataStore {
   }
 
   @Override
-  public void removeSecuityKey(String accountName, byte[] publicKey) {
+  public void removeSecurityKey(String accountName, byte[] publicKey) {
     List<SecurityKeyData> tokens = getSecurityKeyData(accountName);
     for (SecurityKeyData token : tokens) {
       if (Arrays.equals(token.getPublicKey(), publicKey)) {

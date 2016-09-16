@@ -337,7 +337,7 @@ public class U2FServerReferenceImpl implements U2FServer {
 
   @Override
   public void removeSecurityKey(String accountName, byte[] publicKey) throws U2FException {
-    dataStore.removeSecuityKey(accountName, publicKey);
+    dataStore.removeSecurityKey(accountName, publicKey);
   }
 
   private static Set<String> canonicalizeOrigins(Set<String> origins) {

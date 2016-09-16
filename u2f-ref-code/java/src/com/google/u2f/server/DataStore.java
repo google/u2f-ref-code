@@ -35,7 +35,7 @@ public interface DataStore {
 
   public List<SecurityKeyData> getSecurityKeyData(String accountName);
 
-  public void removeSecuityKey(String accountName, byte[] publicKey);
+  public void removeSecurityKey(String accountName, byte[] publicKey);
 
   public void updateSecurityKeyCounter(String accountName, byte[] publicKey, int newCounterValue);
 }

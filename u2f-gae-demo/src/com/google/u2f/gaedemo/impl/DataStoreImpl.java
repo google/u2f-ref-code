@@ -136,7 +136,7 @@ public class DataStoreImpl implements DataStore {
   }
 
   @Override
-  public void removeSecuityKey(String accountName, byte[] publicKey) {
+  public void removeSecurityKey(String accountName, byte[] publicKey) {
     UserTokens tokens = getUserTokens(accountName);
     tokens.removeToken(publicKey);
     ofy().save().entity(tokens).now();

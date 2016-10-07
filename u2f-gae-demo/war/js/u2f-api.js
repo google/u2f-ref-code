@@ -230,7 +230,7 @@ u2f.isAndroidChrome_ = function() {
  * @private
  */
 u2f.isIosChrome_ = function() {
-  return $.inArray(navigator.platform, ["iPhone", "iPad", "iPod"]) > -1;
+  return ["iPhone", "iPad", "iPod"].indexOf(navigator.platform) > -1;
 };
 
 /**

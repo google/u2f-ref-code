@@ -7,22 +7,22 @@ package com.google.u2f.server;
  */
 public class ControlFlags {
   private final boolean userPresence;
-  private final boolean isTransferAccessMessage;
+  private final boolean isTransferAccessResponse;
   
   private static final byte MASK_USER_PRESENCE = 0x1;
-  private static final byte MASK_TRANSFER_ACCESS_MESSAGE = 0x2;
+  private static final byte MASK_TRANSFER_ACCESS_RESPONSE= 0x2;
 
 
   /**
    * Hidden constructor, use builder instead
    *
    * @param userPresence (optional) true if user verifies presence
-   * @param isTransferAccessMessage (optional) true if these flags are attached to a TransferAccess
-   *        Message
+   * @param isTransferAccessResponse (optional) true if these flags are attached to a TransferAccess
+   *        Response
    */
-  private ControlFlags(boolean userPresence, boolean isTransferAccessMessage) {
+  private ControlFlags(boolean userPresence, boolean isTransferAccessResponse) {
     this.userPresence = userPresence;
-    this.isTransferAccessMessage = isTransferAccessMessage;
+    this.isTransferAccessResponse = isTransferAccessResponse;
   }
 
   /**
@@ -30,12 +30,12 @@ public class ControlFlags {
    */
   public static ControlFlags fromByte(byte controlFlags) {
     boolean userPresence = (controlFlags & MASK_USER_PRESENCE) != 0;
-    boolean isTransferAccessMessage =
-        (controlFlags & MASK_TRANSFER_ACCESS_MESSAGE) != 0;
+    boolean isTransferAccessResponse =
+        (controlFlags & MASK_TRANSFER_ACCESS_RESPONSE) != 0;
 
     return new ControlFlags.ControlFlagsBuilder()
         .setUserPresenceBit(userPresence)
-        .setIsTransferAccessMessageBit(isTransferAccessMessage)
+        .setIsTransferAccessResponseBit(isTransferAccessResponse)
         .build();
   }
 
@@ -51,8 +51,8 @@ public class ControlFlags {
       controlByte = (byte) (controlByte | MASK_USER_PRESENCE);
     }
 
-    if (controlFlags.getIsTransferAccessMessage()) {
-      controlByte = (byte) (controlByte | MASK_TRANSFER_ACCESS_MESSAGE);
+    if (controlFlags.getIsTransferAccessResponse()) {
+      controlByte = (byte) (controlByte | MASK_TRANSFER_ACCESS_RESPONSE);
     }
 
     return controlByte;
@@ -62,8 +62,8 @@ public class ControlFlags {
     return userPresence;
   }
 
-  public boolean getIsTransferAccessMessage() {
-    return isTransferAccessMessage;
+  public boolean getIsTransferAccessResponse() {
+    return isTransferAccessResponse;
   }
 
   /**
@@ -72,20 +72,20 @@ public class ControlFlags {
    */
   public static class ControlFlagsBuilder {
     private boolean userPresence;
-    private boolean isTransferAccessMessage;
+    private boolean isTransferAccessResponse;
 
     public ControlFlagsBuilder setUserPresenceBit(boolean userPresence) {
       this.userPresence = userPresence;
       return this;
     }
 
-    public ControlFlagsBuilder setIsTransferAccessMessageBit(boolean isTransferAccessMessage) {
-      this.isTransferAccessMessage = isTransferAccessMessage;
+    public ControlFlagsBuilder setIsTransferAccessResponseBit(boolean isTransferAccessResponse) {
+      this.isTransferAccessResponse = isTransferAccessResponse;
       return this;
     }
 
     public ControlFlags build() {
-      return new ControlFlags(userPresence, isTransferAccessMessage);
+      return new ControlFlags(userPresence, isTransferAccessResponse);
     }
 
   }

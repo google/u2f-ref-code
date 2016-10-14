@@ -207,7 +207,8 @@ public class U2FServerReferenceImpl implements U2FServer {
   }
 
   @Override
-  public SecurityKeyData processSignResponse(SignResponse signResponse) throws U2FException {
+  public SecurityKeyData processSignResponse(SignResponse signResponse, long currentTimeInMillis)
+      throws U2FException {
     Log.info(">> processSignResponse");
 
     String sessionId = signResponse.getSessionId();

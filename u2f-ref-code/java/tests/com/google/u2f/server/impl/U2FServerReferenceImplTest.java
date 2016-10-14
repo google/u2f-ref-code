@@ -211,7 +211,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
     SignResponse signResponse = new SignResponse(KEY_HANDLE_BASE64, SIGN_RESPONSE_DATA_BASE64,
         BROWSER_DATA_SIGN_BASE64, SESSION_ID);
 
-    u2fServer.processSignResponse(signResponse);
+    u2fServer.processSignResponse(signResponse, 0L);
   }
 
   @Test
@@ -224,7 +224,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
         BROWSER_DATA_SIGN_BASE64, SESSION_ID);
 
     try {
-      u2fServer.processSignResponse(signResponse);
+      u2fServer.processSignResponse(signResponse, 0L);
       fail("expected exception, but didn't get it");
     } catch(U2FException e) {
       assertTrue(e.getMessage().contains("is not a recognized home origin"));
@@ -244,6 +244,6 @@ public class U2FServerReferenceImplTest extends TestVectors {
     SignResponse signResponse = new SignResponse(KEY_HANDLE_2_BASE64, SIGN_DATA_2_BASE64,
         BROWSER_DATA_2_BASE64, SESSION_ID);
 
-    u2fServer.processSignResponse(signResponse);
+    u2fServer.processSignResponse(signResponse, 0L);
   }
 }

@@ -26,7 +26,8 @@ public interface U2FServer {
   // authentication //
   public U2fSignRequest getSignRequest(String accountName, String appId) throws U2FException;
 
-  public SecurityKeyData processSignResponse(SignResponse signResponse) throws U2FException;
+  public SecurityKeyData processSignResponse(SignResponse signResponse, long currentTimeInMillis)
+      throws U2FException;
 
   // token management //
   public List<SecurityKeyData> getAllSecurityKeys(String accountName);

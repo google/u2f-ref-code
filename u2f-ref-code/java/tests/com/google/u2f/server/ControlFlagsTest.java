@@ -31,11 +31,11 @@ public class ControlFlagsTest {
 
   @Test
   public void testIsTransferAccessMessageFromByte() {
-    assertTrue(ControlFlags.fromByte(TRANSFER_ACCESS_MESSAGE_BIT_SET).getIsTransferAccessMessage());
+    assertTrue(ControlFlags.fromByte(TRANSFER_ACCESS_MESSAGE_BIT_SET).getIsTransferAccessResponse());
     assertTrue(ControlFlags.fromByte(USER_PRESENCE_AND_TRANSFER_ACCESS_BITS_SET)
-        .getIsTransferAccessMessage());
-    assertFalse(ControlFlags.fromByte(USER_PRESENCE_BIT_SET).getIsTransferAccessMessage());
-    assertFalse(ControlFlags.fromByte(NO_BITS_SET).getIsTransferAccessMessage());
+        .getIsTransferAccessResponse());
+    assertFalse(ControlFlags.fromByte(USER_PRESENCE_BIT_SET).getIsTransferAccessResponse());
+    assertFalse(ControlFlags.fromByte(NO_BITS_SET).getIsTransferAccessResponse());
   }
 
   @Test
@@ -44,16 +44,16 @@ public class ControlFlagsTest {
     assertFalse(
         new ControlFlags.ControlFlagsBuilder().setUserPresenceBit(false).build().getUserPresence());
     assertFalse(new ControlFlags.ControlFlagsBuilder().build().getUserPresence());
-    assertFalse(new ControlFlags.ControlFlagsBuilder().setIsTransferAccessMessageBit(true).build()
+    assertFalse(new ControlFlags.ControlFlagsBuilder().setIsTransferAccessResponseBit(true).build()
         .getUserPresence());
-    assertTrue(new ControlFlags.ControlFlagsBuilder().setIsTransferAccessMessageBit(true)
+    assertTrue(new ControlFlags.ControlFlagsBuilder().setIsTransferAccessResponseBit(true)
         .setUserPresenceBit(true).build().getUserPresence());
     assertFalse(new ControlFlags.ControlFlagsBuilder().setUserPresenceBit(true).build()
-        .getIsTransferAccessMessage());
-    assertTrue(new ControlFlags.ControlFlagsBuilder().setIsTransferAccessMessageBit(true).build()
-        .getIsTransferAccessMessage());
-    assertFalse(new ControlFlags.ControlFlagsBuilder().setIsTransferAccessMessageBit(false).build()
-        .getIsTransferAccessMessage());
+        .getIsTransferAccessResponse());
+    assertTrue(new ControlFlags.ControlFlagsBuilder().setIsTransferAccessResponseBit(true).build()
+        .getIsTransferAccessResponse());
+    assertFalse(new ControlFlags.ControlFlagsBuilder().setIsTransferAccessResponseBit(false).build()
+        .getIsTransferAccessResponse());
   }
 
 }

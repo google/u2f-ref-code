@@ -168,7 +168,9 @@ function sendBeginEnrollRequest() {
             response['sessionId'] = beginEnrollResponse.sessionId;
             onTokenEnrollSuccess(response);
           }
-        });
+        },
+        120 /* timeout of 2 minutes */
+      );
     });
 }
 
@@ -191,7 +193,9 @@ function sendBeginSignRequest() {
             response['sessionId'] = sessionIds[response.keyHandle];
             onTokenSignSuccess(response);
           }
-      })
+        },
+        120 /* timeout of 2 minutes */
+      );
    }) 
    .fail(function(xhr, status) {
       showError("can't authenticate: " + status);

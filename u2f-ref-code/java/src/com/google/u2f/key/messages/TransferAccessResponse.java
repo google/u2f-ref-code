@@ -7,20 +7,17 @@ import com.google.common.base.Preconditions;
 import com.google.u2f.server.ControlFlags;
 
 /**
- * TransferAccessResponse is constructed by a device to whom access has been transferred. It wraps 
+ * TransferAccessResponse is constructed by a device to which access has been transferred. It wraps 
  * the TransferAccessMessage chain with necessary information to register a new key.
  */
 public class TransferAccessResponse extends AuthenticateResponse {
-  private final byte controlFlags;
   private final TransferAccessMessage[] transferAccessMessages;
   private final byte[] keyHandle;
-  private final int counter;
-  private final byte[] signature;
 
   /**
    * Constructor for the TransferAccessResponse
    * 
-   * @param controlFlags: See ControlFlags. Should indicate this is a TransferAccessResponse
+   * @param controlFlags: Sets the {@link ControlFlags} for this Response.
    * @param transferAccessMessages: Array of TransferAccessMessages. The first message is the first
    *        in the chain.
    * @param keyHandle: KeyHandle for the final key to be registered.
@@ -34,25 +31,19 @@ public class TransferAccessResponse extends AuthenticateResponse {
     super(controlFlags, counter, signature); 
 
     Preconditions.checkNotNull(controlFlags, "Control flags should not be null");
-    Preconditions.checkNotNull(transferAccessMessages,
-        "Array of transfer access messages should not be null");
-    Preconditions.checkNotNull(keyHandle, "Key handle should not be null");
     Preconditions.checkNotNull(counter, "Counter should not be null");
     Preconditions.checkNotNull(signature, "Signature should not be null");
     
-    this.controlFlags = controlFlags;
-    this.transferAccessMessages = transferAccessMessages;
-    this.keyHandle = keyHandle;
-    this.counter = counter;
-    this.signature = signature;
+    this.transferAccessMessages = Preconditions.checkNotNull(transferAccessMessages);
+    this.keyHandle = Preconditions.checkNotNull(keyHandle);
   }
 
   /**
-   * ControlFlags object tracks information about the TransferAccessResponse. Bit 1 should be set to
-   * 1 indicating this is a transferAccessResponse.
+   * ControlFlags object tracks information about the TransferAccessResponse. The second least
+   * significant bit should be set to 1 to indicate this is a transferAccessResponse.
    */
   public ControlFlags getControlFlags() {
-    return ControlFlags.fromByte(controlFlags);
+    return ControlFlags.fromByte(super.getUserPresence());
   }
 
   /** An array of transferAccessMessages in the order in which they need to be processed */
@@ -69,22 +60,9 @@ public class TransferAccessResponse extends AuthenticateResponse {
     return keyHandle;
   }
   
-  /**
-   * This is the big-endian representation of a counter value that the U2F token increments every
-   * time it performs an authentication operation.
-   */
-  public int getCounter() {
-    return counter;
-  }
-
-  /** This is a ECDSA signature (on P-256) */
-  public byte[] getSignature() {
-    return signature;
-  }
-
   @Override
   public int hashCode() {
-    return Objects.hash(controlFlags, transferAccessMessages, keyHandle, counter, signature);
+    return Objects.hash(super.hashCode(), transferAccessMessages, keyHandle);
   }
 
   @Override
@@ -96,9 +74,8 @@ public class TransferAccessResponse extends AuthenticateResponse {
     if (getClass() != obj.getClass())
       return false;
     TransferAccessResponse other = (TransferAccessResponse) obj;
-    return Objects.equals(controlFlags, other.controlFlags)
+    return super.equals(other)
         && Arrays.equals(transferAccessMessages, other.transferAccessMessages)
-        && Arrays.equals(keyHandle, other.keyHandle) && Objects.equals(counter, other.counter)
-        && Arrays.equals(signature, other.signature);
+        && Arrays.equals(keyHandle, other.keyHandle);
   }
 }

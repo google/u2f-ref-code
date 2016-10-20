@@ -8,7 +8,6 @@ import com.google.u2f.TestVectors;
 import com.google.u2f.U2FException;
 
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 
 public class TransferAccessMessageTest extends TestVectors {
   private static final int SEQUENCE_NUMBER = 1;
@@ -25,63 +24,66 @@ public class TransferAccessMessageTest extends TestVectors {
   private static final byte[] SIGNATURE_USING_ATTESTATION_KEY =
       TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B;
   private static final byte[] SIGNATURE_USING_ATTESTATION_KEY_OTHER = new byte[1];
-  
+  private static final TransferAccessMessage TRANSFER_ACCESS_MESSAGE = new TransferAccessMessage(
+      SEQUENCE_NUMBER, NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
+      SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+
   @Test
   public void testEquals() {
     TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
         NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
         SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
-    
-    TransferAccessMessage transferAccessMessage2 = new TransferAccessMessage(SEQUENCE_NUMBER,
-        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
-        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
-    
-    assertEquals(transferAccessMessage1, transferAccessMessage2);
-    
-    transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER_OTHER, NEW_USER_PUBLIC_KEY,
-        APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE, SIGNATURE_USING_AUTHENTICATION_KEY,
-        SIGNATURE_USING_ATTESTATION_KEY);
-    
-    assertNotEquals(transferAccessMessage1, transferAccessMessage2);
-    
-    transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER, NEW_USER_PUBLIC_KEY_OTHER,
-        APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE, SIGNATURE_USING_AUTHENTICATION_KEY,
-        SIGNATURE_USING_ATTESTATION_KEY);
-
-    assertNotEquals(transferAccessMessage1, transferAccessMessage2);
-    
-    transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER, NEW_USER_PUBLIC_KEY,
-        APPLICATION_SHA256_OTHER, NEW_ATTESTATION_CERTIFICATE, SIGNATURE_USING_AUTHENTICATION_KEY,
-        SIGNATURE_USING_ATTESTATION_KEY);
-
-    assertNotEquals(transferAccessMessage1, transferAccessMessage2);
-    
-    transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER, NEW_USER_PUBLIC_KEY,
-        APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE_OTHER, SIGNATURE_USING_AUTHENTICATION_KEY,
-        SIGNATURE_USING_ATTESTATION_KEY);
-
-    assertNotEquals(transferAccessMessage1, transferAccessMessage2);
-    
-    transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER, NEW_USER_PUBLIC_KEY,
-        APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE, SIGNATURE_USING_AUTHENTICATION_KEY_OTHER,
-        SIGNATURE_USING_ATTESTATION_KEY);
-
-    assertNotEquals(transferAccessMessage1, transferAccessMessage2);
-    
-    transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER, NEW_USER_PUBLIC_KEY,
-        APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE, SIGNATURE_USING_AUTHENTICATION_KEY,
-        SIGNATURE_USING_ATTESTATION_KEY_OTHER);
-
-    assertNotEquals(transferAccessMessage1, transferAccessMessage2);
-    
-    transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER, NEW_USER_PUBLIC_KEY,
-        APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE, SIGNATURE_USING_AUTHENTICATION_KEY,
-        SIGNATURE_USING_ATTESTATION_KEY_OTHER);
-
-    assertNotEquals(transferAccessMessage1, transferAccessMessage2);
-
+    assertEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
   }
 
+  @Test
+  public void testNotEquals_SequenceNumberDiffers() {
+    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER_OTHER,
+        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
+        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+    assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
+  }
+
+  @Test
+  public void testNotEquals_NewUserPublicKeysDiffer() {
+    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
+        NEW_USER_PUBLIC_KEY_OTHER, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
+        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+    assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
+  }
+
+  @Test
+  public void testNotEquals_Application_Sha256Differs() {
+    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
+        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256_OTHER, NEW_ATTESTATION_CERTIFICATE,
+        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+    assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
+  }
+
+  @Test
+  public void testNotEquals_AttestationCertificatesDiffer() {
+    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
+        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE_OTHER,
+        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+    assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
+  }
+
+  @Test
+  public void testNotEquals_SignatureUsingAuthenticationKeyDiffers() {
+    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
+        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
+        SIGNATURE_USING_AUTHENTICATION_KEY_OTHER, SIGNATURE_USING_ATTESTATION_KEY);
+    assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
+  }
+
+  @Test
+  public void testNotEquals_SignatureUsingAttestationKeyDiffers() {
+    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
+        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
+        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY_OTHER);
+    assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
+  }
+  
   @Test
   public void testGetters() {
     TransferAccessMessage transferAccessMessage = new TransferAccessMessage(SEQUENCE_NUMBER,

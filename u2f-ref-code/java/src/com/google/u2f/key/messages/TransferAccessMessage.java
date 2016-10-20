@@ -14,10 +14,13 @@ import com.google.common.io.BaseEncoding;
 import com.google.u2f.U2FException;
 
 /**
- * Allows transfer of access from one device to another. TransferAccessMessages can be chained in
- * case devices do not sign in before transferring access again.
+ * Allows transfer of access from one device to another. TransferAccessMessages can be chained to 
+ * transfer access through a number of devices, for example from phone A to phone B to phone C.
  */
 public class TransferAccessMessage {
+  private static int RAW_PUBLIC_KEY_SIZE = 65;
+  private static int RAW_APPLICATION_SHA_256_SIZE = 32;
+  
   private final int sequenceNumber;
   private final byte[] newUserPublicKey;
   private final byte[] applicationSha256;
@@ -45,26 +48,18 @@ public class TransferAccessMessage {
       byte[] applicationSha256, X509Certificate newAttestationCertificate,
       byte[] signatureUsingAuthenticationKey, byte[] signatureUsingAttestationKey) {
     
-    Preconditions.checkNotNull(sequenceNumber, "Sequence Number should not be null");
-    Preconditions.checkNotNull(newUserPublicKey, "New user public key should not be null");
-    Preconditions.checkNotNull(applicationSha256, "Application Sha256 should not be null");
-    Preconditions.checkNotNull(newAttestationCertificate,
-        "New attestation certificate should not be null");
-    Preconditions.checkNotNull(signatureUsingAuthenticationKey,
-        "Signature using authentication key should not be null");
-    Preconditions.checkNotNull(signatureUsingAttestationKey,
-        "Signature using attestation Key should not be null");
-    
     this.sequenceNumber = sequenceNumber;
-    this.newUserPublicKey = newUserPublicKey;
-    this.applicationSha256 = applicationSha256;
-    this.newAttestationCertificate = newAttestationCertificate;
-    this.signatureUsingAuthenticationKey = signatureUsingAuthenticationKey;
-    this.signatureUsingAttestationKey = signatureUsingAttestationKey;
+    this.newUserPublicKey = Preconditions.checkNotNull(newUserPublicKey);
+    this.applicationSha256 = Preconditions.checkNotNull(applicationSha256);
+    this.newAttestationCertificate = Preconditions.checkNotNull(newAttestationCertificate);
+    this.signatureUsingAuthenticationKey =
+        Preconditions.checkNotNull(signatureUsingAuthenticationKey);
+    this.signatureUsingAttestationKey = Preconditions.checkNotNull(signatureUsingAttestationKey);
   }
   
   /**
-   * Build TransferAccessMessage from raw byte  array.
+   * Build TransferAccessMessage from raw byte array.
+   * @throws U2FException if parsing error occurs
    */
   public static TransferAccessMessage fromBytes(byte[] data) throws U2FException {
     try {
@@ -72,20 +67,21 @@ public class TransferAccessMessage {
 
       int sequenceNumber = inputStream.readUnsignedByte();
       
-      byte[] newUserPublicKey = new byte[65];
+      byte[] newUserPublicKey = new byte[RAW_PUBLIC_KEY_SIZE];
       inputStream.readFully(newUserPublicKey);
       
-      byte[] applicationSha256 = new byte[32];
+      byte[] applicationSha256 = new byte[RAW_APPLICATION_SHA_256_SIZE];
       inputStream.readFully(applicationSha256);
       
-      // TODO(alextaka): This doesn't seem to read the correct number of bytes
       X509Certificate newAttestationCertificate = (X509Certificate) CertificateFactory.getInstance(
           "X.509").generateCertificate(inputStream);
       
-      byte[] signatureUsingAuthenticationKey = new byte[inputStream.readUnsignedByte()];
+      int signatureUsingAuthenticationKeyLength = inputStream.readUnsignedByte();
+      byte[] signatureUsingAuthenticationKey = new byte[signatureUsingAuthenticationKeyLength];
       inputStream.readFully(signatureUsingAuthenticationKey);
       
-      byte[] signatureUsingAttestationKey = new byte[inputStream.readUnsignedByte()];
+      int signatureUsingAttestationKeyLength = inputStream.readUnsignedByte();
+      byte[] signatureUsingAttestationKey = new byte[signatureUsingAttestationKeyLength];
       inputStream.readFully(signatureUsingAttestationKey);
       
       if (inputStream.available() != 0) {

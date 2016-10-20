@@ -24,6 +24,9 @@ public class TransferAccessResponseTest extends TestVectors {
       new TransferAccessMessage[1];
   private static final TransferAccessMessage[] TRANSFER_ACCESS_MESSAGES_OTHER =
       new TransferAccessMessage[3];
+  private static final TransferAccessResponse TRANSFER_ACCESS_RESPONSE = new TransferAccessResponse(
+      CONTROL_FLAGS, TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
+
   
   /**
    * This should be the only assignment for each of these values. They should be treated as 
@@ -43,25 +46,44 @@ public class TransferAccessResponseTest extends TestVectors {
 
   @Test
   public final void testEquals() {
-    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS, TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
-    TransferAccessResponse transferAccessResponse2 = new TransferAccessResponse(CONTROL_FLAGS, TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
-    assertEquals(transferAccessResponse1, transferAccessResponse2);
-    
-    transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS_OTHER, TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
-    assertNotEquals(transferAccessResponse1, transferAccessResponse2);
-    
-    transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS, TRANSFER_ACCESS_MESSAGES_OTHER, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
-    assertNotEquals(transferAccessResponse1, transferAccessResponse2);
+    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS,
+        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
+    assertEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
+  }
 
-    transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS, TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE_OTHER, COUNTER, SIGNATURE);
-    assertNotEquals(transferAccessResponse1, transferAccessResponse2);
+  @Test
+  public final void testNotEquals_ControlFlagsDiffer() {
+    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS_OTHER,
+        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
+    assertNotEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
+  }
 
-    transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS, TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER_OTHER, SIGNATURE);
-    assertNotEquals(transferAccessResponse1, transferAccessResponse2);
+  @Test
+  public final void testNotEquals_TransferAccessMessagesDiffer() {
+    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS,
+        TRANSFER_ACCESS_MESSAGES_OTHER, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
+    assertNotEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
+  }
 
-    transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS, TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE_OTHER);
-    assertNotEquals(transferAccessResponse1, transferAccessResponse2);
+  @Test
+  public final void testNotEquals_KeyHandleDiffers() {
+    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS,
+        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE_OTHER, COUNTER, SIGNATURE);
+    assertNotEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
+  }
 
+  @Test
+  public final void testNotEquals_CounterDiffers() {
+    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS,
+        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER_OTHER, SIGNATURE);
+    assertNotEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
+  }
+
+  @Test
+  public final void testNotEquals_SignatureDiffers() {
+    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS,
+        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE_OTHER);
+    assertNotEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
   }
 
   @Test
@@ -90,7 +112,5 @@ public class TransferAccessResponseTest extends TestVectors {
     assertEquals(COUNTER_OTHER, transferAccessResponse.getCounter());
     assertArrayEquals(SIGNATURE_OTHER, transferAccessResponse.getSignature());
   }
-  
-  
   
 }

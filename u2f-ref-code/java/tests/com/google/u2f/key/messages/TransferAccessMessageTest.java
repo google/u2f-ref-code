@@ -6,6 +6,9 @@ import org.junit.Test;
 
 import com.google.u2f.TestVectors;
 import com.google.u2f.U2FException;
+import com.google.u2f.server.impl.BouncyCastleCrypto;
+import com.google.u2f.server.Crypto;
+
 
 import java.security.cert.X509Certificate;
 
@@ -27,6 +30,8 @@ public class TransferAccessMessageTest extends TestVectors {
   private static final TransferAccessMessage TRANSFER_ACCESS_MESSAGE = new TransferAccessMessage(
       SEQUENCE_NUMBER, NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
       SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+  
+  private final Crypto crypto = new BouncyCastleCrypto();
 
   @Test
   public void testEquals() {
@@ -83,13 +88,13 @@ public class TransferAccessMessageTest extends TestVectors {
         SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY_OTHER);
     assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
   }
-  
+
   @Test
   public void testGetters() {
     TransferAccessMessage transferAccessMessage = new TransferAccessMessage(SEQUENCE_NUMBER,
         NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
         SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
-    
+
     assertEquals(SEQUENCE_NUMBER, transferAccessMessage.getMessageSequenceNumber());
     assertEquals(NEW_USER_PUBLIC_KEY, transferAccessMessage.getNewUserPublicKey());
     assertArrayEquals(APPLICATION_SHA256, transferAccessMessage.getApplicationSha256());
@@ -100,12 +105,12 @@ public class TransferAccessMessageTest extends TestVectors {
         transferAccessMessage.getSignatureUsingAttestationKey());
 
   }
-  
+
   @Test
   public void testTransferAccessMessage_FromBytes() throws U2FException {
     TransferAccessMessage transferAccessMessage =
         TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_A_TO_B);
-    
+
     assertEquals(1, transferAccessMessage.getMessageSequenceNumber());
     assertArrayEquals(TRANSFER_ACCESS_PUBLIC_KEY_B_HEX,
         transferAccessMessage.getNewUserPublicKey());
@@ -115,42 +120,136 @@ public class TransferAccessMessageTest extends TestVectors {
         transferAccessMessage.getSignatureUsingAuthenticationKey());
     assertArrayEquals(TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B,
         transferAccessMessage.getSignatureUsingAttestationKey());
-
-//    TODO(alextaka): Need to test some error cases as well.
+    
+    assertTrue(crypto.verifySignature(transferAccessMessage.getNewAttestationCertificate(),
+        EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_ATTESTATION_KEY_A_TO_B,
+        transferAccessMessage.getSignatureUsingAttestationKey()));
+    assertTrue(crypto.verifySignature(USER_PUBLIC_KEY_SIGN,
+        EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_AUTHENTICATION_KEY_A_TO_B,
+        transferAccessMessage.getSignatureUsingAuthenticationKey()));
   }
-  
+
   @Test
   public void testTransferAccessMessage_FromBytes_2() throws U2FException {
-    
-  }
-  
-  @Test
-  public void testTransferAccessMessage_FromBytes_extraBytes() {
-    
-  }
-  
-  @Test
-  public void testTransferAccessMessage_FromBytes_tooFewBytes() {
-    
-  }
-  
-  @Test
-  public void testTransferAccessMessage_FromBytes_wayTooFewBytes() {
-    
-  }
-  
-  @Test
-  public void testTransferAccessMessage_FromBytes_invalidAuthenticationSignature() {
-    
+    TransferAccessMessage transferAccessMessage =
+        TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_C_TO_D);
+
+    assertEquals(3, transferAccessMessage.getMessageSequenceNumber());
+    assertArrayEquals(TRANSFER_ACCESS_PUBLIC_KEY_D_HEX,
+        transferAccessMessage.getNewUserPublicKey());
+    assertArrayEquals(APP_ID_SIGN_SHA256, transferAccessMessage.getApplicationSha256());
+    assertEquals(VENDOR_CERTIFICATE, transferAccessMessage.getNewAttestationCertificate());
+    assertArrayEquals(TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_C_TO_D,
+        transferAccessMessage.getSignatureUsingAuthenticationKey());
+    assertArrayEquals(TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_C_TO_D,
+        transferAccessMessage.getSignatureUsingAttestationKey());
   }
 
   @Test
-  public void testTransferAccessMessage_FromBytes_invalidAttestationSignature() {
-    
+  public void testTransferAccessMessage_FromBytes_ExtraBytes() {
+    try {
+      @SuppressWarnings("unused")
+      TransferAccessMessage transferAccessMessage =
+          TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_EXTRA_BYTES);
+      fail("expected exception, but didn't get it");
+    } catch (U2FException e) {
+      assertTrue(e.getMessage().contains("Message ends with unexpected data"));
+    }
   }
-  
+
   @Test
-  public void testTransferAccessMessage_FromBytes_invalidSequenceNumber() {
-    
+  public void testTransferAccessMessage_FromBytes_TooFewBytes() {
+    try {
+      @SuppressWarnings("unused")
+      TransferAccessMessage transferAccessMessage =
+          TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_TOO_FEW_BYTES);
+      fail("expected exception, but didn't get it");
+    } catch (U2FException e) {
+      assertTrue(e.getCause() instanceof java.io.EOFException);
+    }
   }
+
+  @Test
+  public void testTransferAccessMessage_FromBytes_WayTooFewBytes() {
+    try {
+      @SuppressWarnings("unused")
+      TransferAccessMessage transferAccessMessage =
+          TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_WAY_TOO_FEW_BYTES);
+      fail("expected exception, but didn't get it");
+    } catch (U2FException e) {
+      assertTrue(e.getCause() instanceof java.io.EOFException);
+    }
+  }
+
+  @Test
+  /* TODO(alextaka): This will break the parsing sometimes, and sometimes everything will check out.
+   * I think it just has to do with where the change gets made in the raw attestation cert. */
+  public void testTransferAccessMessage_FromBytes_BadAttestationCertificate() throws U2FException {
+    TransferAccessMessage transferAccessMessage =
+        TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_BAD_ATTESTATION_CERT);
+    
+    assertFalse(crypto.verifySignature(transferAccessMessage.getNewAttestationCertificate(),
+        EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_ATTESTATION_KEY_A_TO_B,
+        transferAccessMessage.getSignatureUsingAttestationKey()));
+    assertTrue(crypto.verifySignature(USER_PUBLIC_KEY_SIGN,
+        EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_AUTHENTICATION_KEY_A_TO_B,
+        transferAccessMessage.getSignatureUsingAuthenticationKey()));
+  }
+
+  @Test
+  public void testTransferAccessMessage_FromBytes_CutAttestationCertificate() {
+    try {
+      @SuppressWarnings("unused")
+      TransferAccessMessage transferAccessMessage =
+          TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_CUT_ATTESTATION_CERT);
+      // TODO(alextaka): Somehow, the length seem to match up perfectly and this returns ok.
+      fail("expected exception, but didn't get it");
+    } catch (U2FException e) {
+      assertTrue(e.getCause() instanceof java.io.EOFException);
+    }
+  }
+
+  @Test
+  public void testTransferAccessMessage_FromBytes_DoubleCutAttestationCertificate() {
+    try {
+      @SuppressWarnings("unused")
+      TransferAccessMessage transferAccessMessage =
+          TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_DOUBLE_CUT_ATTESTATION_CERT);
+      fail("expected exception, but didn't get it");
+    } catch (U2FException e) {
+      assertTrue(e.getMessage().contains("Error when parsing attestation certificate"));
+      assertTrue(e.getCause() instanceof java.security.cert.CertificateException);
+    }
+  }
+
+
+  @Test
+  public void testTransferAccessMessage_FromBytes_InvalidAuthenticationSignature()
+      throws U2FException {
+    TransferAccessMessage transferAccessMessage =
+        TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_BAD_AUTHENTICATION_SIGNATURE);
+
+    assertTrue(crypto.verifySignature(transferAccessMessage.getNewAttestationCertificate(),
+        EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_ATTESTATION_KEY_A_TO_B,
+        transferAccessMessage.getSignatureUsingAttestationKey()));
+    assertFalse(crypto.verifySignature(USER_PUBLIC_KEY_SIGN,
+        EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_AUTHENTICATION_KEY_A_TO_B,
+        transferAccessMessage.getSignatureUsingAuthenticationKey()));
+  }
+
+  @Test
+  public void testTransferAccessMessage_FromBytes_InvalidAttestationSignature()
+      throws U2FException {
+    TransferAccessMessage transferAccessMessage =
+        TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_BAD_ATTESTATION_SIGNATURE);
+
+    assertFalse(crypto.verifySignature(transferAccessMessage.getNewAttestationCertificate(),
+        EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_ATTESTATION_KEY_A_TO_B,
+        transferAccessMessage.getSignatureUsingAttestationKey()));
+    assertTrue(crypto.verifySignature(USER_PUBLIC_KEY_SIGN,
+        EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_AUTHENTICATION_KEY_A_TO_B,
+        transferAccessMessage.getSignatureUsingAuthenticationKey()));
+
+  }
+
 }

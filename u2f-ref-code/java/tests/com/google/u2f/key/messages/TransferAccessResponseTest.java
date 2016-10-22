@@ -2,8 +2,6 @@ package com.google.u2f.key.messages;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 

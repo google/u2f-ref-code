@@ -335,8 +335,8 @@ public class TestVectors {
           );
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_C_TO_D = 
       parseHex("03"                                                            // SequenceNumber
-          + "0416668f839b4ba154f70f452d8da81bc3fa93979a03cca5e6bec36b64473024" // Phone D Public Key
-          + "0317f932e2833bb4f780a0e81bc13ec392cba3f809794528e923f4af589b7761e4"
+          + "0472dc3ca63129c6354890309a89f10b51a8f7c49fc2a7ed554f8886fb7fe7ea" // Phone D Public Key
+          + "2f0e8a51345478d7a726b55aad8177bbc826d55395442fbb986d2b323c48f918c8"
           + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // AplicationSha256
           + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
           + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
@@ -434,6 +434,173 @@ public class TestVectors {
           );
   protected static final String TRANSFER_ACCESS_RESPONSE_A_TO_B_TO_C_TO_D_NO_USER_PRESENCE_BASE64 = 
       Base64.encodeBase64URLSafeString(TRANSFER_ACCESS_RESPONSE_A_TO_B_TO_C_TO_D_NO_USER_PRESENCE);
+  protected static final byte[] TRANSFER_ACCESS_MESSAGE_EXTRA_BYTES = 
+      parseHex("01"                                                            // Sequence Number
+          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // Phone B Public Key
+          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
+          + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // AplicationSha256
+          + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
+          + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
+          + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
+          + "2f302d0603550403132650696c6f74476e756262792d302e342e312d34373930"
+          + "313238303030313135353935373335323059301306072a8648ce3d020106082a"
+          + "8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c144668"
+          + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
+          + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
+          + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
+          + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
+          + "47"                               // Length of signature with Authentication Key in Hex
+          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
+          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
+          + "a6333a2671f737"
+          + "48"                               // Length of signature with Attestation Key in Hex
+          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
+          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
+          + "5c03b0a01f1d369e"
+          + "00"                                                               // Extra Bytes
+          );
+  protected static final byte[] TRANSFER_ACCESS_MESSAGE_TOO_FEW_BYTES = 
+      parseHex("01"                                                            // Sequence Number
+          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // Phone B Public Key
+          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
+          + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // AplicationSha256
+          + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
+          + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
+          + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
+          + "2f302d0603550403132650696c6f74476e756262792d302e342e312d34373930"
+          + "313238303030313135353935373335323059301306072a8648ce3d020106082a"
+          + "8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c144668"
+          + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
+          + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
+          + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
+          + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
+          + "47"                               // Length of signature with Authentication Key in Hex
+          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
+          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
+          + "a6333a2671f737"
+          + "48"                               // Length of signature with Attestation Key in Hex
+          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Shortened Signature
+          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // with Attestation Key
+          );
+  protected static final byte[] TRANSFER_ACCESS_MESSAGE_WAY_TOO_FEW_BYTES = 
+      parseHex("01"                                                            // Sequence Number
+          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // Phone B Public Key
+          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c4" 
+          );
+  protected static final byte[] TRANSFER_ACCESS_MESSAGE_BAD_AUTHENTICATION_SIGNATURE = 
+      parseHex("01"                                                            // Sequence Number
+          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // Phone B Public Key
+          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
+          + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // AplicationSha256
+          + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
+          + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
+          + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
+          + "2f302d0603550403132650696c6f74476e756262792d302e342e312d34373930"
+          + "313238303030313135353935373335323059301306072a8648ce3d020106082a"
+          + "8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c144668"
+          + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
+          + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
+          + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
+          + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
+          + "47"                               // Length of signature with Authentication Key in Hex
+          + "3045022074ad6fff533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
+          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
+          + "a6333a2671f737"
+          + "48"                               // Length of signature with Attestation Key in Hex
+          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
+          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
+          + "5c03b0a01f1d369e"
+          );
+  protected static final byte[] TRANSFER_ACCESS_MESSAGE_BAD_ATTESTATION_SIGNATURE = 
+      parseHex("01"                                                            // Sequence Number
+          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // Phone B Public Key
+          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
+          + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // AplicationSha256
+          + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
+          + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
+          + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
+          + "2f302d0603550403132650696c6f74476e756262792d302e342e312d34373930"
+          + "313238303030313135353935373335323059301306072a8648ce3d020106082a"
+          + "8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c144668"
+          + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
+          + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
+          + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
+          + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
+          + "47"                               // Length of signature with Authentication Key in Hex
+          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
+          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
+          + "a6333a2671f737"
+          + "48"                               // Length of signature with Attestation Key in Hex
+          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Bad Signature with
+          + "592f2cd255022100bfd41a37a4ff2ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
+          + "5c03b0a01f1d369e"
+          );
+  protected static final byte[] TRANSFER_ACCESS_MESSAGE_BAD_ATTESTATION_CERT = 
+      parseHex("01"                                                            // Sequence Number
+          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // Phone B Public Key
+          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
+          + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // AplicationSha256
+          + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
+          + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
+          + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
+          + "2f302d0603550403132650696cffff476e756262792d302e342e312d34373930"
+          + "313238303030313135353935373335323059301306072a8648ce3d020106082a"
+          + "8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c144668"
+          + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
+          + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
+          + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
+          + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
+          + "47"                               // Length of signature with Authentication Key in Hex
+          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
+          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
+          + "a6333a2671f737"
+          + "48"                               // Length of signature with Attestation Key in Hex
+          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
+          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
+          + "5c03b0a01f1d369e"
+          );
+  protected static final byte[] TRANSFER_ACCESS_MESSAGE_CUT_ATTESTATION_CERT = 
+      parseHex("01"                                                            // Sequence Number
+          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // Phone B Public Key
+          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
+          + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // AplicationSha256
+          + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
+          + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
+          + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
+          + "2f302d0603550403132650696c6f74476e756262792d302e342e312d34373930"
+          + "313238303030313135353935373335323059301306072a8648ce3d020106082a"
+          + "8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c144668"
+          + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
+          + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
+          + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
+          + "47"                               // Length of signature with Authentication Key in Hex
+          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
+          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
+          + "a6333a2671f737"
+          + "48"                               // Length of signature with Attestation Key in Hex
+          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
+          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
+          + "5c03b0a01f1d369e"
+          );
+  protected static final byte[] TRANSFER_ACCESS_MESSAGE_DOUBLE_CUT_ATTESTATION_CERT = 
+      parseHex("01"                                                            // Sequence Number
+          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // Phone B Public Key
+          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
+          + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // AplicationSha256
+          + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
+          + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
+          + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
+          + "2f302d0603550403132650696c6f74476e756262792d302e342e312d34373930"
+          + "47"                               // Length of signature with Authentication Key in Hex
+          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
+          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
+          + "a6333a2671f737"
+          + "48"                               // Length of signature with Attestation Key in Hex
+          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
+          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
+          + "5c03b0a01f1d369e"
+          );
+
   protected static final byte[] EXPECTED_REGISTER_SIGNED_BYTES =
       parseHex("00f0e6a6a97042a4f1f1c87f5f7d44315b2d852c2df5c7991cc66241bf7072d1"
           + "c44142d21c00d94ffb9d504ada8f99b721f4b191ae4e37ca0140f696b6983cfa"
@@ -454,6 +621,43 @@ public class TestVectors {
       parseHex("304402204b5f0cd17534cedd8c34ee09570ef542a353df4436030ce43d406de8"
           + "70b847780220267bb998fac9b7266eb60e7cb0b5eabdfd5ba9614f53c7b22272"
           + "ec10047a923f");
+  protected static final byte[] EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_AUTHENTICATION_KEY_A_TO_B =
+      parseHex("0104d368f1b665bade3c33a20f1e429c7750d5033660c019119d29aa4ba7abc0"
+          + "4aa7c80a46bbe11ca8cb5674d74f31f8a903f6bad105fb6ab74aefef4db8b002"
+          + "5e1d04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f"
+          + "5cd0f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e89"
+          + "79c46d4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d49"
+          + "3992ca3082013c3081e4a003020102020a47901280001155957352300a06082a"
+          + "8648ce3d0403023017311530130603550403130c476e756262792050696c6f74"
+          + "301e170d3132303831343138323933325a170d3133303831343138323933325a"
+          + "3031312f302d0603550403132650696c6f74476e756262792d302e342e312d34"
+          + "373930313238303030313135353935373335323059301306072a8648ce3d0201"
+          + "06082a8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c"
+          + "1446682c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23"
+          + "abaf0203b4b8911ba0569994e101300a06082a8648ce3d040302034700304402"
+          + "2060cdb6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30d"
+          + "fa0220631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b3"
+          + "0410df");
+  protected static final byte[] EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_ATTESTATION_KEY_A_TO_B =
+      parseHex("0104d368f1b665bade3c33a20f1e429c7750d5033660c019119d29aa4ba7abc0"
+          + "4aa7c80a46bbe11ca8cb5674d74f31f8a903f6bad105fb6ab74aefef4db8b002"
+          + "5e1d04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f"
+          + "5cd0f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e89"
+          + "79c46d4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d49"
+          + "3992ca3082013c3081e4a003020102020a47901280001155957352300a06082a"
+          + "8648ce3d0403023017311530130603550403130c476e756262792050696c6f74"
+          + "301e170d3132303831343138323933325a170d3133303831343138323933325a"
+          + "3031312f302d0603550403132650696c6f74476e756262792d302e342e312d34"
+          + "373930313238303030313135353935373335323059301306072a8648ce3d0201"
+          + "06082a8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c"
+          + "1446682c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23"
+          + "abaf0203b4b8911ba0569994e101300a06082a8648ce3d040302034700304402"
+          + "2060cdb6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30d"
+          + "fa0220631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b3"
+          + "0410df"
+          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e"
+          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
+          + "a6333a2671f737");
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B =
       parseHex("3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e"
           + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2" 
@@ -462,6 +666,14 @@ public class TestVectors {
       parseHex("3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba"
           + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409"
           + "5c03b0a01f1d369e");
+  protected static final byte[] TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_C_TO_D =
+      parseHex("304402207d2f94ec67c07af4066e31a0d6bb4e1b8d3aa3c9b63f5125701870bb"
+          + "ec52d88802200eacb3896b4ec29b977b5c92e1eebbb167a9f3be9c10d16f631a" 
+          + "b0801fe68f2a");
+  protected static final byte[] TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_C_TO_D = 
+      parseHex("3046022100932fb32df08235d12d30aca42391258319fe47cdd906fc31b25db8"
+          + "076cdc3cf9022100d7bf3d7f6e98aaac6276b2a1ce4c883db9a530e634069939"
+          + "5e973dae3dcb69e1");
   protected static final byte[] TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B = 
       parseHex("3045022100ec044e46654aad514a8d609531bdc74c829230f864554a8cedee2a"
           + "82e431824902204004ae942ace3d333f77d11acb7a196ba7dcf233f05ad13cb3"

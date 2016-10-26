@@ -34,6 +34,8 @@ import com.google.u2f.server.messages.SignResponse;
 import com.google.u2f.server.messages.U2fSignRequest;
 
 public class U2FClientReferenceImplTest extends TestVectors {
+  private static final long ENROLLMENT_TIME = 0L;
+  private static final int INITIAL_COUNTER = 0;
 
   @Mock U2FKey mockU2fKey;
   @Mock U2FServer mockU2fServer;
@@ -54,36 +56,36 @@ public class U2FClientReferenceImplTest extends TestVectors {
 
   @Test
   public void testRegister() throws Exception {
-    when(mockU2fServer.getRegistrationRequest(ACCOUNT_NAME, APP_ID_ENROLL)).thenReturn(
-        new RegistrationRequest(U2FConsts.U2F_V2, SERVER_CHALLENGE_ENROLL_BASE64, APP_ID_ENROLL,
-            SESSION_ID));
+    when(mockU2fServer.getRegistrationRequest(ACCOUNT_NAME, APP_ID_ENROLL))
+        .thenReturn(new RegistrationRequest(U2FConsts.U2F_V2, SERVER_CHALLENGE_ENROLL_BASE64,
+            APP_ID_ENROLL, SESSION_ID));
     doNothing().when(mockOriginVerifier).validateOrigin(APP_ID_ENROLL, ORIGIN);
     when(mockU2fKey.register(new RegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256)))
         .thenReturn(new RegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE,
             SIGNATURE_ENROLL));
     when(mockU2fServer.processRegistrationResponse(
-        new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID), 0L))
-        .thenReturn(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0));
+        new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID),
+        ENROLLMENT_TIME))
+            .thenReturn(new SecurityKeyData(ENROLLMENT_TIME, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
+                VENDOR_CERTIFICATE, INITIAL_COUNTER));
 
     u2fClient.register(ORIGIN, ACCOUNT_NAME);
   }
 
   @Test
   public void testAuthenticate() throws Exception {
-    when(mockU2fServer.getSignRequest(ACCOUNT_NAME, ORIGIN)).thenReturn(
-        new U2fSignRequest(SERVER_CHALLENGE_SIGN_BASE64,  
-        ImmutableList.of(new RegisteredKey(U2FConsts.U2F_V2, KEY_HANDLE_BASE64, null /* transports */ , APP_ID_SIGN,
-            SESSION_ID))));
+    when(mockU2fServer.getSignRequest(ACCOUNT_NAME, ORIGIN)).thenReturn(new U2fSignRequest(
+        SERVER_CHALLENGE_SIGN_BASE64, ImmutableList.of(new RegisteredKey(U2FConsts.U2F_V2,
+            KEY_HANDLE_BASE64, null /* transports */ , APP_ID_SIGN, SESSION_ID))));
     doNothing().when(mockOriginVerifier).validateOrigin(APP_ID_SIGN, ORIGIN);
-    when(
-        mockU2fKey.authenticate(new AuthenticateRequest(UserPresenceVerifier.USER_PRESENT_FLAG,
-            BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE)))
-        .thenReturn(
-                new AuthenticateResponse(UserPresenceVerifier.USER_PRESENT_FLAG, COUNTER_VALUE,
-                    SIGNATURE_AUTHENTICATE));
+    when(mockU2fKey.authenticate(new AuthenticateRequest(UserPresenceVerifier.USER_PRESENT_FLAG,
+        BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE)))
+            .thenReturn(new AuthenticateResponse(UserPresenceVerifier.USER_PRESENT_FLAG,
+                COUNTER_VALUE, SIGNATURE_AUTHENTICATE));
     when(mockU2fServer.processSignResponse(new SignResponse(KEY_HANDLE_BASE64,
-        SIGN_RESPONSE_DATA_BASE64, BROWSER_DATA_SIGN_BASE64, SESSION_ID), 0L)).thenReturn(
-            new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0));
+        SIGN_RESPONSE_DATA_BASE64, BROWSER_DATA_SIGN_BASE64, SESSION_ID), ENROLLMENT_TIME))
+            .thenReturn(new SecurityKeyData(ENROLLMENT_TIME, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
+                VENDOR_CERTIFICATE, INITIAL_COUNTER));
 
     u2fClient.authenticate(ORIGIN, ACCOUNT_NAME);
   }

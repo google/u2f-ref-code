@@ -11,21 +11,17 @@ import com.google.u2f.server.ControlFlags;
 
 public class TransferAccessResponseTest extends TestVectors {
   private static final byte CONTROL_FLAGS = 0x03;
-  private static final byte CONTROL_FLAGS_OTHER = 0x02;
   private static final int COUNTER = 0;
-  private static final int COUNTER_OTHER = 1;
-  private static final byte[] NEW_KEY_HANDLE = KEY_HANDLE_B;
-  private static final byte[] NEW_KEY_HANDLE_OTHER = KEY_HANDLE_D;
-  private static final byte[] SIGNATURE = TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B;
-  private static final byte[] SIGNATURE_OTHER = TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B_TO_C_TO_D;
   private static final TransferAccessMessage[] TRANSFER_ACCESS_MESSAGES =
       new TransferAccessMessage[1];
   private static final TransferAccessMessage[] TRANSFER_ACCESS_MESSAGES_OTHER =
       new TransferAccessMessage[3];
-  private static final TransferAccessResponse TRANSFER_ACCESS_RESPONSE = new TransferAccessResponse(
-      CONTROL_FLAGS, TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
+  private static final TransferAccessResponse TRANSFER_ACCESS_RESPONSE =
+      new TransferAccessResponse(CONTROL_FLAGS, 
+                                 TRANSFER_ACCESS_MESSAGES, 
+                                 KEY_HANDLE_B, COUNTER,
+                                 TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B);
 
-  
   /**
    * This should be the only assignment for each of these values. They should be treated as 
    * constants.
@@ -44,71 +40,105 @@ public class TransferAccessResponseTest extends TestVectors {
 
   @Test
   public final void testEquals() {
-    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS,
-        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
+    TransferAccessResponse transferAccessResponse1 = 
+        new TransferAccessResponse(CONTROL_FLAGS,
+                                   TRANSFER_ACCESS_MESSAGES, 
+                                   KEY_HANDLE_B, COUNTER, 
+                                   TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B);
     assertEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
   }
 
   @Test
   public final void testNotEquals_ControlFlagsDiffer() {
-    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS_OTHER,
-        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
+    byte controlFlags_Other = 0x02;
+    TransferAccessResponse transferAccessResponse1 = 
+        new TransferAccessResponse(controlFlags_Other,
+                                   TRANSFER_ACCESS_MESSAGES, 
+                                   KEY_HANDLE_B, COUNTER, 
+                                   TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B);
     assertNotEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
   }
 
   @Test
   public final void testNotEquals_TransferAccessMessagesDiffer() {
-    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS,
-        TRANSFER_ACCESS_MESSAGES_OTHER, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
+    TransferAccessResponse transferAccessResponse1 =
+        new TransferAccessResponse(CONTROL_FLAGS, 
+                                   TRANSFER_ACCESS_MESSAGES_OTHER, 
+                                   KEY_HANDLE_B,
+                                   COUNTER, 
+                                   TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B);
     assertNotEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
   }
 
   @Test
   public final void testNotEquals_KeyHandleDiffers() {
-    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS,
-        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE_OTHER, COUNTER, SIGNATURE);
+    byte[] newKeyHandle_Other = KEY_HANDLE_D;
+    TransferAccessResponse transferAccessResponse1 =
+        new TransferAccessResponse(CONTROL_FLAGS, 
+                                   TRANSFER_ACCESS_MESSAGES, 
+                                   newKeyHandle_Other,
+                                   COUNTER, 
+                                   TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B);
     assertNotEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
   }
 
   @Test
   public final void testNotEquals_CounterDiffers() {
-    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS,
-        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER_OTHER, SIGNATURE);
+    int counter_Other = 1;
+    TransferAccessResponse transferAccessResponse1 =
+        new TransferAccessResponse(CONTROL_FLAGS, 
+                                   TRANSFER_ACCESS_MESSAGES, 
+                                   KEY_HANDLE_B,
+                                   counter_Other,
+                                   TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B);
     assertNotEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
   }
 
   @Test
   public final void testNotEquals_SignatureDiffers() {
-    TransferAccessResponse transferAccessResponse1 = new TransferAccessResponse(CONTROL_FLAGS,
-        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE_OTHER);
+    byte[] signature_Other = TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B_TO_C_TO_D;
+    TransferAccessResponse transferAccessResponse1 = 
+        new TransferAccessResponse(CONTROL_FLAGS,
+                                   TRANSFER_ACCESS_MESSAGES, 
+                                   KEY_HANDLE_B, 
+                                   COUNTER, 
+                                   signature_Other);
     assertNotEquals(transferAccessResponse1, TRANSFER_ACCESS_RESPONSE);
   }
 
   @Test
   public final void testGetters_singleTransferAccessMessage() throws U2FException{     
-    TransferAccessResponse transferAccessResponse = new TransferAccessResponse(CONTROL_FLAGS,
-        TRANSFER_ACCESS_MESSAGES, NEW_KEY_HANDLE, COUNTER, SIGNATURE);
+    TransferAccessResponse transferAccessResponse = 
+        new TransferAccessResponse(CONTROL_FLAGS,
+                                   TRANSFER_ACCESS_MESSAGES, 
+                                   KEY_HANDLE_B, 
+                                   COUNTER, 
+                                   TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B);
     
     assertEquals(CONTROL_FLAGS, ControlFlags.toByte(transferAccessResponse.getControlFlags()));
     assertArrayEquals(TRANSFER_ACCESS_MESSAGES, transferAccessResponse.getTransferAccessMessages());
-    assertArrayEquals(NEW_KEY_HANDLE, transferAccessResponse.getKeyHandle());
+    assertArrayEquals(KEY_HANDLE_B, transferAccessResponse.getKeyHandle());
     assertEquals(COUNTER, transferAccessResponse.getCounter());
-    assertArrayEquals(SIGNATURE, transferAccessResponse.getSignature());
+    assertArrayEquals(TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B,
+        transferAccessResponse.getSignature());
   }
 
   @Test
   public final void testGetters_transferAccessMessageChain() throws U2FException{        
     TransferAccessResponse transferAccessResponse =
-        new TransferAccessResponse(CONTROL_FLAGS_OTHER, TRANSFER_ACCESS_MESSAGES_OTHER,
-            NEW_KEY_HANDLE_OTHER, COUNTER_OTHER, SIGNATURE_OTHER);
+        new TransferAccessResponse(CONTROL_FLAGS, 
+                                   TRANSFER_ACCESS_MESSAGES_OTHER,
+                                   KEY_HANDLE_B, 
+                                   COUNTER, 
+                                   TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B_TO_C_TO_D);
     
-    assertEquals(CONTROL_FLAGS_OTHER,
-        ControlFlags.toByte(transferAccessResponse.getControlFlags()));
+    assertEquals(CONTROL_FLAGS, ControlFlags.toByte(transferAccessResponse.getControlFlags()));
     assertArrayEquals(TRANSFER_ACCESS_MESSAGES_OTHER,
         transferAccessResponse.getTransferAccessMessages());
-    assertArrayEquals(NEW_KEY_HANDLE_OTHER, transferAccessResponse.getKeyHandle());
-    assertEquals(COUNTER_OTHER, transferAccessResponse.getCounter());
-    assertArrayEquals(SIGNATURE_OTHER, transferAccessResponse.getSignature());
+    assertArrayEquals(KEY_HANDLE_B, transferAccessResponse.getKeyHandle());
+    assertEquals(COUNTER, transferAccessResponse.getCounter());
+    assertArrayEquals(TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B_TO_C_TO_D,
+        transferAccessResponse.getSignature());
   }
   
 }

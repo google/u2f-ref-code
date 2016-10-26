@@ -535,30 +535,6 @@ public class TestVectors {
           + "592f2cd255022100bfd41a37a4ff2ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
           + "5c03b0a01f1d369e"
           );
-  protected static final byte[] TRANSFER_ACCESS_MESSAGE_BAD_ATTESTATION_CERT = 
-      parseHex("01"                                                            // Sequence Number
-          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // Phone B Public Key
-          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
-          + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // AplicationSha256
-          + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
-          + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
-          + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
-          + "2f302d0603550403132650696cffff476e756262792d302e342e312d34373930"
-          + "313238303030313135353935373335323059301306072a8648ce3d020106082a"
-          + "8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c144668"
-          + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
-          + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
-          + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
-          + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
-          + "47"                               // Length of signature with Authentication Key in Hex
-          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
-          + "a6333a2671f737"
-          + "48"                               // Length of signature with Attestation Key in Hex
-          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
-          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
-          + "5c03b0a01f1d369e"
-          );
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_CUT_ATTESTATION_CERT = 
       parseHex("01"                                                            // Sequence Number
           + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // Phone B Public Key
@@ -572,7 +548,6 @@ public class TestVectors {
           + "8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c144668"
           + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
           + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
-          + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "47"                               // Length of signature with Authentication Key in Hex
           + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
           + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"

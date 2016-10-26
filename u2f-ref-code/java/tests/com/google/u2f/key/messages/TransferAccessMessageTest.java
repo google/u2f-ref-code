@@ -14,96 +14,122 @@ import java.security.cert.X509Certificate;
 
 public class TransferAccessMessageTest extends TestVectors {
   private static final int SEQUENCE_NUMBER = 1;
-  private static final int SEQUENCE_NUMBER_OTHER = 0;
-  private static final byte[] NEW_USER_PUBLIC_KEY = TRANSFER_ACCESS_PUBLIC_KEY_B_HEX;
-  private static final byte[] NEW_USER_PUBLIC_KEY_OTHER = TRANSFER_ACCESS_PUBLIC_KEY_C_HEX;
-  private static final byte[] APPLICATION_SHA256 = APP_ID_SIGN_SHA256;
-  private static final byte[] APPLICATION_SHA256_OTHER = APP_ID_ENROLL_SHA256;
-  private static final X509Certificate NEW_ATTESTATION_CERTIFICATE = VENDOR_CERTIFICATE;
-  private static final X509Certificate NEW_ATTESTATION_CERTIFICATE_OTHER = TRUSTED_CERTIFICATE_2;
-  private static final byte[] SIGNATURE_USING_AUTHENTICATION_KEY =
-      TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B;
-  private static final byte[] SIGNATURE_USING_AUTHENTICATION_KEY_OTHER = new byte[1];
-  private static final byte[] SIGNATURE_USING_ATTESTATION_KEY =
-      TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B;
-  private static final byte[] SIGNATURE_USING_ATTESTATION_KEY_OTHER = new byte[1];
   private static final TransferAccessMessage TRANSFER_ACCESS_MESSAGE = new TransferAccessMessage(
-      SEQUENCE_NUMBER, NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
-      SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+      SEQUENCE_NUMBER, TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, APP_ID_SIGN_SHA256, VENDOR_CERTIFICATE,
+      TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B,
+      TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B);
   
   private final Crypto crypto = new BouncyCastleCrypto();
 
   @Test
   public void testEquals() {
-    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
-        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
-        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+    System.out.println("Testing equals");
+    TransferAccessMessage transferAccessMessage1 = 
+        new TransferAccessMessage(SEQUENCE_NUMBER,
+                                  TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, 
+                                  APP_ID_SIGN_SHA256, 
+                                  VENDOR_CERTIFICATE,
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B, 
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B);
     assertEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
   }
 
   @Test
   public void testNotEquals_SequenceNumberDiffers() {
-    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER_OTHER,
-        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
-        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+    int sequenceNumber_Other = 0;
+    TransferAccessMessage transferAccessMessage1 = 
+        new TransferAccessMessage(sequenceNumber_Other,
+                                  TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, 
+                                  APP_ID_SIGN_SHA256, 
+                                  VENDOR_CERTIFICATE,
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B, 
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B);
     assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
   }
 
   @Test
   public void testNotEquals_NewUserPublicKeysDiffer() {
-    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
-        NEW_USER_PUBLIC_KEY_OTHER, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
-        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+    byte[] newUserPublicKey_Other = TRANSFER_ACCESS_PUBLIC_KEY_C_HEX;
+    TransferAccessMessage transferAccessMessage1 = 
+        new TransferAccessMessage(SEQUENCE_NUMBER,
+                                  newUserPublicKey_Other, 
+                                  APP_ID_SIGN_SHA256, 
+                                  VENDOR_CERTIFICATE,
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B, 
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B);
     assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
   }
 
   @Test
   public void testNotEquals_Application_Sha256Differs() {
-    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
-        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256_OTHER, NEW_ATTESTATION_CERTIFICATE,
-        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+    byte[] appIdSignSha256_Other = APP_ID_ENROLL_SHA256;
+    TransferAccessMessage transferAccessMessage1 = 
+        new TransferAccessMessage(SEQUENCE_NUMBER,
+                                  TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, 
+                                  appIdSignSha256_Other, 
+                                  VENDOR_CERTIFICATE,
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B, 
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B);
     assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
   }
 
   @Test
   public void testNotEquals_AttestationCertificatesDiffer() {
-    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
-        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE_OTHER,
-        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+    X509Certificate newAttestationCertificate_Other = TRUSTED_CERTIFICATE_2;
+    TransferAccessMessage transferAccessMessage1 = 
+        new TransferAccessMessage(SEQUENCE_NUMBER,
+                                  TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, 
+                                  APP_ID_SIGN_SHA256,
+                                  newAttestationCertificate_Other,
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B,
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B);
     assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
   }
 
   @Test
   public void testNotEquals_SignatureUsingAuthenticationKeyDiffers() {
-    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
-        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
-        SIGNATURE_USING_AUTHENTICATION_KEY_OTHER, SIGNATURE_USING_ATTESTATION_KEY);
+    byte[] signatureUsingAuthenticationKey_Other = new byte[1];
+    TransferAccessMessage transferAccessMessage1 = 
+        new TransferAccessMessage(SEQUENCE_NUMBER,
+                                  TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, 
+                                  APP_ID_SIGN_SHA256, 
+                                  VENDOR_CERTIFICATE,
+                                  signatureUsingAuthenticationKey_Other, 
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B);
     assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
   }
 
   @Test
   public void testNotEquals_SignatureUsingAttestationKeyDiffers() {
-    TransferAccessMessage transferAccessMessage1 = new TransferAccessMessage(SEQUENCE_NUMBER,
-        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
-        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY_OTHER);
+    byte[] signatureUsingAttestationKey_Other = new byte[1];
+    TransferAccessMessage transferAccessMessage1 = 
+        new TransferAccessMessage(SEQUENCE_NUMBER,
+                                  TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, 
+                                  APP_ID_SIGN_SHA256, 
+                                  VENDOR_CERTIFICATE,
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B, 
+                                  signatureUsingAttestationKey_Other);
     assertNotEquals(transferAccessMessage1, TRANSFER_ACCESS_MESSAGE);
   }
 
   @Test
   public void testGetters() {
-    TransferAccessMessage transferAccessMessage = new TransferAccessMessage(SEQUENCE_NUMBER,
-        NEW_USER_PUBLIC_KEY, APPLICATION_SHA256, NEW_ATTESTATION_CERTIFICATE,
-        SIGNATURE_USING_AUTHENTICATION_KEY, SIGNATURE_USING_ATTESTATION_KEY);
+    TransferAccessMessage transferAccessMessage = 
+        new TransferAccessMessage(SEQUENCE_NUMBER,
+                                  TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, 
+                                  APP_ID_SIGN_SHA256, 
+                                  VENDOR_CERTIFICATE,
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B,
+                                  TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B);
 
     assertEquals(SEQUENCE_NUMBER, transferAccessMessage.getMessageSequenceNumber());
-    assertEquals(NEW_USER_PUBLIC_KEY, transferAccessMessage.getNewUserPublicKey());
-    assertArrayEquals(APPLICATION_SHA256, transferAccessMessage.getApplicationSha256());
-    assertEquals(NEW_ATTESTATION_CERTIFICATE, transferAccessMessage.getNewAttestationCertificate());
-    assertArrayEquals(SIGNATURE_USING_AUTHENTICATION_KEY,
+    assertEquals(TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, transferAccessMessage.getNewUserPublicKey());
+    assertArrayEquals(APP_ID_SIGN_SHA256, transferAccessMessage.getApplicationSha256());
+    assertEquals(VENDOR_CERTIFICATE, transferAccessMessage.getNewAttestationCertificate());
+    assertArrayEquals(TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B,
         transferAccessMessage.getSignatureUsingAuthenticationKey());
-    assertArrayEquals(SIGNATURE_USING_ATTESTATION_KEY,
+    assertArrayEquals(TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B,
         transferAccessMessage.getSignatureUsingAttestationKey());
-
   }
 
   @Test
@@ -148,9 +174,7 @@ public class TransferAccessMessageTest extends TestVectors {
   @Test
   public void testTransferAccessMessage_FromBytes_ExtraBytes() {
     try {
-      @SuppressWarnings("unused")
-      TransferAccessMessage transferAccessMessage =
-          TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_EXTRA_BYTES);
+      TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_EXTRA_BYTES);
       fail("expected exception, but didn't get it");
     } catch (U2FException e) {
       assertTrue(e.getMessage().contains("Message ends with unexpected data"));
@@ -160,9 +184,7 @@ public class TransferAccessMessageTest extends TestVectors {
   @Test
   public void testTransferAccessMessage_FromBytes_TooFewBytes() {
     try {
-      @SuppressWarnings("unused")
-      TransferAccessMessage transferAccessMessage =
-          TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_TOO_FEW_BYTES);
+      TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_TOO_FEW_BYTES);
       fail("expected exception, but didn't get it");
     } catch (U2FException e) {
       assertTrue(e.getCause() instanceof java.io.EOFException);
@@ -172,9 +194,7 @@ public class TransferAccessMessageTest extends TestVectors {
   @Test
   public void testTransferAccessMessage_FromBytes_WayTooFewBytes() {
     try {
-      @SuppressWarnings("unused")
-      TransferAccessMessage transferAccessMessage =
-          TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_WAY_TOO_FEW_BYTES);
+      TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_WAY_TOO_FEW_BYTES);
       fail("expected exception, but didn't get it");
     } catch (U2FException e) {
       assertTrue(e.getCause() instanceof java.io.EOFException);
@@ -182,27 +202,9 @@ public class TransferAccessMessageTest extends TestVectors {
   }
 
   @Test
-  /* TODO(alextaka): This will break the parsing sometimes, and sometimes everything will check out.
-   * I think it just has to do with where the change gets made in the raw attestation cert. */
-  public void testTransferAccessMessage_FromBytes_BadAttestationCertificate() throws U2FException {
-    TransferAccessMessage transferAccessMessage =
-        TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_BAD_ATTESTATION_CERT);
-    
-    assertFalse(crypto.verifySignature(transferAccessMessage.getNewAttestationCertificate(),
-        EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_ATTESTATION_KEY_A_TO_B,
-        transferAccessMessage.getSignatureUsingAttestationKey()));
-    assertTrue(crypto.verifySignature(USER_PUBLIC_KEY_SIGN,
-        EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_AUTHENTICATION_KEY_A_TO_B,
-        transferAccessMessage.getSignatureUsingAuthenticationKey()));
-  }
-
-  @Test
   public void testTransferAccessMessage_FromBytes_CutAttestationCertificate() {
     try {
-      @SuppressWarnings("unused")
-      TransferAccessMessage transferAccessMessage =
-          TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_CUT_ATTESTATION_CERT);
-      // TODO(alextaka): Somehow, the length seem to match up perfectly and this returns ok.
+      TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_CUT_ATTESTATION_CERT);
       fail("expected exception, but didn't get it");
     } catch (U2FException e) {
       assertTrue(e.getCause() instanceof java.io.EOFException);
@@ -212,9 +214,7 @@ public class TransferAccessMessageTest extends TestVectors {
   @Test
   public void testTransferAccessMessage_FromBytes_DoubleCutAttestationCertificate() {
     try {
-      @SuppressWarnings("unused")
-      TransferAccessMessage transferAccessMessage =
-          TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_DOUBLE_CUT_ATTESTATION_CERT);
+      TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_DOUBLE_CUT_ATTESTATION_CERT);
       fail("expected exception, but didn't get it");
     } catch (U2FException e) {
       assertTrue(e.getMessage().contains("Error when parsing attestation certificate"));
@@ -249,7 +249,6 @@ public class TransferAccessMessageTest extends TestVectors {
     assertTrue(crypto.verifySignature(USER_PUBLIC_KEY_SIGN,
         EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_AUTHENTICATION_KEY_A_TO_B,
         transferAccessMessage.getSignatureUsingAuthenticationKey()));
-
   }
 
 }

@@ -29,10 +29,6 @@ public class TransferAccessResponse extends AuthenticateResponse {
   public TransferAccessResponse(byte controlFlags, TransferAccessMessage[] transferAccessMessages,
       byte[] keyHandle, int counter, byte[] signature) {
     super(controlFlags, counter, signature); 
-
-    Preconditions.checkNotNull(controlFlags, "Control flags should not be null");
-    Preconditions.checkNotNull(counter, "Counter should not be null");
-    Preconditions.checkNotNull(signature, "Signature should not be null");
     
     this.transferAccessMessages = Preconditions.checkNotNull(transferAccessMessages);
     this.keyHandle = Preconditions.checkNotNull(keyHandle);

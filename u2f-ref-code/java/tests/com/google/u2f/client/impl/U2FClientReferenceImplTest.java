@@ -26,17 +26,11 @@ import com.google.u2f.key.messages.AuthenticateResponse;
 import com.google.u2f.key.messages.RegisterRequest;
 import com.google.u2f.key.messages.RegisterResponse;
 import com.google.u2f.server.U2FServer;
-import com.google.u2f.server.data.SecurityKeyData;
 import com.google.u2f.server.messages.RegisteredKey;
 import com.google.u2f.server.messages.RegistrationRequest;
-import com.google.u2f.server.messages.RegistrationResponse;
-import com.google.u2f.server.messages.SignResponse;
 import com.google.u2f.server.messages.U2fSignRequest;
 
 public class U2FClientReferenceImplTest extends TestVectors {
-  private static final long ENROLLMENT_TIME = 0L;
-  private static final int INITIAL_COUNTER = 0;
-
   @Mock U2FKey mockU2fKey;
   @Mock U2FServer mockU2fServer;
   @Mock OriginVerifier mockOriginVerifier;
@@ -63,11 +57,6 @@ public class U2FClientReferenceImplTest extends TestVectors {
     when(mockU2fKey.register(new RegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256)))
         .thenReturn(new RegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE,
             SIGNATURE_ENROLL));
-    when(mockU2fServer.processRegistrationResponse(
-        new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID),
-        ENROLLMENT_TIME))
-            .thenReturn(new SecurityKeyData(ENROLLMENT_TIME, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
-                VENDOR_CERTIFICATE, INITIAL_COUNTER));
 
     u2fClient.register(ORIGIN, ACCOUNT_NAME);
   }
@@ -82,10 +71,6 @@ public class U2FClientReferenceImplTest extends TestVectors {
         BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE)))
             .thenReturn(new AuthenticateResponse(UserPresenceVerifier.USER_PRESENT_FLAG,
                 COUNTER_VALUE, SIGNATURE_AUTHENTICATE));
-    when(mockU2fServer.processSignResponse(new SignResponse(KEY_HANDLE_BASE64,
-        SIGN_RESPONSE_DATA_BASE64, BROWSER_DATA_SIGN_BASE64, SESSION_ID), ENROLLMENT_TIME))
-            .thenReturn(new SecurityKeyData(ENROLLMENT_TIME, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
-                VENDOR_CERTIFICATE, INITIAL_COUNTER));
 
     u2fClient.authenticate(ORIGIN, ACCOUNT_NAME);
   }

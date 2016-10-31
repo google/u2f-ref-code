@@ -169,7 +169,7 @@ function sendBeginEnrollRequest() {
             onTokenEnrollSuccess(response);
           }
         },
-        120 /* timeout of 2 minutes */
+        600 /* timeout of 10 minutes */
       );
     });
 }
@@ -194,7 +194,7 @@ function sendBeginSignRequest() {
             onTokenSignSuccess(response);
           }
         },
-        120 /* timeout of 2 minutes */
+        600 /* timeout of 10 minutes */
       );
    }) 
    .fail(function(xhr, status) {

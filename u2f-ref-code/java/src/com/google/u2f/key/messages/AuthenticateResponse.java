@@ -9,27 +9,29 @@ package com.google.u2f.key.messages;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.google.common.base.Preconditions;
+
 public class AuthenticateResponse extends U2FResponse {
-  private final byte userPresence;
+  private final byte controlFlags;
   private final int counter;
   private final byte[] signature;
 
-  public AuthenticateResponse(byte userPresence, int counter, byte[] signature) {
+  public AuthenticateResponse(byte controlFlags, int counter, byte[] signature) {
     super();
-    this.userPresence = userPresence;
+    this.controlFlags = controlFlags;
     this.counter = counter;
-    this.signature = signature;
+    this.signature = Preconditions.checkNotNull(signature);
   }
 
   /**
-   * Bit 0 is set to 1, which means that user presence was verified. (This
-   * version of the protocol doesn't specify a way to request authentication
-   * responses without requiring user presence.) A different value of Bit 0, as
-   * well as Bits 1 through 7, are reserved for future use. The values of Bit 1
-   * through 7 SHOULD be 0
+   * Returns a bitfield of flags. Setting the least significant bit indicates that user presence was 
+   * verified. (This version of the protocol doesn't specify a way to request authentication 
+   * responses without requiring user presence.) Setting the second least significant bit indicates
+   * this response contains a TransferAccessMessage. A different value for the LSB as well as the 
+   * remaining bits are reserved for future use.
    */
-  public byte getUserPresence() {
-    return userPresence;
+  public byte getControlFlagByte() {
+    return controlFlags;
   }
 
   /**
@@ -47,7 +49,7 @@ public class AuthenticateResponse extends U2FResponse {
 
   @Override
   public int hashCode() {
-    return Objects.hash(userPresence, counter, signature);
+    return Objects.hash(controlFlags, counter, signature);
   }
 
   @Override
@@ -61,6 +63,6 @@ public class AuthenticateResponse extends U2FResponse {
     AuthenticateResponse other = (AuthenticateResponse) obj;
     return Objects.equals(counter, other.counter)
         && Arrays.equals(signature, other.signature)
-        && Objects.equals(userPresence, other.userPresence);
+        && Objects.equals(controlFlags, other.controlFlags);
   }
 }

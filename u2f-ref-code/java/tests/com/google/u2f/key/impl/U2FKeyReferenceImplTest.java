@@ -90,7 +90,7 @@ public class U2FKeyReferenceImplTest extends TestVectors {
 
     AuthenticateResponse authenticateResponse = u2fKey.authenticate(authenticateRequest);
 
-    assertEquals(UserPresenceVerifier.USER_PRESENT_FLAG, authenticateResponse.getUserPresence());
+    assertEquals(UserPresenceVerifier.USER_PRESENT_FLAG, authenticateResponse.getControlFlagByte());
     assertEquals(COUNTER_VALUE, authenticateResponse.getCounter());
     Signature ecdsaSignature = Signature.getInstance("SHA256withECDSA");
     ecdsaSignature.initVerify(USER_PUBLIC_KEY_SIGN);

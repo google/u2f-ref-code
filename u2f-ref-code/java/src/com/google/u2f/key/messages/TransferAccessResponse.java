@@ -39,7 +39,7 @@ public class TransferAccessResponse extends AuthenticateResponse {
    * significant bit should be set to 1 to indicate this is a transferAccessResponse.
    */
   public ControlFlags getControlFlags() {
-    return ControlFlags.fromByte(super.getUserPresence());
+    return ControlFlags.fromByte(super.getControlFlagByte());
   }
 
   /** An array of transferAccessMessages in the order in which they need to be processed */

@@ -21,7 +21,7 @@ public class TransferAccessMessage {
   private static int RAW_PUBLIC_KEY_SIZE = 65;
   private static int RAW_APPLICATION_SHA_256_SIZE = 32;
   
-  private final int sequenceNumber;
+  private final byte sequenceNumber;
   private final byte[] newUserPublicKey;
   private final byte[] applicationSha256;
   private final X509Certificate newAttestationCertificate;
@@ -31,7 +31,8 @@ public class TransferAccessMessage {
   /**
    * Constructor for TransferAccessMessage.
    * 
-   * @param sequenceNumber: Int indicating position in the chain. 1 is first. 0 is reserved.
+   * @param sequenceNumber: byte indicating position in the chain. 1 is first. 0 is reserved. (max
+   *        255 chained messages)
    * @param newUserPublicKey: Public Key to which access is being transferred.
    * @param applicationSha256
    * @param newAttestationCertificate: Attestation cert of the key to which access is being
@@ -44,7 +45,7 @@ public class TransferAccessMessage {
    *        attestation private key over all above parameters, including the
    *        signatureUsingAuthenticationKey.
    */
-  public TransferAccessMessage(int sequenceNumber, byte[] newUserPublicKey,
+  public TransferAccessMessage(byte sequenceNumber, byte[] newUserPublicKey,
       byte[] applicationSha256, X509Certificate newAttestationCertificate,
       byte[] signatureUsingAuthenticationKey, byte[] signatureUsingAttestationKey) {
     
@@ -65,7 +66,7 @@ public class TransferAccessMessage {
     try {
       DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(data));
 
-      int sequenceNumber = inputStream.readUnsignedByte();
+      byte sequenceNumber = (byte) inputStream.readUnsignedByte();
       
       byte[] newUserPublicKey = new byte[RAW_PUBLIC_KEY_SIZE];
       inputStream.readFully(newUserPublicKey);

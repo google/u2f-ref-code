@@ -13,7 +13,7 @@ import com.google.u2f.server.Crypto;
 import java.security.cert.X509Certificate;
 
 public class TransferAccessMessageTest extends TestVectors {
-  private static final int SEQUENCE_NUMBER = 1;
+  private static final byte SEQUENCE_NUMBER = 1;
   private static final TransferAccessMessage TRANSFER_ACCESS_MESSAGE = new TransferAccessMessage(
       SEQUENCE_NUMBER, TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, APP_ID_SIGN_SHA256, VENDOR_CERTIFICATE,
       TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B,
@@ -36,7 +36,7 @@ public class TransferAccessMessageTest extends TestVectors {
 
   @Test
   public void testNotEquals_SequenceNumberDiffers() {
-    int sequenceNumber_Other = 0;
+    byte sequenceNumber_Other = 2;
     TransferAccessMessage transferAccessMessage1 = 
         new TransferAccessMessage(sequenceNumber_Other,
                                   TRANSFER_ACCESS_PUBLIC_KEY_B_HEX, 

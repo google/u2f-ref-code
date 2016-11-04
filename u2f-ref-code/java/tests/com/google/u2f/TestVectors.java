@@ -268,13 +268,13 @@ public class TestVectors {
           + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
           + "47"                               // Length of signature with Authentication Key in Hex
-          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
-          + "a6333a2671f737"
-          + "48"                               // Length of signature with Attestation Key in Hex
-          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
-          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
-          + "5c03b0a01f1d369e"
+          + "30450221008739a7dd67973a270a34081261c9d30048163174fca0e80c14ff72" // Signature Using
+          + "e449128303022010d1b8edf71fc53814b363582c93fb66306baee74a06eb4f9b" // Authentication Key
+          + "1f06d7956aebca"
+          + "47"                               // Length of signature with Attestation Key in Hex
+          + "3045022038aa3cedbb2c5b59349031071130894fee62a2dbd9553c063ced4b77" // Signature Using
+          + "868c0a23022100bb60d474eb4e0e4bcf65d20142ab3c8ce7438779e2b2878ef8" // Attestation Key
+          + "8bb0acb607172e"
           );
   protected static final byte[] TRANSFER_ACCESS_RESPONSE_A_TO_B = 
       parseHex("03" // Control Byte
@@ -293,19 +293,19 @@ public class TestVectors {
           + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
           + "47"                                    
-          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" 
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
-          + "a6333a2671f737"
-          + "48"                                    
-          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" 
-          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409"
-          + "5c03b0a01f1d369e"                                        // End TRANSFER_ACCESS_MESSAGE
+          + "30450221008739a7dd67973a270a34081261c9d30048163174fca0e80c14ff72"
+          + "e449128303022010d1b8edf71fc53814b363582c93fb66306baee74a06eb4f9b"
+          + "1f06d7956aebca"
+          + "47"                               
+          + "3045022038aa3cedbb2c5b59349031071130894fee62a2dbd9553c063ced4b77" 
+          + "868c0a23022100bb60d474eb4e0e4bcf65d20142ab3c8ce7438779e2b2878ef8"
+          + "8bb0acb607172e"                                          // END TRANSFER_ACCESS_MESSAGE
           + "746ee0dcb3891b4fffe151a035c2e878f1dc0dea6c51455b5b32bcfa046974d8" // New Key Handle (B)
           + "f820cc9ca846cfd3b4f429d205d71904475fc143da8cfb61eeeeba69b5bf1d7a"
           + "00000000" // Counter Initial Value
-          + "3045022100ec044e46654aad514a8d609531bdc74c829230f864554a8cedee2a" // Signature
-          + "82e431824902204004ae942ace3d333f77d11acb7a196ba7dcf233f05ad13cb3"
-          + "6a8fb860467a8b" 
+          + "3045022100c8f9b7f0e33f551f4b8f0b8c3de53b9f9965c4184f73d47f335299" // Signature
+          + "4d26f1ab8802204d7f22780750f5a2e7fc99b28eb7c1a45b68a76e6d234294fa"
+          + "35c6da6e752ed9"
           );
   protected static final String TRANSFER_ACCESS_RESPONSE_A_TO_B_BASE64 = 
       Base64.encodeBase64URLSafeString(TRANSFER_ACCESS_RESPONSE_A_TO_B); 
@@ -325,13 +325,13 @@ public class TestVectors {
           + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
           + "48"                            // Length (in hex) of signature with Authentication Key
-          + "3046022100fc76097b5c9939620de1d08603e67852370108efd8eed0a406c5bf" // Signature with
-          + "5536a471d002210098252f89c99a10094b3458cdcefeda59d32c2cabd04fa2a5" // Authentication Key
-          + "e6181ceaac1069b9"
+          + "304602210092682c7525159aade790a87079913d7551773bf397da0c071726f9" // Signature with
+          + "82f047c86f022100a26eedbe8a6e6408d87a255f4451bab8982a936adde01c18" // Authentication Key
+          + "7bf293fd5fe57b8d"
           + "47"                            // Length (in hex) of signature with Attestation Key
-          + "30450220701541a08f4506f26cf51b9525b0ad1cf4512848865fc596dfe6ebca" // Signature with
-          + "f5c8ac3502210098eaa66b7a0348c65e1025216e9438aa3e0a4f7869d1ef58a5" // Attestation Key
-          + "3d5e8c477fe004"
+          + "3045022100f2ebe8c3e201c3ba64a92567a25ed2c5f8b864b05b8730ef70c239" // Signature with
+          + "055df28ad402201736e5ab3bc6713b8afe8826e1e5395718a63a5a48cc1d3555" // Attestation Key
+          + "023d4c6650bc00"
           );
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_C_TO_D = 
       parseHex("03"                                                            // SequenceNumber
@@ -348,14 +348,14 @@ public class TestVectors {
           + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
           + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
-          + "46"                            // Length (in hex) of signature with Authentication Key
-          + "304402207d2f94ec67c07af4066e31a0d6bb4e1b8d3aa3c9b63f5125701870bb" // Signature with
-          + "ec52d88802200eacb3896b4ec29b977b5c92e1eebbb167a9f3be9c10d16f631a" // Authentication Key
-          + "b0801fe68f2a"
-          + "48"                            // Length (in hex) of signature with Attestation Key
-          + "3046022100932fb32df08235d12d30aca42391258319fe47cdd906fc31b25db8" // Signature with
-          + "076cdc3cf9022100d7bf3d7f6e98aaac6276b2a1ce4c883db9a530e634069939" // Attestation Key
-          + "5e973dae3dcb69e1"
+          + "47"                            // Length (in hex) of signature with Authentication Key
+          + "30450221009b5583388e34bd5efb8699bdb6ecaaf8864322ce7f27ec50b526c0" // Signature with
+          + "453e75cec202205f4f8371fa9a20b884295946c85995115dbbbd00f43f0e64ce" // Authentication Key
+          + "41745e039516d0"
+          + "46"                            // Length (in hex) of signature with Attestation Key
+          + "304402206108ca00030d57086ac3f41be47bae5a093f35d8e05403e1f3fa8160" // Signature with
+          + "c7acff77022019cacc489a5fffe89cc89523c35c6743d75bd28fc9b54f289404" // Attestation Key
+          + "65da527e3e49"
           );
   protected static final byte[] TRANSFER_ACCESS_RESPONSE_A_TO_B_TO_C_TO_D_NO_USER_PRESENCE = 
       parseHex("02"                                                             // Control Byte
@@ -373,14 +373,14 @@ public class TestVectors {
           + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
           + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
-          + "46"                            
-          + "304402207d2f94ec67c07af4066e31a0d6bb4e1b8d3aa3c9b63f5125701870bb" 
-          + "ec52d88802200eacb3896b4ec29b977b5c92e1eebbb167a9f3be9c10d16f631a" 
-          + "b0801fe68f2a"
-          + "48"                           
-          + "3046022100932fb32df08235d12d30aca42391258319fe47cdd906fc31b25db8"
-          + "076cdc3cf9022100d7bf3d7f6e98aaac6276b2a1ce4c883db9a530e634069939"
-          + "5e973dae3dcb69e1"
+          + "47"
+          + "30450221009b5583388e34bd5efb8699bdb6ecaaf8864322ce7f27ec50b526c0"
+          + "453e75cec202205f4f8371fa9a20b884295946c85995115dbbbd00f43f0e64ce"
+          + "41745e039516d0"
+          + "46"
+          + "304402206108ca00030d57086ac3f41be47bae5a093f35d8e05403e1f3fa8160"
+          + "c7acff77022019cacc489a5fffe89cc89523c35c6743d75bd28fc9b54f289404"
+          + "65da527e3e49"
           + "02"                                            // TRANSFER_ACCESS_MESSAGE chain, B to C
           + "0416668f839b4ba154f70f452d8da81bc3fa93979a03cca5e6bec36b64473024" 
           + "0317f932e2833bb4f780a0e81bc13ec392cba3f809794528e923f4af589b7761e4"
@@ -396,13 +396,13 @@ public class TestVectors {
           + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
           + "48"                       
-          + "3046022100fc76097b5c9939620de1d08603e67852370108efd8eed0a406c5bf" 
-          + "5536a471d002210098252f89c99a10094b3458cdcefeda59d32c2cabd04fa2a5" 
-          + "e6181ceaac1069b9"
-          + "47"                            
-          + "30450220701541a08f4506f26cf51b9525b0ad1cf4512848865fc596dfe6ebca" 
-          + "f5c8ac3502210098eaa66b7a0348c65e1025216e9438aa3e0a4f7869d1ef58a5" 
-          + "3d5e8c477fe004"
+          + "304602210092682c7525159aade790a87079913d7551773bf397da0c071726f9"
+          + "82f047c86f022100a26eedbe8a6e6408d87a255f4451bab8982a936adde01c18"
+          + "7bf293fd5fe57b8d"
+          + "47"
+          + "3045022100f2ebe8c3e201c3ba64a92567a25ed2c5f8b864b05b8730ef70c239"
+          + "055df28ad402201736e5ab3bc6713b8afe8826e1e5395718a63a5a48cc1d3555"
+          + "023d4c6650bc00"
           + "01"                                            // TRANSFER_ACCESS_MESSAGE chain, A to B
           + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" 
           + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
@@ -417,20 +417,20 @@ public class TestVectors {
           + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
           + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
-          + "47"                                    
-          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" 
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
-          + "a6333a2671f737"
-          + "48"                                    
-          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" 
-          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409"
-          + "5c03b0a01f1d369e"                                // End TRANSFER_ACCESS_MESSAGE chain
+          + "47"
+          + "30450221008739a7dd67973a270a34081261c9d30048163174fca0e80c14ff72"
+          + "e449128303022010d1b8edf71fc53814b363582c93fb66306baee74a06eb4f9b"
+          + "1f06d7956aebca"
+          + "47"
+          + "3045022038aa3cedbb2c5b59349031071130894fee62a2dbd9553c063ced4b77"
+          + "868c0a23022100bb60d474eb4e0e4bcf65d20142ab3c8ce7438779e2b2878ef8"
+          + "8bb0acb607172e"                                // End TRANSFER_ACCESS_MESSAGE chain
           + "9b31362dc861c620da55569e7e493d9858d2cb8ec5fc33b75bf809610aee5523" // New Key Handle (D)
           + "5a7f496a803099a3c4f7e288cfa74a2b7f0fffcf70bb4396b7abf4841c46303d"
           + "795245b0" // Counter Initial Value
-          + "3046022100842a05e4ba59ef05d773f6d631b752003a80499bde0d1a9e984847"  // Signature
-          + "5929d072bb022100cd790ec88026f2bab3ba076d0e701afebacf766fa7ab8069"
-          + "3dd2b74160b2584d"
+          + "3044022053526d330218638ca6e5dfce157eda2fdab4bb19ee0bfdfb165b322b"  // Signature
+          + "561c1f39022016b661268f6e48f3ad1d9bf2a52ba2f3113292a87a6c5c035671"
+          + "34622a2adfed"
           );
   protected static final String TRANSFER_ACCESS_RESPONSE_A_TO_B_TO_C_TO_D_NO_USER_PRESENCE_BASE64 = 
       Base64.encodeBase64URLSafeString(TRANSFER_ACCESS_RESPONSE_A_TO_B_TO_C_TO_D_NO_USER_PRESENCE);
@@ -450,13 +450,13 @@ public class TestVectors {
           + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
           + "47"                               // Length of signature with Authentication Key in Hex
-          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
-          + "a6333a2671f737"
-          + "48"                               // Length of signature with Attestation Key in Hex
-          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
-          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
-          + "5c03b0a01f1d369e"
+          + "30450221008739a7dd67973a270a34081261c9d30048163174fca0e80c14ff72" // Signature Using
+          + "e449128303022010d1b8edf71fc53814b363582c93fb66306baee74a06eb4f9b" // Authentication Key
+          + "1f06d7956aebca"
+          + "47"                               // Length of signature with Attestation Key in Hex
+          + "3045022038aa3cedbb2c5b59349031071130894fee62a2dbd9553c063ced4b77" // Signature Using
+          + "868c0a23022100bb60d474eb4e0e4bcf65d20142ab3c8ce7438779e2b2878ef8" // Attestation Key
+          + "8bb0acb607172e"
           + "00"                                                               // Extra Bytes
           );
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_TOO_FEW_BYTES = 
@@ -475,12 +475,12 @@ public class TestVectors {
           + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
           + "47"                               // Length of signature with Authentication Key in Hex
-          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
-          + "a6333a2671f737"
-          + "48"                               // Length of signature with Attestation Key in Hex
-          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Shortened Signature
-          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // with Attestation Key
+          + "30450221008739a7dd67973a270a34081261c9d30048163174fca0e80c14ff72" // Signature Using
+          + "e449128303022010d1b8edf71fc53814b363582c93fb66306baee74a06eb4f9b" // Authentication Key
+          + "1f06d7956aebca"
+          + "47"                               // Length of signature with Attestation Key in Hex
+          + "3045022038aa3cedbb2c5b59349031071130894fee62a2dbd9553c063ced4b77" // Shortened Signature
+          + "868c0a23022100bb60d474eb4e0e4bcf65d20142ab3c8ce7438779e2b2878ef8" // with Attestation Key
           );
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_WAY_TOO_FEW_BYTES = 
       parseHex("01"                                                            // Sequence Number
@@ -506,10 +506,10 @@ public class TestVectors {
           + "3045022074ad6fff533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
           + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
           + "a6333a2671f737"
-          + "48"                               // Length of signature with Attestation Key in Hex
-          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
-          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
-          + "5c03b0a01f1d369e"
+          + "47"                               // Length of signature with Attestation Key in Hex
+          + "3045022038aa3cedbb2c5b59349031071130894fee62a2dbd9553c063ced4b77" // Signature Using
+          + "868c0a23022100bb60d474eb4e0e4bcf65d20142ab3c8ce7438779e2b2878ef8" // Attestation Key
+          + "8bb0acb607172e"
           );
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_BAD_ATTESTATION_SIGNATURE = 
       parseHex("01"                                                            // Sequence Number
@@ -527,9 +527,9 @@ public class TestVectors {
           + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
           + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
           + "47"                               // Length of signature with Authentication Key in Hex
-          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
-          + "a6333a2671f737"
+          + "30450221008739a7dd67973a270a34081261c9d30048163174fca0e80c14ff72" // Signature Using
+          + "e449128303022010d1b8edf71fc53814b363582c93fb66306baee74a06eb4f9b" // Authentication Key
+          + "1f06d7956aebca"
           + "48"                               // Length of signature with Attestation Key in Hex
           + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Bad Signature with
           + "592f2cd255022100bfd41a37a4ff2ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
@@ -549,13 +549,13 @@ public class TestVectors {
           + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
           + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
           + "47"                               // Length of signature with Authentication Key in Hex
-          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
-          + "a6333a2671f737"
-          + "48"                               // Length of signature with Attestation Key in Hex
-          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
-          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
-          + "5c03b0a01f1d369e"
+          + "30450221008739a7dd67973a270a34081261c9d30048163174fca0e80c14ff72" // Signature Using
+          + "e449128303022010d1b8edf71fc53814b363582c93fb66306baee74a06eb4f9b" // Authentication Key
+          + "1f06d7956aebca"
+          + "47"                               // Length of signature with Attestation Key in Hex
+          + "3045022038aa3cedbb2c5b59349031071130894fee62a2dbd9553c063ced4b77" // Signature Using
+          + "868c0a23022100bb60d474eb4e0e4bcf65d20142ab3c8ce7438779e2b2878ef8" // Attestation Key
+          + "8bb0acb607172e"
           );
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_DOUBLE_CUT_ATTESTATION_CERT = 
       parseHex("01"                                                            // Sequence Number
@@ -567,13 +567,13 @@ public class TestVectors {
           + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
           + "2f302d0603550403132650696c6f74476e756262792d302e342e312d34373930"
           + "47"                               // Length of signature with Authentication Key in Hex
-          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e" // Signature with Authentication Key
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
-          + "a6333a2671f737"
-          + "48"                               // Length of signature with Attestation Key in Hex
-          + "3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba" // Signature with
-          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409" // Attestation Key
-          + "5c03b0a01f1d369e"
+          + "30450221008739a7dd67973a270a34081261c9d30048163174fca0e80c14ff72" // Signature Using
+          + "e449128303022010d1b8edf71fc53814b363582c93fb66306baee74a06eb4f9b" // Authentication Key
+          + "1f06d7956aebca"
+          + "47"                               // Length of signature with Attestation Key in Hex
+          + "3045022038aa3cedbb2c5b59349031071130894fee62a2dbd9553c063ced4b77" // Signature Using
+          + "868c0a23022100bb60d474eb4e0e4bcf65d20142ab3c8ce7438779e2b2878ef8" // Attestation Key
+          + "8bb0acb607172e"
           );
 
   protected static final byte[] EXPECTED_REGISTER_SIGNED_BYTES =
@@ -597,66 +597,62 @@ public class TestVectors {
           + "70b847780220267bb998fac9b7266eb60e7cb0b5eabdfd5ba9614f53c7b22272"
           + "ec10047a923f");
   protected static final byte[] EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_AUTHENTICATION_KEY_A_TO_B =
-      parseHex("0104d368f1b665bade3c33a20f1e429c7750d5033660c019119d29aa4ba7abc0"
-          + "4aa7c80a46bbe11ca8cb5674d74f31f8a903f6bad105fb6ab74aefef4db8b002"
-          + "5e1d04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f"
-          + "5cd0f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e89"
-          + "79c46d4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d49"
-          + "3992ca3082013c3081e4a003020102020a47901280001155957352300a06082a"
-          + "8648ce3d0403023017311530130603550403130c476e756262792050696c6f74"
-          + "301e170d3132303831343138323933325a170d3133303831343138323933325a"
-          + "3031312f302d0603550403132650696c6f74476e756262792d302e342e312d34"
-          + "373930313238303030313135353935373335323059301306072a8648ce3d0201"
-          + "06082a8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c"
-          + "1446682c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23"
-          + "abaf0203b4b8911ba0569994e101300a06082a8648ce3d040302034700304402"
-          + "2060cdb6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30d"
-          + "fa0220631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b3"
-          + "0410df");
+      parseHex("01"                                                            // Sequence Number
+          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // New Public Key 
+          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
+          + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // ApplicationSha256
+          + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
+          + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
+          + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
+          + "2f302d0603550403132650696c6f74476e756262792d302e342e312d34373930"
+          + "313238303030313135353935373335323059301306072a8648ce3d020106082a"
+          + "8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c144668"
+          + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
+          + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
+          + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
+          + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df");
   protected static final byte[] EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES_FOR_ATTESTATION_KEY_A_TO_B =
-      parseHex("0104d368f1b665bade3c33a20f1e429c7750d5033660c019119d29aa4ba7abc0"
-          + "4aa7c80a46bbe11ca8cb5674d74f31f8a903f6bad105fb6ab74aefef4db8b002"
-          + "5e1d04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f"
-          + "5cd0f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e89"
-          + "79c46d4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d49"
-          + "3992ca3082013c3081e4a003020102020a47901280001155957352300a06082a"
-          + "8648ce3d0403023017311530130603550403130c476e756262792050696c6f74"
-          + "301e170d3132303831343138323933325a170d3133303831343138323933325a"
-          + "3031312f302d0603550403132650696c6f74476e756262792d302e342e312d34"
-          + "373930313238303030313135353935373335323059301306072a8648ce3d0201"
-          + "06082a8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c"
-          + "1446682c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23"
-          + "abaf0203b4b8911ba0569994e101300a06082a8648ce3d040302034700304402"
-          + "2060cdb6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30d"
-          + "fa0220631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b3"
-          + "0410df"
-          + "3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e"
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2"
-          + "a6333a2671f737");
+      parseHex("01"                                                            // Sequence Number
+          + "04269889309e47b66749b855dbc03de26b84ea25b62349c1e09d986bea1f5cd0" // New Public Key 
+          + "f2f3be6b0f2bf7f54eae97764b378bc2313309b2ace492e2b410d97f2e8979c46d"
+          + "4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca" // ApplicationSha256
+          + "3082013c3081e4a003020102020a47901280001155957352300a06082a8648ce" // Attestation Cert
+          + "3d0403023017311530130603550403130c476e756262792050696c6f74301e17"
+          + "0d3132303831343138323933325a170d3133303831343138323933325a303131"
+          + "2f302d0603550403132650696c6f74476e756262792d302e342e312d34373930"
+          + "313238303030313135353935373335323059301306072a8648ce3d020106082a"
+          + "8648ce3d030107034200048d617e65c9508e64bcc5673ac82a6799da3c144668"
+          + "2c258c463fffdf58dfd2fa3e6c378b53d795c4a4dffb4199edd7862f23abaf02"
+          + "03b4b8911ba0569994e101300a06082a8648ce3d0403020347003044022060cd"
+          + "b6061e9c22262d1aac1d96d8c70829b2366531dda268832cb836bcd30dfa0220"
+          + "631b1459f09e6330055722c8d89b7f48883b9089b88d60d1d9795902b30410df" 
+          + "30450221008739a7dd67973a270a34081261c9d30048163174fca0e80c14ff72" // Signature using
+          + "e449128303022010d1b8edf71fc53814b363582c93fb66306baee74a06eb4f9b" // Authentication Key
+          + "1f06d7956aebca");
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_A_TO_B =
-      parseHex("3045022074ad6fea533085578959d556f5737f5e4a79e4f6dfb7ed5c3e8a8d4e"
-          + "5825c1dc02210091fd5b8619f168453927a141de9728a599eeae080d0ea023e2" 
-          + "a6333a2671f737");
+      parseHex("30450221008739a7dd67973a270a34081261c9d30048163174fca0e80c14ff72"
+          + "e449128303022010d1b8edf71fc53814b363582c93fb66306baee74a06eb4f9b"
+          + "1f06d7956aebca");
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_A_TO_B = 
-      parseHex("3046022100ac24d9bede458ba2ac81f08b342e858af377b2972cbbd509353fba"
-          + "592f2cd255022100bfd41a37a4752ed622517e11ecac89bd4e9b335aa22fc409"
-          + "5c03b0a01f1d369e");
+      parseHex("3045022038aa3cedbb2c5b59349031071130894fee62a2dbd9553c063ced4b77"
+          + "868c0a23022100bb60d474eb4e0e4bcf65d20142ab3c8ce7438779e2b2878ef8"
+          + "8bb0acb607172e");
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_AUTHENTICATION_KEY_C_TO_D =
-      parseHex("304402207d2f94ec67c07af4066e31a0d6bb4e1b8d3aa3c9b63f5125701870bb"
-          + "ec52d88802200eacb3896b4ec29b977b5c92e1eebbb167a9f3be9c10d16f631a" 
-          + "b0801fe68f2a");
+      parseHex("30450221009b5583388e34bd5efb8699bdb6ecaaf8864322ce7f27ec50b526c0"
+          + "453e75cec202205f4f8371fa9a20b884295946c85995115dbbbd00f43f0e64ce"
+          + "41745e039516d0");
   protected static final byte[] TRANSFER_ACCESS_MESSAGE_SIGNATURE_USING_ATTESTATION_KEY_C_TO_D = 
-      parseHex("3046022100932fb32df08235d12d30aca42391258319fe47cdd906fc31b25db8"
-          + "076cdc3cf9022100d7bf3d7f6e98aaac6276b2a1ce4c883db9a530e634069939"
-          + "5e973dae3dcb69e1");
+      parseHex("304402206108ca00030d57086ac3f41be47bae5a093f35d8e05403e1f3fa8160"
+          + "c7acff77022019cacc489a5fffe89cc89523c35c6743d75bd28fc9b54f289404"
+          + "65da527e3e49");
   protected static final byte[] TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B = 
-      parseHex("3045022100ec044e46654aad514a8d609531bdc74c829230f864554a8cedee2a"
-          + "82e431824902204004ae942ace3d333f77d11acb7a196ba7dcf233f05ad13cb3"
-          + "6a8fb860467a8b");
+      parseHex("3045022100c8f9b7f0e33f551f4b8f0b8c3de53b9f9965c4184f73d47f335"
+          + "2994d26f1ab8802204d7f22780750f5a2e7fc99b28eb7c1a45b68a76e6d23429"
+          + "4fa35c6da6e752ed9");
   protected static final byte[] TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B_TO_C_TO_D = 
-      parseHex("3046022100842a05e4ba59ef05d773f6d631b752003a80499bde0d1a9e984847"
-          + "5929d072bb022100cd790ec88026f2bab3ba076d0e701afebacf766fa7ab8069"
-          + "3dd2b74160b2584d");
+      parseHex("3044022053526d330218638ca6e5dfce157eda2fdab4bb19ee0bfdfb165b322b"
+          + "561c1f39022016b661268f6e48f3ad1d9bf2a52ba2f3113292a87a6c5c035671"
+          + "34622a2adfed");
 
 
   // Test vectors provided by Discretix

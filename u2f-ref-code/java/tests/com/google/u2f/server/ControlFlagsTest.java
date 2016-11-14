@@ -13,12 +13,12 @@ public class ControlFlagsTest {
   @Test
   public void testToByteFromByte() {
     assertEquals(USER_PRESENCE_BIT_SET,
-        ControlFlags.toByte(ControlFlags.fromByte(USER_PRESENCE_BIT_SET)));
+        ControlFlags.fromByte(USER_PRESENCE_BIT_SET).toByte());
     assertEquals(TRANSFER_ACCESS_MESSAGE_BIT_SET,
-        ControlFlags.toByte(ControlFlags.fromByte(TRANSFER_ACCESS_MESSAGE_BIT_SET)));
+        ControlFlags.fromByte(TRANSFER_ACCESS_MESSAGE_BIT_SET).toByte());
     assertEquals(USER_PRESENCE_AND_TRANSFER_ACCESS_BITS_SET,
-        ControlFlags.toByte(ControlFlags.fromByte(USER_PRESENCE_AND_TRANSFER_ACCESS_BITS_SET)));
-    assertEquals(NO_BITS_SET, ControlFlags.toByte(ControlFlags.fromByte(NO_BITS_SET)));
+        ControlFlags.fromByte(USER_PRESENCE_AND_TRANSFER_ACCESS_BITS_SET).toByte());
+    assertEquals(NO_BITS_SET, ControlFlags.fromByte(NO_BITS_SET).toByte());
   }
 
   @Test

@@ -44,14 +44,14 @@ public class ControlFlags {
    * Write ControlFlags out to a byte. In the future, this may return a byte array. As of this
    * version, only two flags get used, so this returns a single byte.
    */
-  public static byte toByte(ControlFlags controlFlags) {
+  public byte toByte() {
     byte controlByte = 0x0;
 
-    if (controlFlags.getUserPresence()) {
+    if (userPresence) {
       controlByte = (byte) (controlByte | MASK_USER_PRESENCE);
     }
 
-    if (controlFlags.getIsTransferAccessResponse()) {
+    if (isTransferAccessResponse) {
       controlByte = (byte) (controlByte | MASK_TRANSFER_ACCESS_RESPONSE);
     }
 

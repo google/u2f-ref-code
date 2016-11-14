@@ -251,4 +251,19 @@ public class TransferAccessMessageTest extends TestVectors {
         transferAccessMessage.getSignatureUsingAuthenticationKey()));
   }
 
+  @Test
+  public void testTransferAccessMessage_ToBytes() throws U2FException {
+    TransferAccessMessage transferAccessMessage =
+        TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_A_TO_B);
+    
+    assertArrayEquals(transferAccessMessage.toBytes(), TRANSFER_ACCESS_MESSAGE_A_TO_B);
+  }
+  
+  @Test
+  public void testTransferAccessMessage_ToBytes2() throws U2FException {
+    TransferAccessMessage transferAccessMessage =
+        TransferAccessMessage.fromBytes(TRANSFER_ACCESS_MESSAGE_B_TO_C);
+    
+    assertArrayEquals(transferAccessMessage.toBytes(), TRANSFER_ACCESS_MESSAGE_B_TO_C);
+  }
 }

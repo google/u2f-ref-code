@@ -1,8 +1,11 @@
 package com.google.u2f.key.messages;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -99,6 +102,40 @@ public class TransferAccessMessage {
     } catch (CertificateException e) {
       throw new U2FException("Error when parsing attestation certificate", e);
     }
+  }
+  
+  /**
+   * Write a TransferAccessMessage into a raw byte array.
+   * @throws U2FException 
+   */
+  public byte[] toBytes() throws U2FException {
+    int sizeOfSequenceNumber = 1;
+    int lengthField_signatureUsingAuthenticationKey = 1;
+    int lengthField_signatureUsingAttestationKey = 1;
+    
+    byte[] attestationCertificateBytes;
+    try {
+      attestationCertificateBytes = newAttestationCertificate.getEncoded();
+    } catch (CertificateEncodingException e) {
+      throw new U2FException("Error when encoding attestation certificate.", e);
+    }
+
+    byte[] rawTransferAccessMessage = new byte[sizeOfSequenceNumber + RAW_PUBLIC_KEY_SIZE
+        + RAW_APPLICATION_SHA_256_SIZE + attestationCertificateBytes.length
+        + lengthField_signatureUsingAuthenticationKey + signatureUsingAuthenticationKey.length
+        + lengthField_signatureUsingAttestationKey + signatureUsingAttestationKey.length];
+    
+    ByteBuffer.wrap(rawTransferAccessMessage)
+    .put(sequenceNumber)
+    .put(newUserPublicKey)
+    .put(applicationSha256)
+    .put(attestationCertificateBytes)
+    .put((byte)signatureUsingAuthenticationKey.length)
+    .put(signatureUsingAuthenticationKey)
+    .put((byte)signatureUsingAttestationKey.length)
+    .put(signatureUsingAttestationKey);
+
+    return rawTransferAccessMessage;
   }
   
   /**

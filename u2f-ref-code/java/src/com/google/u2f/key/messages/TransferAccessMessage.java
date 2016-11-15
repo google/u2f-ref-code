@@ -105,13 +105,13 @@ public class TransferAccessMessage {
   }
   
   /**
-   * Write a TransferAccessMessage into a raw byte array.
-   * @throws U2FException 
+   * Return TransferAccessMessage as a byte array.
+   * @throws U2FException
    */
   public byte[] toBytes() throws U2FException {
     int sizeOfSequenceNumber = 1;
-    int lengthField_signatureUsingAuthenticationKey = 1;
-    int lengthField_signatureUsingAttestationKey = 1;
+    int sizeOfLengthFieldForSignatureUsingAuthenticationKey = 1;
+    int sizeOfLengthFieldForSignatureUsingAttestationKey = 1;
     
     byte[] attestationCertificateBytes;
     try {
@@ -122,8 +122,8 @@ public class TransferAccessMessage {
 
     byte[] rawTransferAccessMessage = new byte[sizeOfSequenceNumber + RAW_PUBLIC_KEY_SIZE
         + RAW_APPLICATION_SHA_256_SIZE + attestationCertificateBytes.length
-        + lengthField_signatureUsingAuthenticationKey + signatureUsingAuthenticationKey.length
-        + lengthField_signatureUsingAttestationKey + signatureUsingAttestationKey.length];
+        + sizeOfLengthFieldForSignatureUsingAuthenticationKey + signatureUsingAuthenticationKey.length
+        + sizeOfLengthFieldForSignatureUsingAttestationKey + signatureUsingAttestationKey.length];
     
     ByteBuffer.wrap(rawTransferAccessMessage)
     .put(sequenceNumber)

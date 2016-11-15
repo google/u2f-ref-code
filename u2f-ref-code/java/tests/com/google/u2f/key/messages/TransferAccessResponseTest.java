@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import com.google.u2f.TestVectors;
 import com.google.u2f.U2FException;
-import com.google.u2f.server.ControlFlags;
 
 public class TransferAccessResponseTest extends TestVectors {
   private static final byte CONTROL_FLAGS = 0x03;
@@ -115,7 +114,7 @@ public class TransferAccessResponseTest extends TestVectors {
                                    COUNTER, 
                                    TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B);
     
-    assertEquals(CONTROL_FLAGS, ControlFlags.toByte(transferAccessResponse.getControlFlags()));
+    assertEquals(CONTROL_FLAGS, transferAccessResponse.getControlFlags().toByte());
     assertArrayEquals(TRANSFER_ACCESS_MESSAGES, transferAccessResponse.getTransferAccessMessages());
     assertArrayEquals(KEY_HANDLE_B, transferAccessResponse.getKeyHandle());
     assertEquals(COUNTER, transferAccessResponse.getCounter());
@@ -132,7 +131,7 @@ public class TransferAccessResponseTest extends TestVectors {
                                    COUNTER, 
                                    TRANSFER_ACCESS_RESPONSE_SIGNATURE_A_TO_B_TO_C_TO_D);
     
-    assertEquals(CONTROL_FLAGS, ControlFlags.toByte(transferAccessResponse.getControlFlags()));
+    assertEquals(CONTROL_FLAGS, transferAccessResponse.getControlFlags().toByte());
     assertArrayEquals(TRANSFER_ACCESS_MESSAGES_OTHER,
         transferAccessResponse.getTransferAccessMessages());
     assertArrayEquals(KEY_HANDLE_B, transferAccessResponse.getKeyHandle());

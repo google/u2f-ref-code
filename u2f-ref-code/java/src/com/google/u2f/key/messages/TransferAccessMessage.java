@@ -139,10 +139,10 @@ public class TransferAccessMessage {
   }
   
   /**
-   * Integer indicated the position in the chain of TRANSFER_ACCESS_MESSAGES. Higher numbers for 
+   * Byte indicating the position in the chain of TRANSFER_ACCESS_MESSAGES. Higher numbers for 
    * more recent messages. Zero is reserved, so '1' is the first TransferAccessMessage in the chain. 
    */
-  public int getMessageSequenceNumber() {
+  public byte getMessageSequenceNumber() {
     return sequenceNumber;
   }
 

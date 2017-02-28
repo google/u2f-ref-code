@@ -51,7 +51,6 @@ public class U2FRequestHandler {
   private DataStore dataStore = null;
 
   // https://cloud.google.com/appengine/docs/standard/java/endpoints/annotate-code
-  // https://cloud.google.com/appengine/docs/standard/java/endpoints/parameter-and-return-types
   @ApiMethod(name = "getRegistrationRequest")
   public String[] getRegistrationRequest(
       User user, @Named("allowReregistration") boolean allowReregistration)

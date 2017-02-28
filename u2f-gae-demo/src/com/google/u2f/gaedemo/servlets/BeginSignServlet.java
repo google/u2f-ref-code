@@ -43,7 +43,7 @@ public class BeginSignServlet extends HttpServlet {
     try {
       signRequest = u2fServer.getSignRequest(user.getEmail(), appId);
     } catch (U2FException e) {
-      throw new ServletException("couldn't get registration request", e);
+      throw new ServletException("couldn't get sign request", e);
     }
 
     JsonObject result = new JsonObject();

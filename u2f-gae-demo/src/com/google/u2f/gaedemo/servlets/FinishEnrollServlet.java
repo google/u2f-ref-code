@@ -45,7 +45,7 @@ public class FinishEnrollServlet extends HttpServlet {
     // submitting other people's enrollment data. Here we're just checking
     // that it's the same user that also started the enrollment - you might
     // want to do something more sophisticated.
-    String currentUser = userService.getCurrentUser().getUserId();
+    String currentUser = userService.getCurrentUser().getEmail();
     String expectedUser = dataStore
         .getEnrollSessionData(req.getParameter("sessionId"))
         .getAccountName();

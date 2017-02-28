@@ -42,7 +42,7 @@ public class RemoveTokenServlet extends HttpServlet {
         String publicKey = req.getParameter("public_key");
 
         try {
-          u2fServer.removeSecurityKey(user.getUserId(), Hex.decodeHex(publicKey.toCharArray()));
+          u2fServer.removeSecurityKey(user.getEmail(), Hex.decodeHex(publicKey.toCharArray()));
         } catch (U2FException e) {
           throw new ServletException("couldn't remove U2F token", e);
         } catch (DecoderException e) {

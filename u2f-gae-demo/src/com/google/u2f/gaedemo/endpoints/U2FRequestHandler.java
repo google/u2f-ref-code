@@ -47,6 +47,17 @@ import javax.servlet.ServletException;
  * https://cloud.google.com/appengine/docs/standard/java/endpoints/
  */
 public class U2FRequestHandler {
+  private static final String KEY_APP_ID = "appId";
+  private static final String KEY_SESSION_ID = "sessionId"; 
+  private static final String KEY_CHALLENGE = "challenge"; 
+  private static final String KEY_VERSION = "version"; 
+  private static final String KEY_KEYHANDLE = "keyHandle"; 
+  private static final String KEY_CLIENTDATA = "clientData"; 
+  private static final String KEY_REGISTER_REQUESTS = "registerRequests";
+  private static final String KEY_REGISTER_KEYS = "registeredKeys";
+  private static final String KEY_REGISTRATION_DATA = "registrationData";
+  private static final String KEY_SIGNATURE_DATA = "signatureData"; 
+
   private U2FServer u2fServer = null;
   private DataStore dataStore = null;
 
@@ -74,20 +85,20 @@ public class U2FRequestHandler {
     }
 
     JsonObject result = new JsonObject();
-    result.addProperty("appId", Constants.APP_ID);
-    result.addProperty("sessionId", registrationRequest.getSessionId());
+    result.addProperty(KEY_APP_ID, Constants.APP_ID);
+    result.addProperty(KEY_SESSION_ID, registrationRequest.getSessionId());
 
     JsonArray registerRequests = new JsonArray();
     JsonObject registerRequest = new JsonObject();
-    registerRequest.addProperty("challenge", registrationRequest.getChallenge());
-    registerRequest.addProperty("version", registrationRequest.getVersion());
+    registerRequest.addProperty(KEY_CHALLENGE, registrationRequest.getChallenge());
+    registerRequest.addProperty(KEY_VERSION, registrationRequest.getVersion());
     registerRequests.add(registerRequest);
-    result.add("registerRequests", registerRequests);
+    result.add(KEY_REGISTER_REQUESTS, registerRequests);
 
     if (allowReregistration) {
-      result.add("registeredKeys", new JsonArray());
+      result.add(KEY_REGISTER_KEYS, new JsonArray());
     } else {
-      result.add("registeredKeys", signRequest.getRegisteredKeysAsJson(Constants.APP_ID));
+      result.add(KEY_REGISTER_KEYS, signRequest.getRegisteredKeysAsJson(Constants.APP_ID));
     }
 
     return new String[] {result.toString()};
@@ -105,16 +116,17 @@ public class U2FRequestHandler {
 
     String currentUser = user.getEmail();
     String expectedUser = dataStore.getEnrollSessionData(
-        responseDataJson.get("sessionId").toString()).getAccountName();
+        responseDataJson.get(KEY_SESSION_ID).toString()).getAccountName();
     if (!currentUser.equals(expectedUser)) {
-      throw new ServletException("Cross-site request prohibited");
+      throw new ServletException(
+          "Current user differs from the expected one. Cross-site request prohibited!");
     }
 
     RegistrationResponse registrationResponse =
         new RegistrationResponse(
-            responseDataJson.get("registrationData").toString(),
-            responseDataJson.get("clientData").toString(),
-            responseDataJson.get("sessionId").toString());
+            responseDataJson.get(KEY_REGISTRATION_DATA).toString(),
+            responseDataJson.get(KEY_CLIENTDATA).toString(),
+            responseDataJson.get(KEY_SESSION_ID).toString());
 
     if (u2fServer == null) {
       initU2fServer();
@@ -150,9 +162,9 @@ public class U2FRequestHandler {
     }
 
     JsonObject result = new JsonObject();
-    result.addProperty("challenge", u2fSignRequest.getChallenge());
-    result.addProperty("appId", Constants.APP_ID);
-    result.add("registeredKeys", u2fSignRequest.getRegisteredKeysAsJson(Constants.APP_ID));
+    result.addProperty(KEY_CHALLENGE, u2fSignRequest.getChallenge());
+    result.addProperty(KEY_APP_ID, Constants.APP_ID);
+    result.add(KEY_REGISTER_KEYS, u2fSignRequest.getRegisteredKeysAsJson(Constants.APP_ID));
 
     return new String[] {result.toString()};
   }
@@ -166,19 +178,20 @@ public class U2FRequestHandler {
 
     JsonObject responseDataJson = (JsonObject) new JsonParser().parse(responseData);
     String currentUser = user.getEmail();
-    String expectedUser =
-        dataStore.getSignSessionData(responseDataJson.get("sessionId").toString()).getAccountName();
+    String expectedUser = dataStore
+        .getSignSessionData(responseDataJson.get(KEY_SESSION_ID).toString()).getAccountName();
 
     if (!currentUser.equals(expectedUser)) {
-      throw new ServletException("Cross-site request prohibited");
+      throw new ServletException(
+          "Current user differs from the expected one. Cross-site request prohibited!");
     }
 
     SignResponse signResponse =
         new SignResponse(
-            responseDataJson.get("keyHandle").toString(),
-            responseDataJson.get("signatureData").toString(),
-            responseDataJson.get("clientData").toString(),
-            responseDataJson.get("sessionId").toString());
+            responseDataJson.get(KEY_KEYHANDLE).toString(),
+            responseDataJson.get(KEY_SIGNATURE_DATA).toString(),
+            responseDataJson.get(KEY_CLIENTDATA).toString(),
+            responseDataJson.get(KEY_SESSION_ID).toString());
 
     if (u2fServer == null) {
       initU2fServer();

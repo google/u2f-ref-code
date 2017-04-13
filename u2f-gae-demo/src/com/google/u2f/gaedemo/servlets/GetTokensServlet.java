@@ -32,8 +32,8 @@ public class GetTokensServlet extends HttpServlet {
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		User user = userService.getCurrentUser();
 		UserTokens tokens = Objects.firstNonNull(
-				ofy().load().type(UserTokens.class).id(user.getUserId()).now(),
-				new UserTokens(user.getUserId()));
+				ofy().load().type(UserTokens.class).id(user.getEmail()).now(),
+				new UserTokens(user.getEmail()));
 				
 		JsonArray resultList = new JsonArray();
 		

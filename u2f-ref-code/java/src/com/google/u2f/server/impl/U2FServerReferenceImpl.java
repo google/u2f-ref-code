@@ -343,15 +343,23 @@ public class U2FServerReferenceImpl implements U2FServer {
   private static Set<String> canonicalizeOrigins(Set<String> origins) {
     ImmutableSet.Builder<String> result = ImmutableSet.builder();
     for (String origin : origins) {
-      result.add(canonicalizeOrigin(origin));
+      if (origin.startsWith("android:apk-key-hash:")) {
+        result.add(origin);
+      } else {
+        result.add(canonicalizeOrigin(origin));
+      }
     }
     return result.build();
   }
 
-  static String canonicalizeOrigin(String url) {
+  static String canonicalizeOrigin(String origin) {
+    if (origin.startsWith("android:apk-key-hash:")) {
+      return origin;
+    }
+
     URI uri;
     try {
-      uri = new URI(url);
+      uri = new URI(origin);
     } catch (URISyntaxException e) {
       throw new RuntimeException("specified bad origin", e);
     }

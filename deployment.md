@@ -3,6 +3,7 @@ This page lists the deployment history of this project to the *u2fdemo.appspot.c
 
 Date        | Instances    | Commit
 ----------- | ------------ | ---------
+2017.04.13  | noext, crxjs | [7412a97](https://github.com/google/u2f-ref-code/tree/7412a97d2e2e66a790a23f9c6a5bad65cf1fe2e6)
 2016.10.31  | noext, crxjs | [0005b73](https://github.com/google/u2f-ref-code/tree/0005b73431ac3ee5c3591e8d56fa7edbc69a88a9)
 2016.10.19  | noext, crxjs | [14670f5](https://github.com/google/u2f-ref-code/tree/14670f588e80e0b43900308c1019a3c1fdb13df1)
 2016.09.15  | noext, crxjs | [d5099de](https://github.com/google/u2f-ref-code/tree/d5099de09a420543209434be7c6625e9ebfb1869)

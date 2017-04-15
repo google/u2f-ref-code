@@ -150,8 +150,20 @@ public class U2FServerReferenceImpl implements U2FServer {
     byte[] signedBytes = RawMessageCodec.encodeRegistrationSignedBytes(
         appIdSha256, clientDataSha256, keyHandle, userPublicKey);
 
+
+    //check if issuers are trusted
     Set<X509Certificate> trustedCertificates = dataStore.getTrustedCertificates();
-    if (!trustedCertificates.contains(attestationCertificate)) {
+    boolean found = false;
+    for (X509Certificate trusted : trustedCertificates) {
+    	try {
+			  attestationCertificate.verify(trusted.getPublicKey());
+			  found = true;
+		  } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException| SignatureException e) {
+
+		  }
+    }
+
+    if (!found) {
       Log.warning("attestion cert is not trusted");
     }
 

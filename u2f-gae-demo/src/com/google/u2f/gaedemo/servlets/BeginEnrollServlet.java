@@ -43,7 +43,8 @@ public class BeginEnrollServlet extends HttpServlet {
     boolean allowReregistration = Boolean.valueOf(req.getParameter("reregistration"));
     RegistrationRequest registrationRequest;
     U2fSignRequest signRequest;
-    String appId = (req.isSecure() ? "https://" : "http://") + req.getHeader("Host");
+    String appId =
+        (req.isSecure() ? "https://" : "http://") + req.getHeader("Host") + "/origins.json";
 
     try {
       registrationRequest = u2fServer.getRegistrationRequest(user.getEmail(), appId);

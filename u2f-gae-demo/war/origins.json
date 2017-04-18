@@ -2,6 +2,10 @@
   "trustedFacets" : [{
     "version": { "major": 1, "minor" : 0 },
     "ids": [
+      "http://localhost:8888",
+      "https://u2fdemo.appspot.com",
+      "https://crxjs-dot-u2fdemo.appspot.com",
+      "https://noext-dot-u2fdemo.appspot.com",
       "android:apk-key-hash:bkHnlWEV_jRCPdYGJfwOl7Sn_CLC_2TE3h4TO1_n34I"
     ]
   }]

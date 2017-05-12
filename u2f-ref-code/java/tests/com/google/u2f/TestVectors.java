@@ -242,6 +242,25 @@ public class TestVectors {
       parseHex("304402204b5f0cd17534cedd8c34ee09570ef542a353df4436030ce43d406de8"
           + "70b847780220267bb998fac9b7266eb60e7cb0b5eabdfd5ba9614f53c7b22272"
           + "ec10047a923f");
+  // Test vectors for TransferAccessResponse Messages
+  protected static final byte[] TRANSFER_ACCESS_RESPONSE_DATA =
+	  parseHex("");
+//	  parseHex("0100000001304402204b5f0cd17534cedd8c34ee09570ef542a353df4436030c"
+//	      + "e43d406de870b847780220267bb998fac9b7266eb60e7cb0b5eabdfd5ba9614f"
+//	      + "53c7b22272ec10047a923f");
+  protected static final String TRANSFER_ACCESS_RESPONSE_DATA_BASE64 =
+      Base64.encodeBase64URLSafeString(TRANSFER_ACCESS_RESPONSE_DATA);
+  protected static final byte[] EXPECTED_TRANSFER_ACCESS_SIGNED_BYTES =
+	  parseHex("");
+//	  parseHex("4b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992ca"
+//	      + "0100000001ccd6ee2e47baef244d49a222db496bad0ef5b6f93aa7cc4d30c482"
+//	      + "1b3b9dbc57");
+  protected static final byte[] SIGNATURE_TRANSFER_ACCESS =
+	  parseHex("");
+//	  parseHex("304402204b5f0cd17534cedd8c34ee09570ef542a353df4436030ce43d406de8"
+//	      + "70b847780220267bb998fac9b7266eb60e7cb0b5eabdfd5ba9614f53c7b22272"
+//	      + "ec10047a923f");
+
 
   // Test vectors provided by Discretix
   protected static final String APP_ID_2 = APP_ID_ENROLL;

@@ -207,7 +207,8 @@ public class U2FServerReferenceImpl implements U2FServer {
   }
 
   @Override
-  public SecurityKeyData processSignResponse(SignResponse signResponse) throws U2FException {
+  public SecurityKeyData processSignResponse(SignResponse signResponse, long currentTimeInMillis)
+      throws U2FException {
     Log.info(">> processSignResponse");
 
     String sessionId = signResponse.getSessionId();
@@ -250,16 +251,16 @@ public class U2FServerReferenceImpl implements U2FServer {
 
     AuthenticateResponse authenticateResponse =
         RawMessageCodec.decodeAuthenticateResponse(rawSignData);
-    byte userPresence = authenticateResponse.getUserPresence();
+    byte controlFlags = authenticateResponse.getControlFlagByte();
     int counter = authenticateResponse.getCounter();
     byte[] signature = authenticateResponse.getSignature();
 
     Log.info("-- Parsed rawSignData --");
-    Log.info("  userPresence: " + Integer.toHexString(userPresence & 0xFF));
+    Log.info("  controlFlags: " + Integer.toHexString(controlFlags & 0xFF));
     Log.info("  counter: " + counter);
     Log.info("  signature: " + Hex.encodeHexString(signature));
 
-    if ((userPresence & UserPresenceVerifier.USER_PRESENT_FLAG) == 0) {
+    if ((controlFlags & UserPresenceVerifier.USER_PRESENT_FLAG) == 0) {
       throw new U2FException("User presence invalid during authentication");
     }
 
@@ -270,7 +271,7 @@ public class U2FServerReferenceImpl implements U2FServer {
     byte[] appIdSha256 = crypto.computeSha256(appId.getBytes());
     byte[] browserDataSha256 = crypto.computeSha256(browserData.getBytes());
     byte[] signedBytes = RawMessageCodec.encodeAuthenticateSignedBytes(
-        appIdSha256, userPresence, counter, browserDataSha256);
+        appIdSha256, controlFlags, counter, browserDataSha256);
 
     Log.info("Verifying signature of bytes " + Hex.encodeHexString(signedBytes));
     if (!crypto.verifySignature(

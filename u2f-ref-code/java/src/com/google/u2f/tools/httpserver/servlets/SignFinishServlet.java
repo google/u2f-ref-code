@@ -31,7 +31,7 @@ public class SignFinishServlet extends HtmlServlet {
         req.getParameter("browserData"),
         req.getParameter("sessionId"));
     try {
-      u2fServer.processSignResponse(signResponse);
+      u2fServer.processSignResponse(signResponse, System.currentTimeMillis());
       body.println("Success!!!");
     } catch (U2FException e) {
       body.println("Failure: " + e.toString());

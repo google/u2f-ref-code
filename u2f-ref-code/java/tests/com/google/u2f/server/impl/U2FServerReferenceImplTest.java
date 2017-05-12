@@ -44,6 +44,9 @@ import com.google.u2f.server.messages.SignResponse;
 import com.google.u2f.server.messages.U2fSignRequest;
 
 public class U2FServerReferenceImplTest extends TestVectors {
+  private static final long ENROLLMENT_TIME = 0L;
+  private static final int INITIAL_COUNTER = 0;
+
   @Mock ChallengeGenerator mockChallengeGenerator;
   @Mock SessionIdGenerator mockSessionIdGenerator;
   @Mock DataStore mockDataStore;
@@ -64,7 +67,8 @@ public class U2FServerReferenceImplTest extends TestVectors {
     when(mockDataStore.storeSessionData(Matchers.<EnrollSessionData>any())).thenReturn(SESSION_ID);
     when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates);
     when(mockDataStore.getSecurityKeyData(ACCOUNT_NAME)).thenReturn(
-        ImmutableList.of(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_SIGN_HEX, VENDOR_CERTIFICATE, 0)));
+        ImmutableList.of(new SecurityKeyData(ENROLLMENT_TIME, KEY_HANDLE, USER_PUBLIC_KEY_SIGN_HEX,
+            VENDOR_CERTIFICATE, INITIAL_COUNTER)));
   }
 
   @Test
@@ -99,10 +103,11 @@ public class U2FServerReferenceImplTest extends TestVectors {
     RegistrationResponse registrationResponse = new RegistrationResponse(REGISTRATION_DATA_BASE64,
         BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
 
-    u2fServer.processRegistrationResponse(registrationResponse, 0L);
+    u2fServer.processRegistrationResponse(registrationResponse, ENROLLMENT_TIME);
 
     verify(mockDataStore).addSecurityKeyData(eq(ACCOUNT_NAME),
-        eq(new SecurityKeyData(0L, null, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0)));
+        eq(new SecurityKeyData(ENROLLMENT_TIME, null, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
+            VENDOR_CERTIFICATE, INITIAL_COUNTER)));
   }
 
   @Test
@@ -118,13 +123,13 @@ public class U2FServerReferenceImplTest extends TestVectors {
     RegistrationResponse registrationResponse = new RegistrationResponse(
         REGISTRATION_RESPONSE_DATA_ONE_TRANSPORT_BASE64,
         BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
-    u2fServer.processRegistrationResponse(registrationResponse, 0L);
+    u2fServer.processRegistrationResponse(registrationResponse, ENROLLMENT_TIME);
 
     List<Transports> transports = new LinkedList<Transports>();
     transports.add(Transports.BLUETOOTH_BREDR);
     verify(mockDataStore).addSecurityKeyData(eq(ACCOUNT_NAME),
-        eq(new SecurityKeyData(0L, transports, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
-            TRUSTED_CERTIFICATE_ONE_TRANSPORT, 0)));
+        eq(new SecurityKeyData(ENROLLMENT_TIME, transports, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
+            TRUSTED_CERTIFICATE_ONE_TRANSPORT, INITIAL_COUNTER)));
   }
 
   @Test
@@ -140,15 +145,15 @@ public class U2FServerReferenceImplTest extends TestVectors {
     RegistrationResponse registrationResponse = new RegistrationResponse(
         REGISTRATION_RESPONSE_DATA_MULTIPLE_TRANSPORTS_BASE64,
         BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
-    u2fServer.processRegistrationResponse(registrationResponse, 0L);
+    u2fServer.processRegistrationResponse(registrationResponse, ENROLLMENT_TIME);
 
     List<Transports> transports = new LinkedList<Transports>();
     transports.add(Transports.BLUETOOTH_BREDR);
     transports.add(Transports.BLUETOOTH_LOW_ENERGY);
     transports.add(Transports.NFC);
     verify(mockDataStore).addSecurityKeyData(eq(ACCOUNT_NAME),
-        eq(new SecurityKeyData(0L, transports, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
-            TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS, 0)));
+        eq(new SecurityKeyData(ENROLLMENT_TIME, transports, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
+            TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS, INITIAL_COUNTER)));
   }
 
   @Test
@@ -164,11 +169,12 @@ public class U2FServerReferenceImplTest extends TestVectors {
     RegistrationResponse registrationResponse = new RegistrationResponse(
         REGISTRATION_RESPONSE_DATA_MALFORMED_TRANSPORTS_BASE64,
         BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
-    u2fServer.processRegistrationResponse(registrationResponse, 0L);
+    u2fServer.processRegistrationResponse(registrationResponse, ENROLLMENT_TIME);
 
     verify(mockDataStore).addSecurityKeyData(eq(ACCOUNT_NAME),
-        eq(new SecurityKeyData(0L, null /* transports */, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
-            TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION, 0)));
+        eq(new SecurityKeyData(ENROLLMENT_TIME, null /* transports */, KEY_HANDLE,
+            USER_PUBLIC_KEY_ENROLL_HEX, TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION,
+            INITIAL_COUNTER)));
   }
 
   @Test
@@ -185,10 +191,10 @@ public class U2FServerReferenceImplTest extends TestVectors {
     RegistrationResponse registrationResponse = new RegistrationResponse(REGISTRATION_DATA_2_BASE64,
         BROWSER_DATA_2_BASE64, SESSION_ID);
 
-    u2fServer.processRegistrationResponse(registrationResponse, 0L);
+    u2fServer.processRegistrationResponse(registrationResponse, ENROLLMENT_TIME);
     verify(mockDataStore).addSecurityKeyData(eq(ACCOUNT_NAME),
-        eq(new SecurityKeyData(0L, null /* transports */, KEY_HANDLE_2, USER_PUBLIC_KEY_2,
-            TRUSTED_CERTIFICATE_2, 0)));
+        eq(new SecurityKeyData(ENROLLMENT_TIME, null /* transports */, KEY_HANDLE_2, USER_PUBLIC_KEY_2,
+            TRUSTED_CERTIFICATE_2, INITIAL_COUNTER)));
   }
 
   @Test
@@ -211,7 +217,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
     SignResponse signResponse = new SignResponse(KEY_HANDLE_BASE64, SIGN_RESPONSE_DATA_BASE64,
         BROWSER_DATA_SIGN_BASE64, SESSION_ID);
 
-    u2fServer.processSignResponse(signResponse);
+    u2fServer.processSignResponse(signResponse, ENROLLMENT_TIME);
   }
 
   @Test
@@ -224,7 +230,7 @@ public class U2FServerReferenceImplTest extends TestVectors {
         BROWSER_DATA_SIGN_BASE64, SESSION_ID);
 
     try {
-      u2fServer.processSignResponse(signResponse);
+      u2fServer.processSignResponse(signResponse, ENROLLMENT_TIME);
       fail("expected exception, but didn't get it");
     } catch(U2FException e) {
       assertTrue(e.getMessage().contains("is not a recognized home origin"));
@@ -237,13 +243,14 @@ public class U2FServerReferenceImplTest extends TestVectors {
   public void testProcessSignResponse2() throws U2FException {
     when(mockDataStore.getSignSessionData(SESSION_ID)).thenReturn(
         new SignSessionData(ACCOUNT_NAME, APP_ID_2, SERVER_CHALLENGE_SIGN, USER_PUBLIC_KEY_2));
-    when(mockDataStore.getSecurityKeyData(ACCOUNT_NAME)).thenReturn(
-        ImmutableList.of(new SecurityKeyData(0l, KEY_HANDLE_2, USER_PUBLIC_KEY_2, VENDOR_CERTIFICATE, 0)));
-    u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator,
-        mockDataStore, crypto, TRUSTED_DOMAINS);
+    when(mockDataStore.getSecurityKeyData(ACCOUNT_NAME))
+        .thenReturn(ImmutableList.of(new SecurityKeyData(ENROLLMENT_TIME, KEY_HANDLE_2,
+            USER_PUBLIC_KEY_2, VENDOR_CERTIFICATE, INITIAL_COUNTER)));
+    u2fServer =
+        new U2FServerReferenceImpl(mockChallengeGenerator, mockDataStore, crypto, TRUSTED_DOMAINS);
     SignResponse signResponse = new SignResponse(KEY_HANDLE_2_BASE64, SIGN_DATA_2_BASE64,
         BROWSER_DATA_2_BASE64, SESSION_ID);
 
-    u2fServer.processSignResponse(signResponse);
+    u2fServer.processSignResponse(signResponse, ENROLLMENT_TIME);
   }
 }

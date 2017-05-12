@@ -162,13 +162,13 @@ public class RawMessageCodec {
 
   public static byte[] encodeAuthenticateResponse(AuthenticateResponse authenticateResponse)
       throws U2FException {
-    byte userPresence = authenticateResponse.getUserPresence();
+    byte controlFlags = authenticateResponse.getControlFlagByte();
     int counter = authenticateResponse.getCounter();
     byte[] signature = authenticateResponse.getSignature();
 
     byte[] result = new byte[1 + 4 + signature.length];
     ByteBuffer.wrap(result)
-    .put(userPresence)
+    .put(controlFlags)
     .putInt(counter)
     .put(signature);
     return result;
@@ -177,7 +177,7 @@ public class RawMessageCodec {
   public static AuthenticateResponse decodeAuthenticateResponse(byte[] data) throws U2FException {
     try {
       DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(data));
-      byte userPresence = inputStream.readByte();
+      byte controlFlags = inputStream.readByte();
       int counter = inputStream.readInt();
       byte[] signature = new byte[inputStream.available()];
       inputStream.readFully(signature);
@@ -186,7 +186,7 @@ public class RawMessageCodec {
         throw new U2FException("Message ends with unexpected data");
       }
 
-      return new AuthenticateResponse(userPresence, counter, signature);
+      return new AuthenticateResponse(controlFlags, counter, signature);
     } catch (IOException e) {
       throw new U2FException("Error when parsing raw AuthenticateResponse", e);
     }
@@ -205,12 +205,12 @@ public class RawMessageCodec {
     return signedData;
   }
 
-  public static byte[] encodeAuthenticateSignedBytes(byte[] applicationSha256, byte userPresence,
+  public static byte[] encodeAuthenticateSignedBytes(byte[] applicationSha256, byte controlFlags,
       int counter, byte[] challengeSha256) {
     byte[] signedData = new byte[applicationSha256.length + 1 + 4 + challengeSha256.length];
     ByteBuffer.wrap(signedData)
     .put(applicationSha256)
-    .put(userPresence)
+    .put(controlFlags)
     .putInt(counter)
     .put(challengeSha256);
     return signedData;

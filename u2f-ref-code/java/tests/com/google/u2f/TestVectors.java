@@ -322,6 +322,21 @@ public class TestVectors {
    *   cert[1] = batch certificate
    *
    * Note that cert[1] is signed by another cert that should be known to RPs.
+   *
+   * Contents of Android Attestation Key Description extension:
+   *   Keymaster Version: 2,
+   *   Attestation Challenge: 0x6368616c6c656e6765
+   *   Software Enforced:
+   *     tag 1 (KM_TAG_PURPOSE), with values 2 (KM_PURPOSE_SIGN) and 3 (KM_PURPOSE_VERIFY)
+   *     tag 2 (KM_TAG_ALGORITHM), with value 3 (KM_ALGORITHM_EC)
+   *     tag 3 (KM_TAG_KEY_SIZE), with value 256
+   *     tag 5 (KM_TAG_DIGEST), with value 0 (KM_DIGEST_NONE)
+   *     tag 6 (KM_TAG_PADDING), with value 1 (KM_PAD_NONE)
+   *     tag 200 (KM_TAG_RSA_PUBLIC_EXPONENT) with value 3
+   *     tag 504 (KM_TAG_USER_AUTH_TYPE) with value 1 (HW_AUTH_PASSWORD)
+   *     tag 505 (KM_TAG_AUTH_TIMEOUT) with value 300
+   *     tag 701 (KM_TAG_CREATION_DATETIME) with the time I created it (milliseconds since epoch)
+   *     tag 702 (KM_TAG_ORIGIN) with value 0 (KM_ORIGIN_GENERATED)
    */
   private static final String ANDROID_KEYSTORE_ATTESTATION_CERT_CHAIN_BASE64 =
       "MIIBjTCCATKgAwIBAgICJxAwCgYIKoZIzj0EAwIwHDEaMBgGA1UEAwwRQW5kcm9pZCBLZXltYXN0"

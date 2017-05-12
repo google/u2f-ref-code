@@ -20,6 +20,7 @@ import com.google.u2f.key.messages.AuthenticateRequest;
 import com.google.u2f.key.messages.AuthenticateResponse;
 import com.google.u2f.key.messages.RegisterRequest;
 import com.google.u2f.key.messages.RegisterResponse;
+import com.google.u2f.key.messages.TransferAccessResponse;
 
 /**
  * Raw message formats, as per FIDO U2F: Raw Message Formats - Draft 4
@@ -192,6 +193,57 @@ public class RawMessageCodec {
     }
   }
 
+  /*
+   *  TransferAccess:
+   *  Should have something that can at least decode transferAccessResponse messages.
+   *  Should return it's own object, TransferAccessResponse
+   *  This assumes that the logic has already been done, and we are really getting a
+   *  TransferAccessResponse in the input data.
+   */
+  public static TransferAccessResponse decodeTransferAccessResponse(byte[] data) 
+      throws U2FException {
+	try {
+	  DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(data));
+	  byte controlByte = inputStream.readByte();
+      byte[] userPublicKey = new byte[65];
+      inputStream.readFully(userPublicKey);
+	  int numAccessTransfers = inputStream.readUnsignedByte(); // TransferAccess: Will this cast to an int correctly? Is this consistent with the naming scheme?
+	  // TransferAccess: Questionable coding to follow
+	  byte[][] transferAccessMessages = new byte[numAccessTransfers][];
+	  for (int i = 0; i < numAccessTransfers; i++) {
+		  transferAccessMessages[i] = new byte[inputStream.readUnsignedByte()];
+		  inputStream.readFully(transferAccessMessages[i]);
+	  }
+	  // TransferAccess: We should probably make sure we are at the right spot somehow
+	  // (i.e. we have read all the transferAccessMessages and we are now reading the key handle length)
+      byte[] keyHandle = new byte[inputStream.readUnsignedByte()];
+      inputStream.readFully(keyHandle);
+      X509Certificate attestationCertificate = (X509Certificate) CertificateFactory.getInstance(
+          "X.509").generateCertificate(inputStream);
+      byte reservedByte = inputStream.readByte(); // TransferAccess: should be 0x05 -- we should probably check this
+      int counter = inputStream.readInt();
+      byte[] signature = new byte[inputStream.available()];
+	  inputStream.readFully(signature);
+	  
+	  if (inputStream.available() != 0) {
+		throw new U2FException("Message ends with unexpected data");
+	  }
+	  
+      if (reservedByte != REGISTRATION_RESERVED_BYTE_VALUE) {
+          throw new U2FException(String.format(
+              "Incorrect value of reserved byte. Expected: %d. Was: %d",
+              REGISTRATION_RESERVED_BYTE_VALUE, reservedByte));
+        }
+	  
+	  return new TransferAccessResponse(controlByte, userPublicKey, transferAccessMessages, 
+			  keyHandle, attestationCertificate, counter, signature);
+	} catch	(IOException e) {
+	  throw new U2FException("Error when parsing raw Transfer Access", e);
+	} catch (CertificateException e) {
+      throw new U2FException("Error when parsing attestation certificate", e);
+    }
+  }
+  
   public static byte[] encodeRegistrationSignedBytes(byte[] applicationSha256,
       byte[] challengeSha256, byte[] keyHandle, byte[] userPublicKey) {
     byte[] signedData = new byte[1 + applicationSha256.length + challengeSha256.length

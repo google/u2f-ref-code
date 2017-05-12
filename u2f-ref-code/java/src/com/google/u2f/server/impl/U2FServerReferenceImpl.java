@@ -19,6 +19,7 @@ import com.google.u2f.key.UserPresenceVerifier;
 import com.google.u2f.key.messages.AuthenticateResponse;
 import com.google.u2f.key.messages.RegisterResponse;
 import com.google.u2f.server.ChallengeGenerator;
+import com.google.u2f.server.ControlByteData;
 import com.google.u2f.server.Crypto;
 import com.google.u2f.server.DataStore;
 import com.google.u2f.server.U2FServer;
@@ -36,6 +37,9 @@ import com.google.u2f.server.messages.U2fSignRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.cert.CertificateEncodingException;
@@ -248,6 +252,12 @@ public class U2FServerReferenceImpl implements U2FServer {
     verifyBrowserData(
         new JsonParser().parse(browserData), "navigator.id.getAssertion", sessionData);
 
+    /*
+     *  TransferAccess: Should load in the control byte from rawSignData and then 
+     *  make a decision about what to do. Call either processAuthentication() or
+     *  processTransferAccess(), which need to be written as sub-classes.
+     *  TODO: probably need to think about the error cases and how to catch exceptions
+     */ 
     AuthenticateResponse authenticateResponse =
         RawMessageCodec.decodeAuthenticateResponse(rawSignData);
     byte userPresence = authenticateResponse.getUserPresence();
@@ -365,4 +375,38 @@ public class U2FServerReferenceImpl implements U2FServer {
     }
     return uri.getScheme() + "://" + uri.getAuthority();
   }
+  
+  /**
+   * If future versions add control bits, their functionality should be added here.
+   * The 7th bit is reserved to allow for more control bits. 
+   * As of this version, there should only be 1 controlByte, so we'll error if the 7th bit is set.
+   */
+  private ControlByteData parseControlByte(byte[] data) {
+    boolean userPresence = false;
+    boolean isTransferAccessMessage = false;
+        
+    try {
+      DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(data));
+      byte controlByte = inputStream.readByte();
+      
+      // parse this one byte:
+      if (/*7 bit set*/ true) {
+        throw new U2FException("Current version does not support multiple ControlBytes");
+      }
+      
+      if (/*zero bit set*/true) {
+        userPresence = true;
+      }
+      
+      if (/*one bit set*/true) {
+        isTransferAccessMessage = true;
+      }
+      
+      return new ControlByteData(userPresence, isTransferAccessMessage);
+      
+    } catch (IOException e) {
+      throw new U2FException("Error when parsing ControlByte in rawSignData", e);
+    }
+  }
+  
 }

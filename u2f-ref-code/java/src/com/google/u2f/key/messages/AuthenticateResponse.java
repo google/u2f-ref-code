@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class AuthenticateResponse extends U2FResponse {
-  private final byte userPresence;
+  private final byte userPresence;  // TrasnferAccess: Should we rename to controlByte or leave as is?
   private final int counter;
   private final byte[] signature;
 
@@ -21,6 +21,7 @@ public class AuthenticateResponse extends U2FResponse {
     this.signature = signature;
   }
 
+  // TransferAccess: This version is now using these bits for something else
   /**
    * Bit 0 is set to 1, which means that user presence was verified. (This
    * version of the protocol doesn't specify a way to request authentication

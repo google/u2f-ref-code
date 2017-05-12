@@ -403,6 +403,14 @@ u2f.WrappedAuthenticatorPort_ = function() {
  * @param {Object} message
  */
 u2f.WrappedAuthenticatorPort_.prototype.postMessage = function(message) {
+  // Work around a bug in Google Authenticator, in which it fails to decode
+  // transports encoding according to the U2F spec.
+  // TODO: remove when Authenticator is updated.
+  if (message.hasOwnProperty('registeredKeys')) {
+    for (var i = 0; i < message['registeredKeys'].length; i++) {
+      delete message['registeredKeys']['transports'];
+    }
+  }
   var intentUrl =
     u2f.WrappedAuthenticatorPort_.INTENT_URL_BASE_ +
     ';S.request=' + encodeURIComponent(JSON.stringify(message)) +

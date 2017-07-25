@@ -54,4 +54,31 @@ public class U2fAttestationTest extends TestVectors {
     assertTrue(transports.contains(Transports.BLUETOOTH_LOW_ENERGY));
     assertTrue(transports.contains(Transports.NFC));
   }
+
+  @Test
+  public void testValidCertExtendedTransports() throws Exception {
+    U2fAttestation attestation = U2fAttestation.Parse(TRUSTED_CERTIFICATE_EXTENDED_TRANSPORTS);
+
+    assertNotNull(attestation);
+    List<Transports> transports = attestation.getTransports();
+    assertNotNull(transports);
+    assertEquals(4, transports.size());
+    assertTrue(transports.contains(Transports.BLUETOOTH_BREDR));
+    assertTrue(transports.contains(Transports.BLUETOOTH_LOW_ENERGY));
+    assertTrue(transports.contains(Transports.NFC));
+    assertTrue(transports.contains(Transports.USB_INTERNAL));
+  }
+
+  @Test
+  public void testValidCertExtraOctetTransports() throws Exception {
+    U2fAttestation attestation = U2fAttestation.Parse(TRUSTED_CERTIFICATE_EXTRA_EMPTY_OCTET);
+
+    assertNotNull(attestation);
+    List<Transports> transports = attestation.getTransports();
+    assertNotNull(transports);
+    assertEquals(3, transports.size());
+    assertTrue(transports.contains(Transports.BLUETOOTH_BREDR));
+    assertTrue(transports.contains(Transports.BLUETOOTH_LOW_ENERGY));
+    assertTrue(transports.contains(Transports.NFC));
+  }
 }

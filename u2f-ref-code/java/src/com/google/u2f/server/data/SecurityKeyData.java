@@ -18,7 +18,8 @@ public class SecurityKeyData {
     BLUETOOTH_BREDR("bt"),
     BLUETOOTH_LOW_ENERGY("ble"),
     USB("usb"),
-    NFC("nfc");
+    NFC("nfc"),
+    USB_INTERNAL("usb-int");
 
     private String mValue;
 

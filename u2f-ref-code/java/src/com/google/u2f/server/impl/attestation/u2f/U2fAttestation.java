@@ -36,7 +36,8 @@ public class U2fAttestation {
    *       bluetoothRadio(0), -- Bluetooth Classic
    *       bluetoothLowEnergyRadio(1),
    *       uSB(2),
-   *       nFC(3)
+   *       nFC(3),
+   *       uSBInternal(4)
    *     }
    *
    *   <p>Note that the BIT STRING must be wrapped in an OCTET STRING.

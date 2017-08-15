@@ -1,4 +1,7 @@
 war/WEB-INF/appengine-generated/
 war/WEB-INF/deploy/
 war/WEB-INF/classes/
-/target/
+target/
+.settings/
+.classpath
+.project

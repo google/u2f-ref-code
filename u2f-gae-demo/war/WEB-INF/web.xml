@@ -47,6 +47,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 
     <security-constraint>
         <web-resource-collection>
+            <web-resource-name>ahspi</web-resource-name>
             <url-pattern>/_ah/spi/*</url-pattern>
         </web-resource-collection>
         <user-data-constraint>

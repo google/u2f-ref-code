@@ -1,8 +1,18 @@
 language: java
+branches:
+ only:
+  - master
 before_script:
-- cd u2f-gae-demo
+- cd u2f-ref-code
+- mvn install test -B
+- cd ../u2f-gae-demo
 - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && openssl aes-256-cbc -K $encrypted_03381351a0d5_key -iv $encrypted_03381351a0d5_iv
   -in clientsecret.json.enc -out clientsecret.json -d'
 script:
 - mvn test -B
-#- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && mvn appengine:update -Dappengine.additionalParams="--service_account_json_key_file=clientsecret.json"'
+# Deploy "noext" version
+- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && mvn appengine:update -Dappengine.additionalParams="--service_account_json_key_file=clientsecret.json"'
+# Deploy "crxjs" version
+- sed -i 's/kmendfapggjehodndflmmgagdbamhnfd/pfboblefjcgdjicmnffhdgionmgcdmne/' war/js/u2f-api.js
+- sed -i 's/noext/crxjs/' war/WEB-INF/appengine-web.xml
+- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && mvn appengine:update -Dappengine.additionalParams="--service_account_json_key_file=clientsecret.json"'

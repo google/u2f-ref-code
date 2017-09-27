@@ -8,17 +8,29 @@ all: list HIDTest U2FTest
 
 CC ?= gcc
 CXX ?= g++
+PKG_CONFIG ?= pkg-config
 
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
 
-CPPFLAGS+=-Ihidapi/hidapi -D__OS_LINUX -Icore/include
-LDLIBS+=-lrt -ludev
-HIDAPI=hid.o
+HIDAPI_PKG:=hidapi-hidraw
+HIDAPI_LDLIBS:=$(shell $(PKG_CONFIG) --libs $(HIDAPI_PKG))
+ifeq ($(HIDAPI_LDLIBS),)
+# Use local source code
+HIDAPI:=hid.o
+HIDAPI_CPPFLAGS:=-Ihidapi/hidapi
 hid.o: hidapi/linux/hid.c
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) -o hid.o hidapi/linux/hid.c
 
+else
+# Use hidapi library
+HIDAPI:=
+HIDAPI_CPPFLAGS:=$(shell $(PKG_CONFIG) --cflags-only-I $(HIDAPI_PKG))
+endif # hidapi library
+
+CPPFLAGS+=$(HIDAPI_CPPFLAGS) -D__OS_LINUX -Icore/include
+LDLIBS+=-lrt -ludev $(HIDAPI_LDLIBS)
 endif  # Linux
 
 ifeq ($(UNAME), Darwin)

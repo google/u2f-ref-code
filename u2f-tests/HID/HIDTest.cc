@@ -63,6 +63,13 @@ void initFrame(U2FHID_FRAME* f, uint32_t cid, uint8_t cmd,
   }
 }
 
+// Initialize a continue frame
+void contFrame(U2FHID_FRAME* f, uint32_t cid, uint8_t seqno, uint8_t val) {
+  memset(f, val, sizeof(U2FHID_FRAME));
+  f->cid = cid;
+  f->cont.seq = seqno & ~TYPE_INIT;
+}
+
 // Return true if frame r is error frame for expected error.
 bool isError(const U2FHID_FRAME r, int error) {
   return
@@ -346,6 +353,46 @@ void test_Busy() {
   CHECK_EQ(isError(r, ERR_MSG_TIMEOUT), true);
 
   CHECK_GE(U2Fob_deltaTime(&t), .45);  // Expect T/O msg only after timeout.
+}
+
+// Check that fob ignores CONT frame for different cid.
+void test_Interleave() {
+  U2FHID_FRAME f, r;
+  uint64_t t = 0; U2Fob_deltaTime(&t);
+  uint32_t cid0 = U2Fob_getCid(device);
+  uint32_t cid1 = U2Fob_getCid(device) ^ 1;
+  uint8_t expected;
+
+  // Start a 2 frame request on cid 0
+  initFrame(&f, cid0, U2FHID_PING, sizeof(f.cont.data) + sizeof(f.init.data));
+  expected = f.init.data[0];
+  SEND(f);
+
+  // Interleave a 2 frame request on cid 1
+  initFrame(&f, cid1, U2FHID_PING, sizeof(f.cont.data) + sizeof(f.init.data));
+  SEND(f);
+  contFrame(&f, cid1, 0, expected ^ 1);
+  SEND(f);
+
+  // Then send 2nd frame on cid 0
+  contFrame(&f, cid0, 0, expected);
+  SEND(f);
+
+  // Expect CHANNEL_BUSY for  cid 1
+  RECV(r, 1.0);
+  CHECK_EQ(r.cid, cid1);
+  CHECK_EQ(isError(r, ERR_CHANNEL_BUSY), true);
+
+  // Expect correct 2 frame reply for cid 0
+  RECV(r, 1.0);
+  CHECK_EQ(r.cid, cid0);
+  CHECK_EQ(r.init.data[0], expected);
+  RECV(r, 1.0);
+  CHECK_EQ(r.cid, cid0);
+  CHECK_EQ(r.cont.data[1], expected);
+
+  // Expect nothing left to receive
+  CHECK_EQ(-ERR_MSG_TIMEOUT, U2Fob_receiveHidFrame(device, &r, .5));
 }
 
 // Test INIT self aborts wait for CONT frame
@@ -641,6 +688,7 @@ int main(int argc, char* argv[]) {
   PASS(test_Limits());
 
   PASS(test_Busy());
+  PASS(test_Interleave());
   PASS(test_LeadingZero());
 
   PASS(test_Idle(2.0));

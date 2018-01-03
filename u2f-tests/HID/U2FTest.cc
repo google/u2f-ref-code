@@ -373,6 +373,9 @@ int main(int argc, char* argv[]) {
   // Ctr should have incremented by 1.
   CHECK_EQ(ctr2, ctr1 + 1);
 
+  regRsp.keyHandleLen -= 8; // perturb keyhandle length
+  PASS(test_Sign(0x6700, false));
+
   U2Fob_destroy(device);
   return 0;
 }

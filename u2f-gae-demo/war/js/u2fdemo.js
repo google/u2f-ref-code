@@ -157,6 +157,10 @@ function sendBeginEnrollRequest() {
    .done(function(beginEnrollResponse) {
       console.log(beginEnrollResponse);
       showMessage("please touch the token");
+      // Request attestation if needed
+      if (document.getElementById("req-attestation").checked) {
+        beginEnrollResponse.registerRequests.attestation = 'direct';
+      }
       u2f.register(
         beginEnrollResponse.appId,
         [beginEnrollResponse.registerRequests],

@@ -73,7 +73,7 @@
               <targetPath>jquery</targetPath>
             </resource>
             <resource>
-              <directory>${basedir}</directory>
+              <directory>${basedir}/war</directory>
               <includes>
                 <include>favicon.ico</include>
                 <include>origins.json</include>

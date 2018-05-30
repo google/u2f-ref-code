@@ -50,13 +50,16 @@ and includes packages for all crypto, utilities, etc.  It does *not* need to run
 in a container or application server like Tomcat.  To run the demo server, run
 the main class in ``com.google.u2f.tools.httpserver.U2fHttpServer``
 
-To compile and run the server in Eclipse, import the project into your
+To compile and run the server in Eclipse, import the Maven project into your
 workspace. You may need to fix the classpath if your version of JDK is
 different (this has been tested with Java 1.7).  The simple demo web server is
-in ``com.google.u2f.tools.httpserver.UtfHttpServer.java`` and runs on port
+in ``com.google.u2f.tools.httpserver.U2fHttpServer.java`` and runs on port
 8080. Run this class as a regular Java application (right click, select *Run
 As* and *Java Application*). Note that you need to have the U2F extension
 installed in Chrome in order for the demo app to talk to your U2F token.
+
+To run directly with Maven, run `mvn compile exec:java` from the u2f-ref-code
+directory.
 
 ### U2F-GAE-Demo
 
@@ -64,10 +67,14 @@ The u2f-gae-demo project is a sample application built on the Google App Engine
 web platform which demonstrates a possible UX for user interaction with U2F in a
 web page.
 
-As above, after importing the project into Eclipse you might have to adjust JDK
-versions, App Engine SDK version, etc. Once everything compiles, you can run the
-App Engine server locally and point Google Chrome at http://localhost:8888/. The
-built-in support for U2F in Google Chrome only works on HTTPS sites.  To test
+To start the development server with Maven, run `mvn appengine:devserver`. This
+will run the server locally at `http://localhost:8888/`.
+
+As above, if importing the Maven project into Eclipse you might have to adjust
+JDK versions, App Engine SDK version, etc. Once everything compiles, you can run
+the App Engine server locally and point Google Chrome at `http://localhost:8888/`.
+
+The built-in support for U2F in Google Chrome only works on HTTPS sites.  To test
 the app on `http://localhost:8888`, which uses HTTP, you need to do one of the
 following:
 

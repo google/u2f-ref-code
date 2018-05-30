@@ -1,0 +1,193 @@
+{
+  "extends" : "thirdParty.api",
+  "abstract" : false,
+  "root" : "https://u2fdemo.appspot.com/_ah/api",
+  "name" : "u2fRequestHandler",
+  "version" : "v1",
+  "defaultVersion" : false,
+  "discovery" : [ "PUBLIC" ],
+  "adapter" : {
+    "bns" : "https://u2fdemo.appspot.com/_ah/spi",
+    "deadline" : 65.0,
+    "type" : "lily"
+  },
+  "auth" : {
+    "allowCookieAuth" : false
+  },
+  "frontendLimits" : {
+    "unregisteredUserQps" : -1,
+    "unregisteredQps" : -1,
+    "unregisteredDaily" : -1,
+    "rules" : [ ]
+  },
+  "cacheControl" : {
+    "type" : "no-cache",
+    "maxAge" : 0
+  },
+  "ownerDomain" : "gaedemo.u2f.google.com",
+  "ownerName" : "gaedemo.u2f.google.com",
+  "methods" : {
+    "u2fRequestHandler.getSignRequest" : {
+      "path" : "getSignRequest",
+      "httpMethod" : "GET",
+      "authLevel" : "NONE",
+      "scopes" : [ "https://www.googleapis.com/auth/userinfo.email", "openid" ],
+      "audiences" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com" ],
+      "clientIds" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com", "533916084229-a1v1p3l6vhtmo0h5931lc90oo10274da.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.getSignRequest",
+      "request" : {
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "u2fRequestHandler.getRegistrationRequest" : {
+      "path" : "stringcollection/{allowReregistration}",
+      "httpMethod" : "GET",
+      "authLevel" : "NONE",
+      "scopes" : [ "https://www.googleapis.com/auth/userinfo.email", "openid" ],
+      "audiences" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com" ],
+      "clientIds" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com", "533916084229-a1v1p3l6vhtmo0h5931lc90oo10274da.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.getRegistrationRequest",
+      "request" : {
+        "parameters" : {
+          "allowReregistration" : {
+            "type" : "boolean",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "u2fRequestHandler.processRegistrationResponse" : {
+      "path" : "processRegistrationResponse/{responseData}",
+      "httpMethod" : "POST",
+      "authLevel" : "NONE",
+      "scopes" : [ "https://www.googleapis.com/auth/userinfo.email", "openid" ],
+      "audiences" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com" ],
+      "clientIds" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com", "533916084229-a1v1p3l6vhtmo0h5931lc90oo10274da.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.processRegistrationResponse",
+      "request" : {
+        "parameters" : {
+          "responseData" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "u2fRequestHandler.removeSecurityKey" : {
+      "path" : "securitykey/{publicKey}",
+      "httpMethod" : "DELETE",
+      "authLevel" : "NONE",
+      "scopes" : [ "https://www.googleapis.com/auth/userinfo.email", "openid" ],
+      "audiences" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com" ],
+      "clientIds" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com", "533916084229-a1v1p3l6vhtmo0h5931lc90oo10274da.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.removeSecurityKey",
+      "request" : {
+        "parameters" : {
+          "publicKey" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "u2fRequestHandler.processSignResponse" : {
+      "path" : "processSignResponse/{responseData}",
+      "httpMethod" : "POST",
+      "authLevel" : "NONE",
+      "scopes" : [ "https://www.googleapis.com/auth/userinfo.email", "openid" ],
+      "audiences" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com" ],
+      "clientIds" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com", "533916084229-a1v1p3l6vhtmo0h5931lc90oo10274da.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.processSignResponse",
+      "request" : {
+        "parameters" : {
+          "responseData" : {
+            "type" : "string",
+            "required" : true
+          }
+        },
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    },
+    "u2fRequestHandler.getAllSecurityKeys" : {
+      "path" : "getAllSecurityKeys",
+      "httpMethod" : "GET",
+      "authLevel" : "NONE",
+      "scopes" : [ "https://www.googleapis.com/auth/userinfo.email", "openid" ],
+      "audiences" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com" ],
+      "clientIds" : [ "533916084229-qmk7s8pcv7u4uhj2coctv9h75rbp66d3.apps.googleusercontent.com", "533916084229-a1v1p3l6vhtmo0h5931lc90oo10274da.apps.googleusercontent.com" ],
+      "rosyMethod" : "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.getAllSecurityKeys",
+      "request" : {
+        "body" : "empty"
+      },
+      "response" : {
+        "body" : "autoTemplate(backendResponse)"
+      }
+    }
+  },
+  "descriptor" : {
+    "schemas" : {
+      "StringCollection" : {
+        "id" : "StringCollection",
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    },
+    "methods" : {
+      "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.getSignRequest" : {
+        "response" : {
+          "$ref" : "StringCollection"
+        }
+      },
+      "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.getRegistrationRequest" : {
+        "response" : {
+          "$ref" : "StringCollection"
+        }
+      },
+      "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.processRegistrationResponse" : {
+        "response" : {
+          "$ref" : "StringCollection"
+        }
+      },
+      "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.removeSecurityKey" : {
+        "response" : {
+          "$ref" : "StringCollection"
+        }
+      },
+      "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.processSignResponse" : {
+        "response" : {
+          "$ref" : "StringCollection"
+        }
+      },
+      "com.google.u2f.gaedemo.endpoints.U2FRequestHandler.getAllSecurityKeys" : {
+        "response" : {
+          "$ref" : "StringCollection"
+        }
+      }
+    }
+  }
+}

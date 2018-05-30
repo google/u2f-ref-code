@@ -1,13 +1,13 @@
 language: java
 branches:
- only:
+  only:
   - master
 before_script:
 - cd u2f-ref-code
 - mvn install test -B
 - cd ../u2f-gae-demo
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && openssl aes-256-cbc -K $encrypted_03381351a0d5_key -iv $encrypted_03381351a0d5_iv
-  -in clientsecret.json.enc -out clientsecret.json -d'
+- openssl aes-256-cbc -K $encrypted_03381351a0d5_key -iv $encrypted_03381351a0d5_iv
+  -in ../u2fdemo-876b57d6173a.json.enc -out clientsecret.json -d
 script:
 - mvn test -B
 # Deploy "noext" version

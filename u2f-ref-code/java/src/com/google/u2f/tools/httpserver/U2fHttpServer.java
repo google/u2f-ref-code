@@ -112,6 +112,7 @@ public class U2fHttpServer {
 
       try {
         connection.connect(new InetSocketAddress("0.0.0.0", 8080));
+        System.out.println("Starting up the server at localhost:8080");
 
         synchronized (lock) {
           lock.wait();

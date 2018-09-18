@@ -19,6 +19,7 @@
     Allows App Engine to send multiple requests to one instance in parallel:
   -->
   <threadsafe>true</threadsafe>
+  <runtime>java8</runtime>
 
   <!-- Configure java.util.logging -->
   <system-properties>

@@ -5,12 +5,12 @@
   <artifactId>u2f-gae-demo</artifactId>
   <properties>
     <appengine.app.version>1</appengine.app.version>
-    <appengine.sdk.version>1.9.54</appengine.sdk.version>
+    <appengine.sdk.version>1.9.64</appengine.sdk.version>
     <objectify.version>5.1.5</objectify.version>
-    <guava.version>18.0</guava.version>
+    <guava.version>26.0-jre</guava.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <packaging>war</packaging>
   <name>u2f-gae-demo</name>
   <description>u2f-gae-demo</description>
@@ -29,8 +29,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.5.1</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
       <plugin>
@@ -89,13 +89,23 @@
         <configuration>
           <enableJarClasses>false</enableJarClasses>
           <port>8888</port>
-          <!-- Comment in the below snippet to bind to all IPs instead of just localhost -->
+          <!-- Comment in the below snippet to bind to all IPs instead of 
+            just localhost -->
           <!-- <address>0.0.0.0</address> -->
           <!-- <port>8080</port> -->
-          <!-- Comment in the below snippet to enable local debugging with a remote 
-            debugger like those included with Eclipse or IntelliJ -->
+          <!-- Comment in the below snippet to enable local debugging with 
+            a remote debugger like those included with Eclipse or IntelliJ -->
           <!-- jvmFlags> <jvmFlag>-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag> 
             </jvmFlags -->
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.google.cloud.tools</groupId>
+        <artifactId>endpoints-framework-maven-plugin</artifactId>
+        <version>1.0.2</version>
+        <configuration>
+          <!-- plugin configuration -->
+          <hostname>u2fdemo.appspot.com</hostname>
         </configuration>
       </plugin>
     </plugins>
@@ -112,9 +122,19 @@
       <version>${appengine.sdk.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.google.appengine</groupId>
-      <artifactId>appengine-endpoints</artifactId>
-      <version>${appengine.sdk.version}</version>
+      <groupId>com.google.endpoints</groupId>
+      <artifactId>endpoints-framework-all</artifactId>
+      <version>2.0.7</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.endpoints</groupId>
+      <artifactId>endpoints-management-control-appengine</artifactId>
+      <version>1.0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.endpoints</groupId>
+      <artifactId>endpoints-framework-auth</artifactId>
+      <version>1.0.4</version>
     </dependency>
     <dependency>
       <groupId>com.google.template</groupId>

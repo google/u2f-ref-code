@@ -47,8 +47,8 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 
     <security-constraint>
         <web-resource-collection>
-            <web-resource-name>ahspi</web-resource-name>
-            <url-pattern>/_ah/spi/*</url-pattern>
+            <web-resource-name>ahapi</web-resource-name>
+            <url-pattern>/_ah/api/*</url-pattern>
         </web-resource-collection>
         <user-data-constraint>
             <transport-guarantee>CONFIDENTIAL</transport-guarantee>
@@ -69,8 +69,8 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
     </security-constraint>
 
     <servlet>
-        <servlet-name>SystemServiceServlet</servlet-name>
-        <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
+        <servlet-name>EndpointsServlet</servlet-name>
+        <servlet-class>com.google.api.server.spi.EndpointsServlet</servlet-class>
         <init-param>
             <param-name>services</param-name>
             <param-value>
@@ -78,12 +78,8 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
             </param-value>
         </init-param>
     </servlet>
-
-    <!-- GAE checks for this URL pattern mapping to enable Cloud Endpoints.
-         https://cloud.google.com/appengine/docs/standard/java/endpoints/required_files
-    -->
     <servlet-mapping>
-        <servlet-name>SystemServiceServlet</servlet-name>
-        <url-pattern>/_ah/spi/*</url-pattern>
+        <servlet-name>EndpointsServlet</servlet-name>
+        <url-pattern>/_ah/api/*</url-pattern>
     </servlet-mapping>
 </web-app>

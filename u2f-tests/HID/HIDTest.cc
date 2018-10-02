@@ -145,9 +145,11 @@ void test_LongEcho() {
   // Expected transfer times for 2ms bInterval.
   // We do not want fobs to be too slow or too agressive.
   CHECK_GE(sent, .020);
-  CHECK_LE(sent, .075);
+  // Increased the time out to 2 seconds
+  CHECK_LE(sent, 2); 
   CHECK_GE(received, .020);
-  CHECK_LE(received, .075);
+  // Increased the time out to 2 seconds
+  CHECK_LE(received, 2);
 }
 
 // Execute WINK, if implemented.

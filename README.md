@@ -31,11 +31,9 @@ integrate U2F into a web application on their own favorite web app platform.
 
 This extension brings U2F capability to the Chrome browser. A web application
 is able to access USB U2F devices using the U2F API provided by this extension.
-The extension is [available from the Chrome store][webstore] for direct use.
-The source is available in ``u2f-chrome-extension`` for experimentation, see
-[the extension README](u2f-chrome-extension/README.md) for details.
+The extension is built into Chrome [as a component
+extension](https://cs.chromium.org/chromium/src/chrome/browser/resources/cryptotoken/).
 
-[webstore]: https://chrome.google.com/webstore/detail/fido-u2f-universal-2nd-fa/pfboblefjcgdjicmnffhdgionmgcdmne
 * * *
 
 To experience the end-to-end user experience you will need to get a physical
@@ -75,30 +73,9 @@ JDK versions, App Engine SDK version, etc. Once everything compiles, you can run
 the App Engine server locally and point Google Chrome at `http://localhost:8888/`.
 
 The built-in support for U2F in Google Chrome only works on HTTPS sites.  To test
-the app on `http://localhost:8888`, which uses HTTP, you need to do one of the
-following:
+the app on `http://localhost:8888`, which uses HTTP, you need to do the following:
 
-#### Option 1: Use the extension from the webstore
-* Install the u2f extension [available from the Chrome store][webstore].
-* Navigate to `chrome://extensions` and enable `Developer Mode` by clicking a
-  checkbox in the top right corner.
-* Find the `FIDO U2F (Universal 2nd Factor)` extension.
-* Click on "background page". This will open a Developer Tools window, including
-  a Console.
-* In the console, type:
-
-        HTTP_ORIGINS_ALLOWED = true;
-* Now, configure the appspot server to call the U2F extension by setting the
-  extension id in
-  [u2f-api.js](https://github.com/google/u2f-ref-code/blob/master/u2f-gae-demo/war/js/u2f-api.js)
-  to ```kmendfapggjehodndflmmgagdbamhnfd```:
-```
-  u2f.EXTENSION_ID = 'kmendfapggjehodndflmmgagdbamhnfd';
-```
-  Remember to reset this value before deploying.
-* Then, point your browser at `http://localhost:8888/`.
-
-#### Option 2: Use the built-in chrome support
+#### Use the built-in chrome support
 * Quit all instances of Google Chrome.
 * Restart Google Chrome with the `--show-component-extension-options`
   command-line flag.

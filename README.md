@@ -27,20 +27,6 @@ https://crxjs-dot-u2fdemo.appspot.com/. The underlying U2F capability is provide
 Java U2F implementation.  A developer can take the core ideas from here and
 integrate U2F into a web application on their own favorite web app platform.
 
-## A U2F extension for the Chrome browser
-
-This extension brings U2F capability to the Chrome browser. A web application
-is able to access USB U2F devices using the U2F API provided by this extension.
-The extension is built into Chrome [as a component
-extension](https://cs.chromium.org/chromium/src/chrome/browser/resources/cryptotoken/).
-
-* * *
-
-To experience the end-to-end user experience you will need to get a physical
-USB device since the virtual device *does not* simulate the USB layer at this
-time. You can visit https://goo.gl/z0taoW to find FIDO U2F compliant devices
-available for sale.
-
 ## Getting started
 
 u2f-ref-code is a self contained java project that includes a basic web server

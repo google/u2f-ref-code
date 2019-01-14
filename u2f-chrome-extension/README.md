@@ -1,18 +1,23 @@
+# Deprecation notice
+As part of the gradual migration from U2F to WebAuthn, support for this
+compiled U2F Chrome extension is being formally deprecated. No further
+updates or enhancements are planned, and migration to using the support
+built into Chrome or migration to [WebAuthn][webauthn] is recommended.
+
+[webauthn]: https://www.w3.org/TR/webauthn/
+
 # U2F Chrome extension
 
 This is an implementation of a U2F client for Chrome, intended for
-experimentation and testing. For general testing, we recommend installing it
-from the Chrome Web Store [here][webstore]. In this case, the extension will
-automatically update when new versions are released. Any origin may call the
-extension; side-loading is not necessary for this.
-
-[webstore]: https://chrome.google.com/webstore/detail/fido-u2f-universal-2nd-fa/pfboblefjcgdjicmnffhdgionmgcdmne
+experimentation and testing. For general testing, we recommend using Chrome's
+built-in support for U2F via the Cryptotoken component extension. In this
+case, the extension will automatically update when new versions are released.
+Any origin may call the extension; side-loading is not necessary for this.
 
 To experiment with modifications to the extension, this folder can be loaded
-directly, but the Web Store instance must be disabled or uninstalled. It is
-important that the extension id remains the same, as it is whitelisted by
-Chrome to allow USB access, which is normally reserved to packaged apps. Thus,
-do not modify/remove the key in ``manifest.json``.
+directly. It is important that the extension id remains the same, as it is
+whitelisted by Chrome to allow USB access, which is normally reserved to
+packaged apps. Thus, do not modify/remove the key in ``manifest.json``.
 
 ## Communicating with the extension
 

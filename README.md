@@ -21,10 +21,10 @@ implementation. A physical U2F device will generate similar statements.
 ## A sample web app that uses U2F
 
 This is a sample application built on the Google App Engine web platform which
-demonstrates a possible UX for  user interaction with U2F in a web page.  The
+demonstrates a possible UX for user interaction with U2F in a web page. The
 sample application is deployed and available live at
-https://crxjs-dot-u2fdemo.appspot.com/. The underlying U2F capability is provided by the
-Java U2F implementation.  A developer can take the core ideas from here and
+https://u2fdemo.appspot.com/. The underlying U2F capability is provided by the
+Java U2F implementation. A developer can take the core ideas from here and
 integrate U2F into a web application on their own favorite web app platform.
 
 ## Getting started

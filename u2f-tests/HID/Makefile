@@ -65,14 +65,17 @@ sha256.o: core/libmincrypt/sha256.c
 u2f_util.o: u2f_util.cc u2f_util.h u2f.h u2f_hid.h
 	$(CXX) -c $(CPPFLAGS) $(CFLAGS) -Wall -o u2f_util.o u2f_util.cc
 
+dev.o: dev.cc u2f_util.h
+	$(CXX) -c $(CPPFLAGS) $(CFLAGS) -Wall -o dev.o dev.cc
+
 # simple hidapi tool to list devices to see paths.
 list: list.c $(HIDAPI)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -Wall -o $@ $^ $(LDLIBS)
 
 # Low-level HID framing test.
-HIDTest: HIDTest.cc u2f_util.o $(HIDAPI)
+HIDTest: HIDTest.cc u2f_util.o dev.o $(HIDAPI)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -Wall -o $@ $^ $(LDLIBS)
 
 # U2F messaging crypto test.
-U2FTest: U2FTest.cc u2f_util.o $(HIDAPI) $(LIBMINCRYPT)
+U2FTest: U2FTest.cc u2f_util.o dev.o $(HIDAPI) $(LIBMINCRYPT)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -Wall -o $@ $^ $(LDLIBS)

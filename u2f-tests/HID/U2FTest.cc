@@ -54,8 +54,11 @@ void AbortOrNot() {
 }
 
 void WaitForUserPresence(struct U2Fob* device, bool hasButton) {
+  int touched = DEV_touch(device);
   U2Fob_close(device);
-  pause(string(hasButton ? "Touch" : "Re-insert") + " device and hit enter..");
+  if (!touched) {
+    pause(string(hasButton ? "Touch" : "Re-insert") + " device and hit enter..");
+  }
   CHECK_EQ(0, U2Fob_reopen(device));
   CHECK_EQ(0, U2Fob_init(device));
 }

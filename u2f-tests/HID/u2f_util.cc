@@ -18,9 +18,9 @@
 #include "u2f_util.h"
 
 // This is a "library"; do not abort.
-#define AbortOrNot() \
-    std::cerr << "returning false" << std::endl; \
-    return false
+#define AbortOrNot()                           \
+  std::cerr << "returning false" << std::endl; \
+  return false
 
 #ifdef __OS_WIN
 #define strdup _strdup
@@ -33,14 +33,12 @@
 
 #define CLOCK_MONOTONIC 0
 
-static
-void clock_gettime(int which, struct timespec* ts) {
+static void clock_gettime(int which, struct timespec* ts) {
   static mach_timebase_info_data_t __clock_gettime_inf;
   uint64_t now, nano;
 
   now = mach_absolute_time();
-  if (0 == __clock_gettime_inf.denom)
-      mach_timebase_info(&__clock_gettime_inf);
+  if (0 == __clock_gettime_inf.denom) mach_timebase_info(&__clock_gettime_inf);
 
   nano = now * __clock_gettime_inf.numer / __clock_gettime_inf.denom;
   ts->tv_sec = nano * 1e-9;
@@ -62,19 +60,23 @@ std::string b2a(const void* ptr, size_t size) {
   return result;
 }
 
-std::string b2a(const std::string& s) {
-  return b2a(s.data(), s.size());
-}
+std::string b2a(const std::string& s) { return b2a(s.data(), s.size()); }
 
 std::string a2b(const std::string& s) {
   std::string result;
   int v;
   for (size_t i = 0; i < s.size(); ++i) {
-    if ((i & 1) == 1) v <<= 4; else v = 0;
+    if ((i & 1) == 1)
+      v <<= 4;
+    else
+      v = 0;
     char d = s[i];
-    if (d >= '0' && d <= '9') v += (d - '0');
-    else if (d >= 'A' && d <= 'F') v += (d - 'A' + 10);
-    else if (d >= 'a' && d <= 'f') v += (d - 'a' + 10);
+    if (d >= '0' && d <= '9')
+      v += (d - '0');
+    else if (d >= 'A' && d <= 'F')
+      v += (d - 'A' + 10);
+    else if (d >= 'a' && d <= 'f')
+      v += (d - 'a' + 10);
     if ((i & 1) == 1) result.push_back(v & 255);
   }
   return result;
@@ -83,15 +85,15 @@ std::string a2b(const std::string& s) {
 float U2Fob_deltaTime(uint64_t* state) {
   uint64_t now, delta;
 #ifdef __OS_WIN
-  now = (uint64_t) GetTickCount64() * 1000000;
+  now = (uint64_t)GetTickCount64() * 1000000;
 #else
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  now = (uint64_t) (ts.tv_sec * 1e9 + ts.tv_nsec);
+  now = (uint64_t)(ts.tv_sec * 1e9 + ts.tv_nsec);
 #endif
   delta = *state ? now - *state : 0;
   *state = now;
-  return (float) (delta / 1.0e9);
+  return (float)(delta / 1.0e9);
 }
 
 struct U2Fob* U2Fob_create() {
@@ -99,7 +101,7 @@ struct U2Fob* U2Fob_create() {
   if (hid_init() == 0) {
     f = (struct U2Fob*)malloc(sizeof(struct U2Fob));
     memset(f, 0, sizeof(struct U2Fob));
-    f->cid = -1;
+    f->cid = f->fd_in = f->fd_out = -1;
   }
   return f;
 }
@@ -116,9 +118,7 @@ void U2Fob_destroy(struct U2Fob* device) {
   hid_exit();
 }
 
-uint32_t U2Fob_getCid(struct U2Fob* device) {
-  return device->cid;
-}
+uint32_t U2Fob_getCid(struct U2Fob* device) { return device->cid; }
 
 int U2Fob_open(struct U2Fob* device, const char* path) {
   U2Fob_close(device);
@@ -127,21 +127,16 @@ int U2Fob_open(struct U2Fob* device, const char* path) {
     device->path = NULL;
   }
   device->path = strdup(path);
-  device->dev = hid_open_path(device->path);
-  return device->dev != NULL ? -ERR_NONE : -ERR_OTHER;
+  DEV_open_path(device);
+  return DEV_opened(device) ? -ERR_NONE : -ERR_OTHER;
 }
 
-void U2Fob_close(struct U2Fob* device) {
-  if (device->dev) {
-    hid_close(device->dev);
-    device->dev = NULL;
-  }
-}
+void U2Fob_close(struct U2Fob* device) { DEV_close(device); }
 
 int U2Fob_reopen(struct U2Fob* device) {
   U2Fob_close(device);
-  device->dev = hid_open_path(device->path);
-  return device->dev != NULL ? -ERR_NONE : -ERR_OTHER;
+  DEV_open_path(device);
+  return DEV_opened(device) ? -ERR_NONE : -ERR_OTHER;
 }
 
 void U2Fob_setLog(struct U2Fob* device, FILE* fd, int level) {
@@ -151,9 +146,8 @@ void U2Fob_setLog(struct U2Fob* device, FILE* fd, int level) {
   U2Fob_deltaTime(&device->logtime);
 }
 
-static
-void U2Fob_logFrame(struct U2Fob* device,
-                    const char* tag, const U2FHID_FRAME* f) {
+static void U2Fob_logFrame(struct U2Fob* device, const char* tag,
+                           const U2FHID_FRAME* f) {
   if (device->logfp) {
     fprintf(device->logfp, "t+%.3f", U2Fob_deltaTime(&device->logtime));
     fprintf(device->logfp, "%s %08x:%02x", tag, f->cid, f->type);
@@ -161,11 +155,11 @@ void U2Fob_logFrame(struct U2Fob* device,
       int len = f->init.bcnth * 256 + f->init.bcntl;
       fprintf(device->logfp, "[%d]:", len);
       for (size_t i = 0; i < sizeof(f->init.data); ++i)
-          fprintf(device->logfp, "%02X", f->init.data[i]);
+        fprintf(device->logfp, "%02X", f->init.data[i]);
     } else {
       fprintf(device->logfp, ":");
       for (size_t i = 0; i < sizeof(f->cont.data); ++i)
-          fprintf(device->logfp, "%02X", f->cont.data[i]);
+        fprintf(device->logfp, "%02X", f->cont.data[i]);
     }
     fprintf(device->logfp, "\n");
   }
@@ -175,13 +169,13 @@ int U2Fob_sendHidFrame(struct U2Fob* device, U2FHID_FRAME* f) {
   uint8_t d[sizeof(U2FHID_FRAME) + 1];
   int res;
 
-  d[0] = 0;  // un-numbered report
+  d[0] = 0;                // un-numbered report
   f->cid = htonl(f->cid);  // cid is in network order on the wire
   memcpy(d + 1, f, sizeof(U2FHID_FRAME));
   f->cid = ntohl(f->cid);
 
-  if (!device->dev) return -ERR_OTHER;
-  res = hid_write(device->dev, d, sizeof(d));
+  if (!DEV_opened(device)) return -ERR_OTHER;
+  res = DEV_write(device, d, sizeof(d));
 
   if (res == sizeof(d)) {
     U2Fob_logFrame(device, ">", f);
@@ -192,22 +186,19 @@ int U2Fob_sendHidFrame(struct U2Fob* device, U2FHID_FRAME* f) {
 }
 
 int U2Fob_receiveHidFrame(struct U2Fob* device, U2FHID_FRAME* r, float to) {
-  if (to <= 0.0)
-      return -ERR_MSG_TIMEOUT;
+  if (to <= 0.0) return -ERR_MSG_TIMEOUT;
 
-  if (!device->dev) return -ERR_OTHER;
+  if (!DEV_opened(device)) return -ERR_OTHER;
   memset((int8_t*)r, 0xEE, sizeof(U2FHID_FRAME));
-  int res = hid_read_timeout(device->dev,
-                             (uint8_t*) r, sizeof(U2FHID_FRAME),
-                             (int) (to * 1000));
+  int res = DEV_read_timeout(device, (uint8_t*)r, sizeof(U2FHID_FRAME),
+                             (int)(to * 1000));
   if (res == sizeof(U2FHID_FRAME)) {
     r->cid = ntohl(r->cid);
     U2Fob_logFrame(device, "<", r);
     return 0;
   }
 
-  if (res == -1)
-      return -ERR_OTHER;
+  if (res == -1) return -ERR_OTHER;
 
   if (device->logfp) {
     fprintf(device->logfp, "t+%.3f", U2Fob_deltaTime(&device->logtime));
@@ -245,13 +236,11 @@ int U2Fob_init(struct U2Fob* device) {
     if (response.init.cmd != challenge.init.cmd) continue;
     if (MSG_LEN(response) != sizeof(U2FHID_INIT_RESP)) continue;
     if (memcmp(response.init.data, challenge.init.data, INIT_NONCE_SIZE))
-        continue;
+      continue;
 
-    device->cid =
-        (response.init.data[8] << 24) |
-        (response.init.data[9] << 16) |
-        (response.init.data[10] << 8) |
-        (response.init.data[11] << 0);
+    device->cid = (response.init.data[8] << 24) |
+                  (response.init.data[9] << 16) |
+                  (response.init.data[10] << 8) | (response.init.data[11] << 0);
 
     break;
   }
@@ -259,13 +248,13 @@ int U2Fob_init(struct U2Fob* device) {
   return 0;
 }
 
-int U2Fob_send(struct U2Fob* device, uint8_t cmd,
-               const void* data, size_t size) {
+int U2Fob_send(struct U2Fob* device, uint8_t cmd, const void* data,
+               size_t size) {
   U2FHID_FRAME frame;
   int res;
   size_t frameLen;
   uint8_t seq = 0;
-  uint8_t* pData = (uint8_t*) data;
+  uint8_t* pData = (uint8_t*)data;
 
   frame.cid = device->cid;
   frame.init.cmd = TYPE_INIT | cmd;
@@ -280,6 +269,8 @@ int U2Fob_send(struct U2Fob* device, uint8_t cmd,
     res = U2Fob_sendHidFrame(device, &frame);
     if (res != 0) return res;
 
+    usleep(10000);
+
     size -= frameLen;
     pData += frameLen;
 
@@ -292,14 +283,13 @@ int U2Fob_send(struct U2Fob* device, uint8_t cmd,
   return 0;
 }
 
-int U2Fob_recv(struct U2Fob* device, uint8_t* cmd,
-               void* data, size_t max,
+int U2Fob_recv(struct U2Fob* device, uint8_t* cmd, void* data, size_t max,
                float timeout) {
   U2FHID_FRAME frame;
   int res, result;
   size_t totalLen, frameLen;
   uint8_t seq = 0;
-  uint8_t* pData = (uint8_t*) data;
+  uint8_t* pData = (uint8_t*)data;
   uint64_t timeTracker = 0;
 
   U2Fob_deltaTime(&timeTracker);
@@ -344,9 +334,7 @@ int U2Fob_recv(struct U2Fob* device, uint8_t* cmd,
   return result;
 }
 
-int U2Fob_exchange_apdu_buffer(struct U2Fob* device,
-                               void* data,
-                               size_t size,
+int U2Fob_exchange_apdu_buffer(struct U2Fob* device, void* data, size_t size,
                                std::string* in) {
   uint8_t cmd = U2FHID_MSG;
 
@@ -371,10 +359,8 @@ int U2Fob_exchange_apdu_buffer(struct U2Fob* device,
   return sw12;
 }
 
-int U2Fob_apdu(struct U2Fob* device,
-               uint8_t CLA, uint8_t INS, uint8_t P1, uint8_t P2,
-               const std::string& out,
-               std::string* in) {
+int U2Fob_apdu(struct U2Fob* device, uint8_t CLA, uint8_t INS, uint8_t P1,
+               uint8_t P2, const std::string& out, std::string* in) {
   uint8_t buf[4096];
   size_t nc = out.size() ? (3 + out.size()) : 0;
 
@@ -407,8 +393,7 @@ int U2Fob_apdu(struct U2Fob* device,
   return U2Fob_exchange_apdu_buffer(device, buf, offs, in);
 }
 
-bool getCertificate(const U2F_REGISTER_RESP& rsp,
-                    std::string* cert) {
+bool getCertificate(const U2F_REGISTER_RESP& rsp, std::string* cert) {
   size_t hkLen = rsp.keyHandleLen;
 
   CHECK_GE(hkLen, 64);
@@ -443,8 +428,7 @@ bool getCertificate(const U2F_REGISTER_RESP& rsp,
   return true;
 }
 
-bool getSignature(const U2F_REGISTER_RESP& rsp,
-                  std::string* sig) {
+bool getSignature(const U2F_REGISTER_RESP& rsp, std::string* sig) {
   std::string cert;
   CHECK_NE(false, getCertificate(rsp, &cert));
 
@@ -464,8 +448,7 @@ bool getSignature(const U2F_REGISTER_RESP& rsp,
   return true;
 }
 
-bool getSubjectPublicKey(const std::string& cert,
-                         std::string* pk) {
+bool getSubjectPublicKey(const std::string& cert, std::string* pk) {
   CHECK_GE(cert.size(), P256_POINT_SIZE);
 
   // Explicitly search for asn1 lead-in sequence of p256-ecdsa public key.
@@ -482,8 +465,7 @@ bool getSubjectPublicKey(const std::string& cert,
   return true;
 }
 
-bool getCertSignature(const std::string& cert,
-                      std::string* sig) {
+bool getCertSignature(const std::string& cert, std::string* sig) {
   // Explicitly search asn1 lead-in sequence of p256-ecdsa signature.
   const char asn1[] = "300A06082A8648CE3D04030203";
   std::string sigStart(a2b(asn1));
@@ -502,7 +484,6 @@ bool getCertSignature(const std::string& cert,
   return true;
 }
 
-bool verifyCertificate(const std::string& pk,
-                       const std::string& cert) {
+bool verifyCertificate(const std::string& pk, const std::string& cert) {
   CHECK_EQ(true, false);  // not yet implemented
 }

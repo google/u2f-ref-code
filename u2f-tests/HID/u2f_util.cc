@@ -269,7 +269,7 @@ int U2Fob_send(struct U2Fob* device, uint8_t cmd, const void* data,
     res = U2Fob_sendHidFrame(device, &frame);
     if (res != 0) return res;
 
-    usleep(10000);
+    if (device->dev == NULL) usleep(10000);
 
     size -= frameLen;
     pData += frameLen;

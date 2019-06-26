@@ -379,6 +379,7 @@ int main(int argc, char* argv[]) {
   regRsp.keyHandleLen -= 8; // perturb keyhandle length
   PASS(test_Sign(0x6700, false));
 
+  //DEV_quit(device); // stop emulator, if any
   U2Fob_destroy(device);
   return 0;
 }

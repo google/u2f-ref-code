@@ -44,6 +44,21 @@ void DEV_open_path(struct U2Fob* device) {
   }
 }
 
+void DEV_quit(struct U2Fob* device) {
+  if (device->dev) return;
+
+  struct {
+    uint32_t cmd;
+    uint32_t len;
+    uint32_t mode;
+  } data;
+
+  data.cmd = htole32(2);  // kReset
+  data.len = htole32(4);
+  data.mode = htole32(3);  // kResetQuit
+  assert(write(device->fd_out, (const void*)&data, sizeof(data)) == sizeof(data));
+}
+
 int DEV_write(struct U2Fob* device, const uint8_t* src, size_t n) {
   assert(n == 65);
 

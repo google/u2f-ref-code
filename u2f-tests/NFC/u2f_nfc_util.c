@@ -330,6 +330,7 @@ uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc,
   capdu[P1] = p1 & 0xff;
   capdu[P2] = p2 & 0xff;
   if (lc != 0) {
+    // Case 4E, lc coded on 3 bytes, le coded on 2 bytes
     capdu[4] = 0;
     capdu[5] = (lc>>8) & 0xff;
     capdu[6]= lc & 0xff;
@@ -338,9 +339,11 @@ uint xchgAPDUExtended(uint cla, uint ins, uint p1, uint p2, uint lc,
     capdu[8+lc]=(uint8_t) (*rapduLen & 0xff);
     len = lc+9;
   } else {
-    capdu[4]=(uint8_t) ((*rapduLen/256) & 0xff);
-    capdu[5]=(uint8_t) (*rapduLen & 0xff);
-    len = 6;
+    // Case 2E, lc omitted, le coded on 3 bytes
+    capdu[4]=0;
+    capdu[5]=(uint8_t) ((*rapduLen/256) & 0xff);
+    capdu[6]=(uint8_t) (*rapduLen & 0xff);
+    len = 7;
   }
 
   start  = getTimestampMs();

@@ -19,7 +19,8 @@ public class SecurityKeyData {
     BLUETOOTH_LOW_ENERGY("ble"),
     USB("usb"),
     NFC("nfc"),
-    USB_INTERNAL("usb-internal");
+    USB_INTERNAL("usb-internal"),
+    LIGHTNING("lightning");
 
     private String mValue;
 

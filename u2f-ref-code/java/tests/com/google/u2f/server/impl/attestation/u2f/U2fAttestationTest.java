@@ -81,4 +81,16 @@ public class U2fAttestationTest extends TestVectors {
     assertTrue(transports.contains(Transports.BLUETOOTH_LOW_ENERGY));
     assertTrue(transports.contains(Transports.NFC));
   }
+
+  @Test
+  public void testValidCertLightningTransport() throws Exception {
+    U2fAttestation attestation = U2fAttestation.Parse(TRUSTED_CERTIFICATE_LIGHTNING);
+
+    assertNotNull(attestation);
+    List<Transports> transports = attestation.getTransports();
+    assertNotNull(transports);
+    assertEquals(2, transports.size());
+    assertTrue(transports.contains(Transports.USB));
+    assertTrue(transports.contains(Transports.LIGHTNING));
+  }
 }

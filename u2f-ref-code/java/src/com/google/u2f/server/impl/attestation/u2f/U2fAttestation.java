@@ -38,6 +38,7 @@ public class U2fAttestation {
    *       uSB(2),
    *       nFC(3),
    *       uSBInternal(4)
+   *       lightning(5)
    *     }
    *
    *   <p>Note that the BIT STRING must be wrapped in an OCTET STRING.

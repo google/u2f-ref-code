@@ -182,10 +182,6 @@ int main(int argc, char* argv[]) {
   CHECK_EQ(0x6D00, xchgAPDUExtended(0, 0 /* not U2F INS */, 0, 0, 0, "", &rapduLen, rapdu));
   CHECK_EQ(0, rapduLen);
 
-  std::cout << "\nCheck Bad CLA Response";
-  CHECK_NE(0x9000, xchgAPDUShort(1 /* not U2F CLA, 0x00 */, U2F_INS_AUTHENTICATE, 0, 0, 0, "abc", &rapduLen, rapdu));
-  CHECK_EQ(0, rapduLen);
-
   std::cout << "\nCheck Wrong Length U2F_REGISTER Response";
   CHECK_EQ(0x6700u, xchgAPDUShort(0, U2F_INS_REGISTER, 0, 0, 0, "", &rapduLen, rapdu));
   CHECK_EQ(0, rapduLen);

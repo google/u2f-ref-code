@@ -680,10 +680,14 @@ int main(int argc, char* argv[]) {
   PASS(test_Lock());
 
   PASS(test_Echo());
+  //Re-initialize the device
+  PASS(test_BasicInit());
   PASS(test_LongEcho());
 
   PASS(test_Timeout());
 
+  //Re-initialize the device
+  PASS(test_BasicInit());
   PASS(test_WrongSeq());
   PASS(test_NotCont());
   PASS(test_NotFirst());

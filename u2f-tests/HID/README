@@ -4,7 +4,7 @@ HIDTest to check compliance at the usb HID communication layer.
 U2FTest to check compliance at the application layer.
 
 DEPENDENCIES:
-git clone https://github.com/signal11/hidapi
+git clone https://github.com/libusb/hidapi
 git clone -b lollipop-release https://android.googlesource.com/platform/system/core
 
 linux: sudo apt-get install libudev-dev
